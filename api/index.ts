@@ -8,7 +8,7 @@ import "dotenv/config";
 
 import { correlationIdMiddleware, requestLoggingMiddleware, healthCheckMiddleware, Logger } from '../src/middlewares/logging';
 import { errorHandlingMiddleware, notFoundMiddleware, jsonErrorHandler } from '../src/middlewares/errorHandling';
-import { securityHeaders, generalRateLimit, sanitizeRequest } from '../src/middlewares/security';
+import { securityHeaders, sanitizeRequest } from '../src/middlewares/security';
 
 const app = express();
 const logger = Logger.getInstance();
@@ -20,8 +20,6 @@ app.set('trust proxy', 1);
 app.use(correlationIdMiddleware);
 app.use(healthCheckMiddleware);
 app.use(securityHeaders);
-// Temporarily disable rate limiting for Vercel debugging
-// app.use(generalRateLimit);
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
