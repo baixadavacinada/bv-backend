@@ -97,7 +97,7 @@ export const sanitizeRequest = (req: Request, res: Response, next: NextFunction)
     const sanitized: any = Array.isArray(obj) ? [] : {};
 
     for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
+      if (Object.prototype.hasOwnProperty.call(obj, key)) {
 
         if (typeof key === 'string' && key.startsWith('$')) {
           continue;
