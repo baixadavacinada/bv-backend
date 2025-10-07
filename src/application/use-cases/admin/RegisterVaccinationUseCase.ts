@@ -1,9 +1,10 @@
-import { VaccinationRepository } from '../../../domain/repositories/VaccinationRepository';
+import { VaccinationRecordRepository } from '../../../domain/repositories/VaccinationRecordRepository';
+import { VaccinationRecord } from '../../../domain/entities/VaccinationRecord';
 
 export class RegisterVaccinationUseCase {
-  constructor(private vaccinationRepository: VaccinationRepository) {}
+  constructor(private vaccinationRecordRepository: VaccinationRecordRepository) {}
 
-  async execute(record: any) {
-    return this.vaccinationRepository.create(record);
+  async execute(record: VaccinationRecord): Promise<VaccinationRecord> {
+    return this.vaccinationRecordRepository.create(record);
   }
 }
