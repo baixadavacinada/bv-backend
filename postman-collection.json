@@ -1,0 +1,536 @@
+{
+  "info": {
+    "name": "Baixada Vacinada API - Complete Collection",
+    "description": "Collection completa para testar todas as rotas da API Baixada Vacinada Backend\n\nConfiguração:\n- URL Base: http://localhost:3000\n- Autenticação: JWT Bearer Token\n- Content-Type: application/json\n\nFluxo de Teste:\n1. Teste Health Check\n2. Login (obter token)\n3. Criar usuário admin\n4. Criar unidades de saúde\n5. Criar vacinas\n6. Testar rotas públicas\n\nVariáveis:\n- {{baseUrl}} = http://localhost:3000\n- {{token}} = JWT token obtido no login",
+    "_postman_id": "baixada-vacinada-api-v1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔧 Sistema",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "API Documentation (Swagger)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api-docs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api-docs"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🔑 Autenticação",
+      "item": [
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (responseCode.code === 200) {",
+                  "  const response = pm.response.json();",
+                  "  pm.collectionVariables.set('token', response.token);",
+                  "  console.log('Token salvo:', response.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\\n  \\\"email\\\": \\\"admin@baixadavacinada.com\\\",\\n  \\\"password\\\": \\\"admin123\\\"\\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/public/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "public", "auth", "login"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Agent",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (responseCode.code === 200) {",
+                  "  const response = pm.response.json();",
+                  "  pm.collectionVariables.set('token', response.token);",
+                  "  console.log('Token salvo:', response.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\\n  \\\"email\\\": \\\"agent@baixadavacinada.com\\\",\\n  \\\"password\\\": \\\"agent123\\\"\\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/public/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "public", "auth", "login"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🌐 Rotas Públicas",
+      "item": [
+        {
+          "name": "Listar Unidades de Saúde (Público)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/public/health-unit?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "public", "health-unit"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "👥 Gestão de Usuários",
+      "item": [
+        {
+          "name": "Criar Usuário Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\\n  \\\"name\\\": \\\"Administrador Teste\\\",\\n  \\\"email\\\": \\\"admin.teste@baixadavacinada.com\\\",\\n  \\\"password\\\": \\\"admin123456\\\",\\n  \\\"role\\\": \\\"admin\\\",\\n  \\\"isActive\\\": true\\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "users"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Usuário Agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\\n  \\\"name\\\": \\\"Agente Teste\\\",\\n  \\\"email\\\": \\\"agente.teste@baixadavacinada.com\\\",\\n  \\\"password\\\": \\\"agent123456\\\",\\n  \\\"role\\\": \\\"agent\\\",\\n  \\\"isActive\\\": true\\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "users"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🏥 Unidades de Saúde",
+      "item": [
+        {
+          "name": "Criar Unidade de Saúde",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\\n  \\\"name\\\": \\\"UBS Central Santos\\\",\\n  \\\"address\\\": {\\n    \\\"street\\\": \\\"Rua das Flores, 123\\\",\\n    \\\"neighborhood\\\": \\\"Centro\\\",\\n    \\\"city\\\": \\\"Santos\\\",\\n    \\\"state\\\": \\\"SP\\\",\\n    \\\"zipCode\\\": \\\"11010-000\\\",\\n    \\\"coordinates\\\": {\\n      \\\"latitude\\\": -23.9618,\\n      \\\"longitude\\\": -46.3322\\n    }\\n  },\\n  \\\"contact\\\": {\\n    \\\"phone\\\": \\\"(13) 3222-1234\\\",\\n    \\\"email\\\": \\\"ubs.central@santos.sp.gov.br\\\"\\n  },\\n  \\\"operatingHours\\\": {\\n    \\\"monday\\\": \\\"07:00-17:00\\\",\\n    \\\"tuesday\\\": \\\"07:00-17:00\\\",\\n    \\\"wednesday\\\": \\\"07:00-17:00\\\",\\n    \\\"thursday\\\": \\\"07:00-17:00\\\",\\n    \\\"friday\\\": \\\"07:00-17:00\\\",\\n    \\\"saturday\\\": \\\"08:00-12:00\\\",\\n    \\\"sunday\\\": \\\"Fechado\\\"\\n  },\\n  \\\"capacity\\\": 200,\\n  \\\"isActive\\\": true,\\n  \\\"isVisible\\\": true\\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/health-units",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "health-units"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Listar Unidades de Saúde (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/health-units?page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "health-units"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar Unidade por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/health-units/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "health-units", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "SUBSTITUA_PELO_ID_DA_UNIDADE"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Atualizar Unidade de Saúde",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\\n  \\\"name\\\": \\\"UBS Central Santos - Atualizada\\\",\\n  \\\"address\\\": {\\n    \\\"street\\\": \\\"Rua das Flores, 123\\\",\\n    \\\"neighborhood\\\": \\\"Centro\\\",\\n    \\\"city\\\": \\\"Santos\\\",\\n    \\\"state\\\": \\\"SP\\\",\\n    \\\"zipCode\\\": \\\"11010-000\\\",\\n    \\\"coordinates\\\": {\\n      \\\"latitude\\\": -23.9618,\\n      \\\"longitude\\\": -46.3322\\n    }\\n  },\\n  \\\"contact\\\": {\\n    \\\"phone\\\": \\\"(13) 3222-1234\\\",\\n    \\\"email\\\": \\\"ubs.central@santos.sp.gov.br\\\"\\n  },\\n  \\\"operatingHours\\\": {\\n    \\\"monday\\\": \\\"07:00-18:00\\\",\\n    \\\"tuesday\\\": \\\"07:00-18:00\\\",\\n    \\\"wednesday\\\": \\\"07:00-18:00\\\",\\n    \\\"thursday\\\": \\\"07:00-18:00\\\",\\n    \\\"friday\\\": \\\"07:00-18:00\\\",\\n    \\\"saturday\\\": \\\"08:00-12:00\\\",\\n    \\\"sunday\\\": \\\"Fechado\\\"\\n  },\\n  \\\"capacity\\\": 250,\\n  \\\"isActive\\\": true,\\n  \\\"isVisible\\\": true\\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/health-units/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "health-units", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "SUBSTITUA_PELO_ID_DA_UNIDADE"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Toggle Favorito",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/health-units/:id/favorite",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "health-units", ":id", "favorite"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "SUBSTITUA_PELO_ID_DA_UNIDADE"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Toggle Ativo",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/health-units/:id/active",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "health-units", ":id", "active"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "SUBSTITUA_PELO_ID_DA_UNIDADE"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Toggle Visibilidade",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/health-units/:id/visibility",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "health-units", ":id", "visibility"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "SUBSTITUA_PELO_ID_DA_UNIDADE"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "💉 Vacinas",
+      "item": [
+        {
+          "name": "Criar Vacina",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\\n  \\\"name\\\": \\\"COVID-19 - Pfizer\\\",\\n  \\\"manufacturer\\\": \\\"Pfizer/BioNTech\\\",\\n  \\\"description\\\": \\\"Vacina contra COVID-19 baseada em mRNA\\\",\\n  \\\"doses\\\": 2,\\n  \\\"intervalBetweenDoses\\\": 21,\\n  \\\"ageGroup\\\": {\\n    \\\"min\\\": 12,\\n    \\\"max\\\": 99\\n  },\\n  \\\"contraindications\\\": [\\n    \\\"Alergia a componentes da vacina\\\",\\n    \\\"Reação alérgica grave à dose anterior\\\"\\n  ],\\n  \\\"sideEffects\\\": [\\n    \\\"Dor no local da aplicação\\\",\\n    \\\"Fadiga\\\",\\n    \\\"Dor de cabeça\\\",\\n    \\\"Febre baixa\\\"\\n  ],\\n  \\\"isActive\\\": true\\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/vaccines",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "vaccines"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Criar Vacina - H1N1",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\\n  \\\"name\\\": \\\"Influenza H1N1\\\",\\n  \\\"manufacturer\\\": \\\"Instituto Butantan\\\",\\n  \\\"description\\\": \\\"Vacina contra Influenza H1N1 - Campanha anual\\\",\\n  \\\"doses\\\": 1,\\n  \\\"intervalBetweenDoses\\\": 0,\\n  \\\"ageGroup\\\": {\\n    \\\"min\\\": 6,\\n    \\\"max\\\": 99\\n  },\\n  \\\"contraindications\\\": [\\n    \\\"Alergia ao ovo\\\",\\n    \\\"Febre no momento da vacinação\\\"\\n  ],\\n  \\\"sideEffects\\\": [\\n    \\\"Dor local\\\",\\n    \\\"Vermelhidão\\\",\\n    \\\"Febre baixa\\\"\\n  ],\\n  \\\"isActive\\\": true\\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/vaccines",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "vaccines"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🧪 Testes de Segurança",
+      "item": [
+        {
+          "name": "Rate Limiting Test",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Acesso sem Token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/health-units",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "health-units"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Token Inválido",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer token-invalido"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/health-units",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "health-units"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Dados Inválidos",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\\n  \\\"name\\\": \\\"\\\",\\n  \\\"email\\\": \\\"email-invalido\\\",\\n  \\\"password\\\": \\\"123\\\"\\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "admin", "users"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}
