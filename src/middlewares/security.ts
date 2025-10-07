@@ -18,15 +18,6 @@ export const createRateLimiter = (windowMs: number, max: number, message: string
     },
     standardHeaders: true,
     legacyHeaders: false,
-    // Configuração para funcionar com proxy (Vercel)
-    keyGenerator: (req: Request) => {
-      // Use X-Forwarded-For se disponível (Vercel), senão use IP da conexão
-      const forwarded = req.headers['x-forwarded-for'] as string;
-      if (forwarded) {
-        return forwarded.split(',')[0].trim();
-      }
-      return req.ip || req.connection.remoteAddress || 'unknown';
-    },
     handler: (req: Request, res: Response) => {
       // Log rate limit exceeded
       securityEventLogger.logRateLimitExceeded(req, max, windowMs);

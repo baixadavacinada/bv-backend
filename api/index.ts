@@ -20,7 +20,8 @@ app.set('trust proxy', 1);
 app.use(correlationIdMiddleware);
 app.use(healthCheckMiddleware);
 app.use(securityHeaders);
-app.use(generalRateLimit);
+// Temporarily disable rate limiting for Vercel debugging
+// app.use(generalRateLimit);
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
