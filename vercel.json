@@ -2,23 +2,7 @@
   "version": 2,
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api"
-    },
-    {
-      "source": "/public/(.*)",
-      "destination": "/api"
-    },
-    {
-      "source": "/admin/(.*)",
-      "destination": "/api"
-    },
-    {
-      "source": "/api-docs",
-      "destination": "/api"
-    },
-    {
-      "source": "/",
+      "source": "/(.*)",
       "destination": "/api"
     }
   ],
@@ -29,6 +13,5 @@
     "api/index.ts": {
       "maxDuration": 30
     }
-  },
-  "installCommand": "npm install"
+  }
 }

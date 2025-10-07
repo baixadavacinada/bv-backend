@@ -46,8 +46,6 @@ app.get('/', (req, res) => {
 // Routes
 app.use('/api/public', publicRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/public', publicRoutes);
-app.use('/admin', adminRoutes);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlingMiddleware);

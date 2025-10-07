@@ -18,13 +18,69 @@ const options = {
         description: process.env.NODE_ENV === 'production' ? 'Production' : 'Development'
       }
     ],
+    paths: {
+      '/api/public/health-unit': {
+        get: {
+          summary: 'List health units',
+          tags: ['Public'],
+          parameters: [
+            {
+              name: 'page',
+              in: 'query',
+              schema: { type: 'integer', default: 1 }
+            },
+            {
+              name: 'limit',
+              in: 'query',
+              schema: { type: 'integer', default: 10 }
+            }
+          ],
+          responses: {
+            200: {
+              description: 'Success',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      success: { type: 'boolean' },
+                      data: { type: 'array' },
+                      pagination: { type: 'object' }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      '/api/public/auth/login': {
+        post: {
+          summary: 'User login',
+          tags: ['Authentication'],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    username: { type: 'string' },
+                    password: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            200: { description: 'Login successful' },
+            401: { description: 'Invalid credentials' }
+          }
+        }
+      }
+    }
   },
-  apis: [
-    './src/docs/*.ts',
-    './src/docs/*.js',
-    'src/docs/*.ts',
-    'src/docs/*.js'
-  ],
+  apis: [] // Remove file scanning to prevent timeout
 };
 
 export const swaggerSpec = swaggerJsdoc(options);
