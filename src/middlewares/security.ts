@@ -1,12 +1,13 @@
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { Request, Response, NextFunction } from 'express';
+import { securityEventLogger } from './logging';
 
 /**
- * Rate Limiting seguindo OWASP guidelines
+ * Rate Limiting seguindo OWASP guidelines com logs de segurança
  * Protege contra ataques de força bruta e DDoS
  */
-export const createRateLimiter = (windowMs: number, max: number, message: string) => {
+export const createRateLimiter = (windowMs: number, max: number, message: string, identifier?: string) => {
   return rateLimit({
     windowMs,
     max,
@@ -17,26 +18,48 @@ export const createRateLimiter = (windowMs: number, max: number, message: string
     },
     standardHeaders: true,
     legacyHeaders: false,
-
+    handler: (req: Request, res: Response) => {
+      // Log rate limit exceeded
+      securityEventLogger.logRateLimitExceeded(req, max, windowMs);
+      
+      res.status(429).json({
+        success: false,
+        error: {
+          code: 'RATE_LIMIT_EXCEEDED',
+          message,
+          details: {
+            limit: max,
+            window: windowMs,
+            retryAfter: Math.ceil(windowMs / 1000)
+          },
+          timestamp: new Date().toISOString(),
+          correlationId: req.correlationId
+        }
+      });
+    },
+    skip: (req: Request) => {
+      // Skip rate limiting for health checks
+      return req.path === '/health' || req.path === '/api/health';
+    }
   });
 };
 
 export const authRateLimit = createRateLimiter(
   15 * 60 * 1000,
   5,
-  'Muitas tentativas de login. Tente novamente em 15 minutos.'
+  'Too many login attempts. Try again in 15 minutes.'
 );
 
 export const generalRateLimit = createRateLimiter(
   15 * 60 * 1000,
   100,
-  'Limite de requisições excedido. Tente novamente em alguns minutos.'
+  'Request limit exceeded. Try again in a few minutes.'
 );
 
 export const adminRateLimit = createRateLimiter(
   5 * 60 * 1000,
   20,
-  'Limite de operações administrativas excedido.'
+  'Administrative operations limit exceeded.'
 );
 
 /**

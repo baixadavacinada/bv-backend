@@ -30,6 +30,9 @@ Thumbs.db
 # Vercel
 .vercel
 
+# Development docs and scripts (ignored)
+docs-dev/
+
 # Postman (opcional, se salvar exportações locais)
 *.postman_collection.json
 *.postman_environment.json

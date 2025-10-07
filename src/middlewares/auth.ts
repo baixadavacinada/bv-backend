@@ -2,6 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
 import { UserRole } from '../domain/entities/User';
+import { securityEventLogger } from './logging';
+import { UnauthorizedError, ForbiddenError } from './errorHandling';
 
 declare global {
   namespace Express {
@@ -29,7 +31,7 @@ interface JWTPayload {
 }
 
 /**
- * Middleware de autenticação flexível
+ * Middleware de autenticação flexível com logs de segurança
  * Suporta JWT tradicional e Firebase (futuro)
  */
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
@@ -37,19 +39,15 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
     const authHeader = req.headers.authorization;
 
     if (!authHeader) {
-      return res.status(401).json({
-        error: 'Authentication required',
-        message: 'Token de autenticação não fornecido'
-      });
+      securityEventLogger.logUnauthorizedAccess(req, 'Missing authorization header');
+      throw new UnauthorizedError('Authentication token not provided');
     }
 
     const [scheme, token] = authHeader.split(' ');
 
     if (scheme !== 'Bearer' || !token) {
-      return res.status(401).json({
-        error: 'Invalid authentication format',
-        message: 'Formato de autenticação inválido. Use: Bearer <token>'
-      });
+      securityEventLogger.logUnauthorizedAccess(req, 'Invalid authorization format');
+      throw new UnauthorizedError('Invalid authentication format. Use: Bearer <token>');
     }
 
     const decoded = jwt.verify(token, env.jwtSecret) as JWTPayload;
@@ -60,48 +58,37 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
       role: decoded.role,
       firebaseUid: decoded.firebaseUid
     };
-
+    
     next();
   } catch (error) {
     if (error instanceof jwt.TokenExpiredError) {
-      return res.status(401).json({
-        error: 'Token expired',
-        message: 'Token expirado. Faça login novamente.'
-      });
+      securityEventLogger.logUnauthorizedAccess(req, 'Token expired');
+      throw new UnauthorizedError('Token expired. Please login again.');
     }
 
     if (error instanceof jwt.JsonWebTokenError) {
-      return res.status(401).json({
-        error: 'Invalid token',
-        message: 'Token inválido.'
-      });
+      securityEventLogger.logUnauthorizedAccess(req, `Invalid token: ${error.message}`);
+      throw new UnauthorizedError('Invalid token');
     }
 
-    return res.status(500).json({
-      error: 'Authentication error',
-      message: 'Erro interno de autenticação.'
-    });
+    throw error;
   }
 };
 
 /**
  * Middleware de autorização baseado em roles (RBAC)
- * Segue o princípio Open/Closed (SOLID)
+ * Segue o princípio Open/Closed (SOLID) com logs de segurança
  */
 export const requireRole = (...allowedRoles: UserRole[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
-      return res.status(401).json({
-        error: 'Authentication required',
-        message: 'Usuário não autenticado.'
-      });
+      securityEventLogger.logUnauthorizedAccess(req, 'User not authenticated for role check');
+      throw new UnauthorizedError('User not authenticated.');
     }
 
     if (!allowedRoles.includes(req.user.role)) {
-      return res.status(403).json({
-        error: 'Insufficient permissions',
-        message: `Acesso negado. Roles permitidas: ${allowedRoles.join(', ')}`
-      });
+      securityEventLogger.logUnauthorizedAccess(req, `Insufficient role: ${req.user.role}, required: ${allowedRoles.join(', ')}`);
+      throw new ForbiddenError(`Access denied. Allowed roles: ${allowedRoles.join(', ')}`);
     }
 
     next();
@@ -110,22 +97,25 @@ export const requireRole = (...allowedRoles: UserRole[]) => {
 
 /**
  * Middleware para verificar se usuário está ativo
+ * Com logs de segurança para usuários inativos
  */
 export const requireActiveUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
-      return res.status(401).json({
-        error: 'Authentication required',
-        message: 'Usuário não autenticado.'
-      });
+      securityEventLogger.logUnauthorizedAccess(req, 'User not authenticated for active check');
+      throw new UnauthorizedError('User not authenticated.');
     }
+
+    // TODO: Aqui seria verificado no banco se o usuário está ativo
+    // const user = await UserRepository.findById(req.user.id);
+    // if (!user || !user.isActive) {
+    //   securityEventLogger.logUnauthorizedAccess(req, 'Inactive user attempted access');
+    //   throw new ForbiddenError('Inactive user.');
+    // }
 
     next();
   } catch (error) {
-    return res.status(500).json({
-      error: 'Authorization error',
-      message: 'Erro ao verificar status do usuário.'
-    });
+    throw error;
   }
 };
 
@@ -138,7 +128,7 @@ export const requireOwnership = (resourceIdParam: string = 'id') => {
     if (!req.user) {
       return res.status(401).json({
         error: 'Authentication required',
-        message: 'Usuário não autenticado.'
+        message: 'User not authenticated.'
       });
     }
 
@@ -151,7 +141,7 @@ export const requireOwnership = (resourceIdParam: string = 'id') => {
     if (req.user.id !== resourceId) {
       return res.status(403).json({
         error: 'Access denied',
-        message: 'Você só pode acessar seus próprios recursos.'
+        message: 'You can only access your own resources.'
       });
     }
 

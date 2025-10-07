@@ -28,7 +28,7 @@ class FieldValidator {
   static validate(value: any, rule: ValidationRule, fieldName: string): string | null {
 
     if (rule.required && (value === undefined || value === null || value === '')) {
-      return `${fieldName} é obrigatório`;
+      return `${fieldName} is required`;
     }
 
     if (!rule.required && (value === undefined || value === null || value === '')) {
@@ -39,40 +39,40 @@ class FieldValidator {
       if (rule.type === 'email') {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(value)) {
-          return `${fieldName} deve ser um email válido`;
+          return `${fieldName} must be a valid email`;
         }
       } else if (rule.type === 'array') {
         if (!Array.isArray(value)) {
-          return `${fieldName} deve ser um array`;
+          return `${fieldName} must be an array`;
         }
       } else if (typeof value !== rule.type) {
-        return `${fieldName} deve ser do tipo ${rule.type}`;
+        return `${fieldName} must be of type ${rule.type}`;
       }
     }
 
     if (typeof value === 'string') {
       if (rule.minLength && value.length < rule.minLength) {
-        return `${fieldName} deve ter pelo menos ${rule.minLength} caracteres`;
+        return `${fieldName} must have at least ${rule.minLength} characters`;
       }
       if (rule.maxLength && value.length > rule.maxLength) {
-        return `${fieldName} deve ter no máximo ${rule.maxLength} caracteres`;
+        return `${fieldName} must have at most ${rule.maxLength} characters`;
       }
       if (rule.pattern && !rule.pattern.test(value)) {
-        return `${fieldName} não atende ao padrão exigido`;
+        return `${fieldName} format is invalid`;
       }
     }
 
     if (typeof value === 'number') {
       if (rule.min !== undefined && value < rule.min) {
-        return `${fieldName} deve ser pelo menos ${rule.min}`;
+        return `${fieldName} must be at least ${rule.min}`;
       }
       if (rule.max !== undefined && value > rule.max) {
-        return `${fieldName} deve ser no máximo ${rule.max}`;
+        return `${fieldName} must be at most ${rule.max}`;
       }
     }
 
     if (rule.enum && !rule.enum.includes(value)) {
-      return `${fieldName} deve ser um dos valores: ${rule.enum.join(', ')}`;
+      return `${fieldName} must be one of: ${rule.enum.join(', ')}`;
     }
 
     if (rule.custom) {
@@ -81,7 +81,7 @@ class FieldValidator {
         return result;
       }
       if (result === false) {
-        return `${fieldName} não é válido`;
+        return `${fieldName} is invalid`;
       }
     }
 
@@ -107,7 +107,7 @@ export const validateBody = (schema: ValidationSchema) => {
     }
 
     if (Object.keys(errors).length > 0) {
-      throw new ValidationError('Dados inválidos', { fields: errors });
+      throw new ValidationError('Invalid data', { fields: errors });
     }
 
     next();
@@ -142,7 +142,7 @@ export const validateQuery = (schema: ValidationSchema) => {
     }
 
     if (Object.keys(errors).length > 0) {
-      throw new ValidationError('Parâmetros de consulta inválidos', { fields: errors });
+      throw new ValidationError('Invalid query parameters', { fields: errors });
     }
 
     next();
@@ -166,7 +166,26 @@ export const ValidationSchemas = {
     city: { required: true, type: 'string' as const, minLength: 2, maxLength: 50 },
     state: { required: true, type: 'string' as const, minLength: 2, maxLength: 50 },
     zipCode: { required: true, type: 'string' as const, pattern: /^\d{5}-?\d{3}$/ },
-    phone: { required: false, type: 'string' as const, pattern: /^\(\d{2}\)\s\d{4,5}-\d{4}$/ }
+    phone: { required: false, type: 'string' as const, pattern: /^\(\d{2}\)\s\d{4,5}-\d{4}$/ },
+    operatingHours: { 
+      required: false, 
+      type: 'object' as const,
+      custom: (value: any) => {
+        if (!value) return true;
+        const validDays = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        const hourPattern = /^(\d{2}:\d{2}-\d{2}:\d{2}|Fechado|Closed)$/i;
+        
+        for (const day of Object.keys(value)) {
+          if (!validDays.includes(day)) {
+            return `Invalid day of week: ${day}`;
+          }
+          if (value[day] && !hourPattern.test(value[day])) {
+            return `Invalid time format for ${day}. Use: HH:MM-HH:MM or 'Fechado'`;
+          }
+        }
+        return true;
+      }
+    }
   },
 
   feedback: {

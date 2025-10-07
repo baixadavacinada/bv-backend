@@ -8,7 +8,7 @@ export async function createHealthUnitController(req: Request, res: Response) {
     return res.status(201).json(saved);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Erro ao criar unidade de saúde" });
+    return res.status(500).json({ error: "Error creating health unit" });
   }
 }
 
@@ -26,7 +26,7 @@ export async function listHealthUnitsController(req: Request, res: Response) {
     return res.status(200).json(units);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Erro ao buscar unidades" });
+    return res.status(500).json({ error: "Error fetching units" });
   }
 }
 
@@ -34,11 +34,11 @@ export async function getHealthUnitByIdController(req: Request, res: Response) {
   try {
     const { id } = req.params;
     const unit = await HealthUnitModel.findById(id);
-    if (!unit) return res.status(404).json({ error: "Unidade não encontrada" });
+    if (!unit) return res.status(404).json({ error: "Unit not found" });
     return res.status(200).json(unit);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Erro ao buscar unidade" });
+    return res.status(500).json({ error: "Error fetching unit" });
   }
 }
 
@@ -46,11 +46,11 @@ export async function updateHealthUnitController(req: Request, res: Response) {
   try {
     const { id } = req.params;
     const updated = await HealthUnitModel.findByIdAndUpdate(id, req.body, { new: true });
-    if (!updated) return res.status(404).json({ error: "Unidade não encontrada" });
+    if (!updated) return res.status(404).json({ error: "Unit not found" });
     return res.status(200).json(updated);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Erro ao atualizar unidade" });
+    return res.status(500).json({ error: "Error updating unit" });
   }
 }
 
@@ -63,11 +63,11 @@ export async function toggleFavoriteController(req: Request, res: Response) {
       { isFavorite },
       { new: true }
     );
-    if (!updated) return res.status(404).json({ error: "Unidade não encontrada" });
+    if (!updated) return res.status(404).json({ error: "Unit not found" });
     return res.status(200).json(updated);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Erro ao atualizar favorito" });
+    return res.status(500).json({ error: "Error updating favorite" });
   }
 }
 
@@ -80,11 +80,11 @@ export async function toggleActiveController(req: Request, res: Response) {
       { isActive },
       { new: true }
     );
-    if (!updated) return res.status(404).json({ error: "Unidade não encontrada" });
+    if (!updated) return res.status(404).json({ error: "Unit not found" });
     return res.status(200).json(updated);
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ error: "Erro ao atualizar status ativo" });
+    return res.status(500).json({ error: "Error updating active status" });
   }
 }
 
