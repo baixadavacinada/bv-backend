@@ -13,6 +13,9 @@ import { securityHeaders, generalRateLimit, sanitizeRequest } from '../src/middl
 const app = express();
 const logger = Logger.getInstance();
 
+// Configure Express to trust proxy (required for Vercel)
+app.set('trust proxy', 1);
+
 // Middleware setup
 app.use(correlationIdMiddleware);
 app.use(healthCheckMiddleware);
