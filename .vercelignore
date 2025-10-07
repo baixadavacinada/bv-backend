@@ -1,9 +1,7 @@
-src/
 docs-dev/
 *.md
 .env
 .env.local
 .env.example
-node_modules/
 .git/
 dist/
