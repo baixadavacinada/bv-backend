@@ -2,7 +2,23 @@
   "version": 2,
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/api/(.*)",
+      "destination": "/api"
+    },
+    {
+      "source": "/public/(.*)",
+      "destination": "/api"
+    },
+    {
+      "source": "/admin/(.*)",
+      "destination": "/api"
+    },
+    {
+      "source": "/api-docs",
+      "destination": "/api"
+    },
+    {
+      "source": "/",
       "destination": "/api"
     }
   ],
