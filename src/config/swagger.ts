@@ -1,55 +1,159 @@
+import swaggerJsdoc from 'swagger-jsdoc';
+import swaggerUi from 'swagger-ui-express';
 import { Express } from 'express';
 
-// Minimal static swagger spec to avoid file operations
-const swaggerSpec = {
-  openapi: '3.0.0',
-  info: {
-    title: 'Baixada Vacinada API',
-    version: '1.0.0',
-    description: 'API para gerenciamento de vacinação em Japeri',
-  },
-  servers: [
-    { 
-      url: process.env.NODE_ENV === 'production' 
-        ? 'https://bv-backend.vercel.app' 
-        : 'http://localhost:3000',
-      description: process.env.NODE_ENV === 'production' ? 'Production' : 'Development'
-    }
-  ],
-  paths: {
-    '/api/public/health-unit': {
-      get: {
-        summary: 'List health units',
-        tags: ['Public'],
-        parameters: [
-          {
-            name: 'isActive',
-            in: 'query',
-            schema: { type: 'boolean' }
-          },
-          {
-            name: 'isFavorite', 
-            in: 'query',
-            schema: { type: 'boolean' }
-          },
-          {
-            name: 'neighborhood',
-            in: 'query',
-            schema: { type: 'string' }
+// Simplified swagger options optimized for Vercel
+const options = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Baixada Vacinada API',
+      version: '1.0.0',
+      description: 'API para gerenciamento de vacinação em Japeri',
+    },
+    servers: [
+      { 
+        url: process.env.NODE_ENV === 'production' 
+          ? 'https://bv-backend.vercel.app' 
+          : 'http://localhost:3000',
+        description: process.env.NODE_ENV === 'production' ? 'Production' : 'Development'
+      }
+    ],
+    paths: {
+      '/api/public/health-unit': {
+        get: {
+          summary: 'List health units',
+          tags: ['Public'],
+          parameters: [
+            {
+              name: 'isActive',
+              in: 'query',
+              description: 'Filter by active status',
+              schema: { type: 'boolean' }
+            },
+            {
+              name: 'isFavorite', 
+              in: 'query',
+              description: 'Filter by favorite status',
+              schema: { type: 'boolean' }
+            },
+            {
+              name: 'neighborhood',
+              in: 'query',
+              description: 'Filter by neighborhood name',
+              schema: { type: 'string' }
+            }
+          ],
+          responses: {
+            200: {
+              description: 'List of health units',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      success: { type: 'boolean', example: true },
+                      data: { 
+                        type: 'array',
+                        items: {
+                          type: 'object',
+                          properties: {
+                            _id: { type: 'string' },
+                            name: { type: 'string' },
+                            address: { type: 'string' },
+                            neighborhood: { type: 'string' },
+                            isActive: { type: 'boolean' },
+                            isFavorite: { type: 'boolean' }
+                          }
+                        }
+                      },
+                      message: { type: 'string', example: 'Health units retrieved successfully' },
+                      count: { type: 'number', example: 10 }
+                    }
+                  }
+                }
+              }
+            },
+            500: {
+              description: 'Server error',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      success: { type: 'boolean', example: false },
+                      error: {
+                        type: 'object',
+                        properties: {
+                          code: { type: 'string', example: 'FETCH_ERROR' },
+                          message: { type: 'string', example: 'Error fetching health units' }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
-        ],
-        responses: {
-          200: {
-            description: 'Success',
+        }
+      },
+      '/api/public/auth/login': {
+        post: {
+          summary: 'User authentication',
+          tags: ['Authentication'],
+          requestBody: {
+            required: true,
             content: {
               'application/json': {
                 schema: {
                   type: 'object',
                   properties: {
-                    success: { type: 'boolean' },
-                    data: { type: 'array' },
-                    message: { type: 'string' },
-                    count: { type: 'number' }
+                    username: { type: 'string', example: 'admin' },
+                    password: { type: 'string', example: 'password123' }
+                  },
+                  required: ['username', 'password']
+                }
+              }
+            }
+          },
+          responses: {
+            200: { 
+              description: 'Login successful',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      success: { type: 'boolean', example: true },
+                      token: { type: 'string', example: 'jwt.token.here' },
+                      user: {
+                        type: 'object',
+                        properties: {
+                          id: { type: 'string' },
+                          username: { type: 'string' }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            401: { 
+              description: 'Invalid credentials',
+              content: {
+                'application/json': {
+                  schema: {
+                    type: 'object',
+                    properties: {
+                      success: { type: 'boolean', example: false },
+                      error: {
+                        type: 'object',
+                        properties: {
+                          code: { type: 'string', example: 'UNAUTHORIZED' },
+                          message: { type: 'string', example: 'Invalid credentials' }
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -57,74 +161,36 @@ const swaggerSpec = {
           }
         }
       }
-    },
-    '/api/public/auth/login': {
-      post: {
-        summary: 'User login',
-        tags: ['Authentication'],
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  username: { type: 'string' },
-                  password: { type: 'string' }
-                },
-                required: ['username', 'password']
-              }
-            }
-          }
-        },
-        responses: {
-          200: { description: 'Login successful' },
-          401: { description: 'Invalid credentials' }
-        }
-      }
     }
-  }
+  },
+  apis: [] // No file scanning to prevent timeout
 };
 
+export const swaggerSpec = swaggerJsdoc(options);
+
 export function setupSwagger(app: Express) {
-  // Simple JSON endpoint without Swagger UI to avoid timeout
-  app.get('/api-docs', (req, res) => {
+  // Swagger UI with optimized configuration for Vercel
+  const swaggerUiOptions = {
+    customCss: `
+      .swagger-ui .topbar { display: none; }
+      .swagger-ui .info { margin: 20px 0; }
+      .swagger-ui .info .title { color: #2e8b57; }
+    `,
+    customSiteTitle: 'Baixada Vacinada API',
+    swaggerOptions: {
+      persistAuthorization: true,
+      displayRequestDuration: true,
+      filter: true,
+      tryItOutEnabled: true
+    }
+  };
+
+  app.use('/api-docs', swaggerUi.serve);
+  app.get('/api-docs', swaggerUi.setup(swaggerSpec, swaggerUiOptions));
+  
+  // JSON endpoint for programmatic access
+  app.get('/api-docs.json', (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     res.json(swaggerSpec);
-  });
-  
-  // Minimal HTML documentation page
-  app.get('/docs', (req, res) => {
-    res.setHeader('Content-Type', 'text/html');
-    res.send(`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Baixada Vacinada API Documentation</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 40px; }
-            h1 { color: #333; }
-            .endpoint { background: #f5f5f5; padding: 15px; margin: 10px 0; border-radius: 5px; }
-            .method { font-weight: bold; color: #2e8b57; }
-          </style>
-        </head>
-        <body>
-          <h1>Baixada Vacinada API</h1>
-          <p>API para gerenciamento de vacinação em Japeri</p>
-          
-          <div class="endpoint">
-            <p><span class="method">GET</span> /api/public/health-unit</p>
-            <p>List health units with optional filters: isActive, isFavorite, neighborhood</p>
-          </div>
-          
-          <div class="endpoint">
-            <p><span class="method">POST</span> /api/public/auth/login</p>
-            <p>User authentication with username and password</p>
-          </div>
-          
-          <p><a href="/api-docs">View JSON Schema</a></p>
-        </body>
-      </html>
-    `);
   });
 }
