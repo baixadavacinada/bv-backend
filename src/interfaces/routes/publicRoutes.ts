@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import { loginController } from '../controllers/public/loginController';
-import { listUbsController } from '../controllers/public/ubsController';
+import { listHealthUnitsController } from '../controllers/healthUnitsController';
 
 const router = Router();
 
 router.post('/auth/login', loginController);
-router.get('/ubs', listUbsController);
+router.get('/health-unit', listHealthUnitsController);
 
 export default router;
