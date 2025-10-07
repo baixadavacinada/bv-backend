@@ -29,9 +29,19 @@ app.use(sanitizeRequest);
 
 setupSwagger(app);
 
+// Health check route
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Baixada Vacinada API is running',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0'
+  });
+});
+
 // Routes
-app.use('/api/public', publicRoutes);
-app.use('/api/admin', adminRoutes);
+app.use('/public', publicRoutes);
+app.use('/admin', adminRoutes);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlingMiddleware);
