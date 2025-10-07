@@ -8,7 +8,15 @@ export interface IHealthUnit extends Document {
   state: string;
   zipCode: string;
   phone?: string;
-  operatingHours?: string;
+  operatingHours?: {
+    monday?: string;
+    tuesday?: string;
+    wednesday?: string;
+    thursday?: string;
+    friday?: string;
+    saturday?: string;
+    sunday?: string;
+  };
   availableVaccines?: string[];
   geolocation?: {
     lat: number;
@@ -26,7 +34,15 @@ const HealthUnitSchema: Schema = new Schema({
   state: { type: String, required: true },
   zipCode: { type: String, required: true },
   phone: { type: String },
-  operatingHours: { type: String },
+  operatingHours: {
+    monday: { type: String },
+    tuesday: { type: String },
+    wednesday: { type: String },
+    thursday: { type: String },
+    friday: { type: String },
+    saturday: { type: String },
+    sunday: { type: String }
+  },
   availableVaccines: [{ type: String }],
   geolocation: {
     lat: { type: Number },

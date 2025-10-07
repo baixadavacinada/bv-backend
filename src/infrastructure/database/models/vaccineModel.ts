@@ -16,35 +16,35 @@ export interface VaccineDocument extends Document {
 const VaccineSchema = new Schema<VaccineDocument>({
   name: {
     type: String,
-    required: [true, 'Nome da vacina é obrigatório'],
+    required: [true, 'Vaccine name is required'],
     trim: true,
-    maxLength: [100, 'Nome deve ter no máximo 100 caracteres']
+    maxLength: [100, 'Name must have at most 100 characters']
   },
   manufacturer: {
     type: String,
-    required: [true, 'Fabricante é obrigatório'],
+    required: [true, 'Manufacturer is required'],
     trim: true,
-    maxLength: [100, 'Fabricante deve ter no máximo 100 caracteres']
+    maxLength: [100, 'Manufacturer must have at most 100 characters']
   },
   doses: {
     type: [String],
-    required: [true, 'Doses são obrigatórias'],
+    required: [true, 'Doses are required'],
     validate: {
       validator: function(doses: string[]) {
         return doses.length > 0;
       },
-      message: 'Deve ter pelo menos uma dose'
+      message: 'Must have at least one dose'
     }
   },
   ageGroup: {
     type: String,
-    required: [true, 'Faixa etária é obrigatória'],
+    required: [true, 'Age group is required'],
     trim: true
   },
   description: {
     type: String,
     trim: true,
-    maxLength: [500, 'Descrição deve ter no máximo 500 caracteres']
+    maxLength: [500, 'Description must have at most 500 characters']
   },
   isActive: {
     type: Boolean,
@@ -53,7 +53,7 @@ const VaccineSchema = new Schema<VaccineDocument>({
   createdBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: [true, 'Usuário criador é obrigatório']
+    required: [true, 'Creator user is required']
   },
   updatedBy: {
     type: mongoose.Schema.Types.ObjectId,

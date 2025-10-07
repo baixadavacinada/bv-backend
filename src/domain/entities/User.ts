@@ -4,7 +4,7 @@ export interface User {
   _id?: string;
   name: string;
   email: string;
-  passwordHash: string;
+  password: string;
   role: UserRole;
   profile?: {
     assignedUnitsIds?: string[];

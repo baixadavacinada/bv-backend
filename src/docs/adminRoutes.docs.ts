@@ -28,7 +28,7 @@
  *                 type: string
  *               email:
  *                 type: string
- *               passwordHash:
+ *               password:
  *                 type: string
  *               role:
  *                 type: string
@@ -104,7 +104,29 @@
  *               phone:
  *                 type: string
  *               operatingHours:
- *                 type: string
+ *                 type: object
+ *                 properties:
+ *                   monday:
+ *                     type: string
+ *                     example: "07:00-17:00"
+ *                   tuesday:
+ *                     type: string
+ *                     example: "07:00-17:00"
+ *                   wednesday:
+ *                     type: string
+ *                     example: "07:00-17:00"
+ *                   thursday:
+ *                     type: string
+ *                     example: "07:00-17:00"
+ *                   friday:
+ *                     type: string
+ *                     example: "07:00-17:00"
+ *                   saturday:
+ *                     type: string
+ *                     example: "08:00-12:00"
+ *                   sunday:
+ *                     type: string
+ *                     example: "Fechado"
  *               isActive:
  *                 type: boolean
  *                 default: true
@@ -202,7 +224,29 @@
  *               phone:
  *                 type: string
  *               operatingHours:
- *                 type: string
+ *                 type: object
+ *                 properties:
+ *                   monday:
+ *                     type: string
+ *                     example: "07:00-17:00"
+ *                   tuesday:
+ *                     type: string
+ *                     example: "07:00-17:00"
+ *                   wednesday:
+ *                     type: string
+ *                     example: "07:00-17:00"
+ *                   thursday:
+ *                     type: string
+ *                     example: "07:00-17:00"
+ *                   friday:
+ *                     type: string
+ *                     example: "07:00-17:00"
+ *                   saturday:
+ *                     type: string
+ *                     example: "08:00-12:00"
+ *                   sunday:
+ *                     type: string
+ *                     example: "Fechado"
  *     responses:
  *       200:
  *         description: Unidade atualizada com sucesso

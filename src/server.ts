@@ -58,7 +58,7 @@ process.on('uncaughtException', (error) => {
 
 connectDatabase().then(() => {
     app.listen(PORT, () => {
-        logger.info(`🚀 Server running on port ${PORT}`, {
+        logger.info(`Server running on port ${PORT}`, {
             environment: process.env.NODE_ENV || 'development',
             port: PORT
         });

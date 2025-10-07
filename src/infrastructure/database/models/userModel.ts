@@ -3,7 +3,7 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 export interface UserDocument extends Document {
   name: string;
   email: string;
-  passwordHash: string;
+  password: string;
   role: "public" | "agent" | "admin";
   profile?: {
     assignedUnitsIds?: Types.ObjectId[];
@@ -22,30 +22,30 @@ export interface UserDocument extends Document {
 const UserSchema = new Schema<UserDocument>({
   name: {
     type: String,
-    required: [true, 'Nome é obrigatório'],
+    required: [true, 'Name is required'],
     trim: true,
-    maxLength: [100, 'Nome deve ter no máximo 100 caracteres']
+    maxLength: [100, 'Name must have at most 100 characters']
   },
   email: {
     type: String,
-    required: [true, 'Email é obrigatório'],
+    required: [true, 'Email is required'],
     unique: true,
     lowercase: true,
     trim: true,
-    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Email inválido']
+    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Invalid email']
   },
-  passwordHash: {
+  password: {
     type: String,
-    required: [true, 'Senha é obrigatória'],
-    minLength: [6, 'Senha deve ter no mínimo 6 caracteres']
+    required: [true, 'Password is required'],
+    minLength: [6, 'Password must have at least 6 characters']
   },
   role: {
     type: String,
     enum: {
       values: ["public", "agent", "admin"],
-      message: 'Role deve ser: public, agent ou admin'
+      message: 'Role must be: public, agent or admin'
     },
-    required: [true, 'Role é obrigatória'],
+    required: [true, 'Role is required'],
     default: "public"
   },
   profile: {
@@ -81,7 +81,6 @@ const UserSchema = new Schema<UserDocument>({
   versionKey: false
 });
 
-UserSchema.index({ email: 1 });
 UserSchema.index({ role: 1 });
 UserSchema.index({ 'profile.assignedUnitsIds': 1 });
 

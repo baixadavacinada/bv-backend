@@ -20,45 +20,45 @@ const vaccinationRecordSchema = new Schema<VaccinationRecordDocument>(
     residentId: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: [true, 'ID do residente é obrigatório']
+      required: [true, 'Resident ID is required']
     },
     vaccineId: {
       type: Schema.Types.ObjectId,
       ref: "Vaccine",
-      required: [true, 'ID da vacina é obrigatório']
+      required: [true, 'Vaccine ID is required']
     },
     healthUnitId: {
       type: Schema.Types.ObjectId,
       ref: "HealthUnit",
-      required: [true, 'ID da unidade de saúde é obrigatório']
+      required: [true, 'Health unit ID is required']
     },
     dose: {
       type: String,
-      required: [true, 'Dose é obrigatória'],
+      required: [true, 'Dose is required'],
       enum: {
         values: ['1ª dose', '2ª dose', '3ª dose', 'dose única', 'reforço'],
-        message: 'Dose deve ser: 1ª dose, 2ª dose, 3ª dose, dose única ou reforço'
+        message: 'Dose must be: 1ª dose, 2ª dose, 3ª dose, dose única or reforço'
       }
     },
     date: {
       type: Date,
-      required: [true, 'Data da aplicação é obrigatória'],
+      required: [true, 'Application date is required'],
       validate: {
         validator: function(date: Date) {
           return date <= new Date();
         },
-        message: 'Data da aplicação não pode ser futura'
+        message: 'Application date cannot be in the future'
       }
     },
     appliedBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: [true, 'Agente aplicador é obrigatório']
+      required: [true, 'Applicator agent is required']
     },
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: [true, 'Usuário criador é obrigatório']
+      required: [true, 'Creator user is required']
     },
     updatedBy: {
       type: Schema.Types.ObjectId,
@@ -70,7 +70,7 @@ const vaccinationRecordSchema = new Schema<VaccinationRecordDocument>(
     },
     notes: {
       type: String,
-      maxLength: [500, 'Observações devem ter no máximo 500 caracteres']
+      maxLength: [500, 'Notes must have at most 500 characters']
     }
   },
   {

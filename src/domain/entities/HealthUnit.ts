@@ -7,7 +7,15 @@ export interface HealthUnit {
   state: string;
   zipCode: string;
   phone?: string;
-  operatingHours?: string;
+  operatingHours?: {
+    monday?: string;
+    tuesday?: string;
+    wednesday?: string;
+    thursday?: string;
+    friday?: string;
+    saturday?: string;
+    sunday?: string;
+  };
   availableVaccines?: string[];
   geolocation?: {
     lat: number;
