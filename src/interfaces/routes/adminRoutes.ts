@@ -1,67 +1,72 @@
 import { Router } from "express";
 import { createUserController } from "../controllers/admin/userController";
 import { createVaccineController } from "../controllers/admin/vaccineController";
-import { createHealthUnitController, getHealthUnitByIdController, listHealthUnitsController, toggleActiveController, toggleFavoriteController, toggleVisibilityController, updateHealthUnitController } from "../controllers/healthUnitsController";
+import { listHealthUnitsController } from "../controllers/healthUnitsController";
+import { 
+  createFirebaseUser, 
+  getFirebaseUser, 
+  updateUserClaims, 
+  toggleUserStatus, 
+  deleteFirebaseUser,
+  getCurrentUser 
+} from "../controllers/admin/firebaseUserController";
 
 import { authMiddleware, requireRole, requireActiveUser } from "../../middlewares/auth";
+import { firebaseAuth, requireAdmin } from "../../middlewares/firebaseAuth";
 import { validateBody, validateQuery, ValidationSchemas } from "../../middlewares/validation";
 import { asyncHandler } from "../../middlewares/errorHandling";
 import { adminRateLimit } from "../../middlewares/security";
 
 const router = Router();
 
-router.use(authMiddleware);
-router.use(requireActiveUser);
+// Use Firebase authentication for admin routes
+router.use(requireAdmin);
 router.use(adminRateLimit);
 
+// Traditional user endpoints (JWT-based)
 router.post("/users",
-  requireRole('admin'),
   validateBody(ValidationSchemas.user),
   asyncHandler(createUserController)
 );
 
+// Vaccine endpoints
 router.post("/vaccines",
-  requireRole('admin', 'agent'),
   validateBody(ValidationSchemas.vaccine),
   asyncHandler(createVaccineController)
 );
 
-router.post("/health-units",
-  requireRole('admin'),
-  validateBody(ValidationSchemas.healthUnit),
-  asyncHandler(createHealthUnitController)
-);
-
+// Health units endpoints
 router.get("/health-units",
-  requireRole('admin', 'agent'),
   validateQuery(ValidationSchemas.pagination),
   asyncHandler(listHealthUnitsController)
 );
 
-router.get("/health-units/:id",
-  requireRole('admin', 'agent'),
-  asyncHandler(getHealthUnitByIdController)
+// Firebase User Management Endpoints
+router.post("/firebase/users",
+  validateBody(ValidationSchemas.firebaseUser),
+  asyncHandler(createFirebaseUser)
 );
 
-router.put("/health-units/:id",
-  requireRole('admin'),
-  validateBody(ValidationSchemas.healthUnit),
-  asyncHandler(updateHealthUnitController)
+router.get("/firebase/users/:uid",
+  asyncHandler(getFirebaseUser)
 );
 
-router.patch("/health-units/:id/favorite",
-  requireRole('admin', 'agent'),
-  asyncHandler(toggleFavoriteController)
+router.put("/firebase/users/claims",
+  validateBody(ValidationSchemas.firebaseUserClaims),
+  asyncHandler(updateUserClaims)
 );
 
-router.patch("/health-units/:id/active",
-  requireRole('admin'),
-  asyncHandler(toggleActiveController)
+router.patch("/firebase/users/:uid/status",
+  validateBody(ValidationSchemas.firebaseUserStatus),
+  asyncHandler(toggleUserStatus)
 );
 
-router.patch("/health-units/:id/visibility",
-  requireRole('admin'),
-  asyncHandler(toggleVisibilityController)
+router.delete("/firebase/users/:uid",
+  asyncHandler(deleteFirebaseUser)
+);
+
+router.get("/firebase/me",
+  asyncHandler(getCurrentUser)
 );
 
 export default router;
