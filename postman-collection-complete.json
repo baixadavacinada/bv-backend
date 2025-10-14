@@ -1,0 +1,593 @@
+{
+  "info": {
+    "name": "Baixada Vacinada API - Complete Test Collection",
+    "description": "Collection completa para testar todas as rotas da API Baixada Vacinada com Firebase Authentication",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "prodUrl",
+      "value": "https://bv-backend.vercel.app/api",
+      "type": "string"
+    },
+    {
+      "key": "firebaseToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Firebase Authentication",
+      "item": [
+        {
+          "name": "Register with Email",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"displayName\": \"Test User\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/public/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["public", "auth", "register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login with Google",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idToken\": \"GOOGLE_FIREBASE_ID_TOKEN_HERE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/public/auth/login/google",
+              "host": ["{{baseUrl}}"],
+              "path": ["public", "auth", "login", "google"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idToken\": \"{{firebaseToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/public/auth/verify-token",
+              "host": ["{{baseUrl}}"],
+              "path": ["public", "auth", "verify-token"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/public/auth/password-reset",
+              "host": ["{{baseUrl}}"],
+              "path": ["public", "auth", "password-reset"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{firebaseToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/public/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["public", "auth", "profile"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{firebaseToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"displayName\": \"Updated Name\",\n  \"photoURL\": \"https://example.com/photo.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/public/auth/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["public", "auth", "profile"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🏥 Public Health Units",
+      "item": [
+        {
+          "name": "List All Health Units",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/public/health-unit",
+              "host": ["{{baseUrl}}"],
+              "path": ["public", "health-unit"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Filter Health Units by City",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/public/health-unit?city=Japeri",
+              "host": ["{{baseUrl}}"],
+              "path": ["public", "health-unit"],
+              "query": [
+                {
+                  "key": "city",
+                  "value": "Japeri"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Filter Active Health Units",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/public/health-unit?isActive=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["public", "health-unit"],
+              "query": [
+                {
+                  "key": "isActive",
+                  "value": "true"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Filter by Neighborhood",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/public/health-unit?neighborhood=Centro",
+              "host": ["{{baseUrl}}"],
+              "path": ["public", "health-unit"],
+              "query": [
+                {
+                  "key": "neighborhood",
+                  "value": "Centro"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🔑 Traditional JWT Auth",
+      "item": [
+        {
+          "name": "JWT Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/public/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["public", "auth", "login"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "👑 Firebase Admin - User Management",
+      "item": [
+        {
+          "name": "Create Firebase User (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newuser@example.com\",\n  \"password\": \"password123\",\n  \"displayName\": \"New User\",\n  \"role\": \"public\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/firebase/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "firebase", "users"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Firebase User (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/firebase/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "firebase", "users", "{{userId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update User Claims (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": \"{{userId}}\",\n  \"claims\": {\n    \"role\": \"admin\",\n    \"admin\": true\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/firebase/users/claims",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "firebase", "users", "claims"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Disable User (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"disabled\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/firebase/users/{{userId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "firebase", "users", "{{userId}}", "status"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Enable User (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"disabled\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/firebase/users/{{userId}}/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "firebase", "users", "{{userId}}", "status"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Firebase User (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/firebase/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "firebase", "users", "{{userId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current Admin Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/firebase/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "firebase", "me"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🏥 Admin Health Units (JWT)",
+      "item": [
+        {
+          "name": "List Health Units (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/admin/health-units",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "health-units"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "👥 Admin User Management (JWT)",
+      "item": [
+        {
+          "name": "Create User (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Test User\",\n  \"email\": \"testuser@example.com\",\n  \"password\": \"password123\",\n  \"role\": \"public\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "users"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "💉 Admin Vaccines (JWT)",
+      "item": [
+        {
+          "name": "Create Vaccine (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{adminToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"COVID-19 Vaccine\",\n  \"manufacturer\": \"Pfizer\",\n  \"ageGroup\": \"12+\",\n  \"doses\": [\"Dose 1\", \"Dose 2\", \"Booster\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/admin/vaccines",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "vaccines"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🔧 API Health Check",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"],
+              "path": [""]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Swagger Documentation",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api-docs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api-docs"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-set variables based on response",
+          "pm.globals.set('timestamp', Date.now());"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-extract tokens from responses",
+          "if (pm.response.json() && pm.response.json().data) {",
+          "    const data = pm.response.json().data;",
+          "    ",
+          "    // Set Firebase token",
+          "    if (data.token) {",
+          "        pm.collectionVariables.set('firebaseToken', data.token);",
+          "    }",
+          "    ",
+          "    // Set user ID",
+          "    if (data.uid) {",
+          "        pm.collectionVariables.set('userId', data.uid);",
+          "    }",
+          "}",
+          "",
+          "// Check if response is successful",
+          "pm.test('Status code is successful', function () {",
+          "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+          "});",
+          "",
+          "// Check response structure",
+          "pm.test('Response has success field', function () {",
+          "    const jsonData = pm.response.json();",
+          "    pm.expect(jsonData).to.have.property('success');",
+          "});"
+        ]
+      }
+    }
+  ]
+}
