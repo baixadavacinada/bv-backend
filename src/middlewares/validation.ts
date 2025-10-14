@@ -221,6 +221,12 @@ export const ValidationSchemas = {
     role: { required: false, type: 'string' as const, enum: ['public', 'agent', 'admin'] as any[] }
   },
 
+  firebaseRegistration: {
+    email: { required: true, type: 'email' as const },
+    password: { required: true, type: 'string' as const, minLength: 6 },
+    displayName: { required: false, type: 'string' as const, minLength: 2, maxLength: 100 }
+  },
+
   firebaseTokenVerify: {
     idToken: { required: true, type: 'string' as const, minLength: 10 }
   },

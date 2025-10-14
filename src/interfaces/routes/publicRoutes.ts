@@ -1,7 +1,14 @@
 import { Router } from 'express';
 import { loginController } from '../controllers/public/loginController';
 import { listHealthUnitsController } from '../controllers/healthUnitsController';
-import { verifyToken, getProfile, updateProfile } from '../controllers/public/authController';
+import { 
+  verifyToken, 
+  getProfile, 
+  updateProfile, 
+  registerWithEmail, 
+  loginWithGoogle, 
+  sendPasswordReset 
+} from '../controllers/public/authController';
 import { requireAuth, optionalAuth } from '../../middlewares/firebaseAuth';
 import { validateBody, ValidationSchemas } from '../../middlewares/validation';
 import { asyncHandler } from '../../middlewares/errorHandling';
@@ -12,11 +19,28 @@ const router = Router();
 router.post('/auth/login', loginController);
 
 // Firebase authentication endpoints
+router.post('/auth/register', 
+  validateBody(ValidationSchemas.firebaseRegistration), 
+  asyncHandler(registerWithEmail)
+);
+
+router.post('/auth/login/google', 
+  validateBody(ValidationSchemas.firebaseTokenVerify), 
+  asyncHandler(loginWithGoogle)
+);
+
 router.post('/auth/verify-token', 
   validateBody(ValidationSchemas.firebaseTokenVerify), 
   asyncHandler(verifyToken)
 );
+
+router.post('/auth/password-reset', 
+  validateBody({ email: { required: true, type: 'email' as const } }), 
+  asyncHandler(sendPasswordReset)
+);
+
 router.get('/auth/profile', requireAuth, asyncHandler(getProfile));
+
 router.put('/auth/profile', 
   requireAuth, 
   validateBody(ValidationSchemas.profileUpdate), 
