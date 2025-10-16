@@ -1,7 +1,7 @@
 import swaggerJsdoc from 'swagger-jsdoc';
 import { Express, Request, Response } from 'express';
 
-// Simplified swagger options optimized for Vercel
+// Configuração otimizada para Vercel
 const options = {
   definition: {
     openapi: '3.0.0',
@@ -15,7 +15,7 @@ const options = {
         url: process.env.NODE_ENV === 'production' 
           ? 'https://bv-backend.vercel.app' 
           : 'http://localhost:3000',
-        description: process.env.NODE_ENV === 'production' ? 'Production' : 'Development'
+        description: process.env.NODE_ENV === 'production' ? 'Produção' : 'Desenvolvimento'
       }
     ],
     components: {
@@ -24,38 +24,38 @@ const options = {
           type: 'http',
           scheme: 'bearer',
           bearerFormat: 'Firebase ID Token',
-          description: 'Firebase ID Token obtained from Firebase Auth'
+          description: 'Token de ID do Firebase obtido através do Firebase Auth'
         }
       }
     },
     paths: {
       '/api/public/health-units': {
         get: {
-          summary: 'List health units',
-          tags: ['Public'],
+          summary: 'Listar unidades de saúde',
+          tags: ['Público'],
           parameters: [
             {
               name: 'isActive',
               in: 'query',
-              description: 'Filter by active status',
+              description: 'Filtrar por status ativo',
               schema: { type: 'boolean' }
             },
             {
               name: 'isFavorite', 
               in: 'query',
-              description: 'Filter by favorite status',
+              description: 'Filtrar por status favorito',
               schema: { type: 'boolean' }
             },
             {
               name: 'neighborhood',
               in: 'query',
-              description: 'Filter by neighborhood name',
+              description: 'Filtrar por nome do bairro',
               schema: { type: 'string' }
             }
           ],
           responses: {
             200: {
-              description: 'List of health units',
+              description: 'Lista de unidades de saúde',
               content: {
                 'application/json': {
                   schema: {
@@ -76,7 +76,7 @@ const options = {
                           }
                         }
                       },
-                      message: { type: 'string', example: 'Health units retrieved successfully' },
+                      message: { type: 'string', example: 'Unidades de saúde recuperadas com sucesso' },
                       count: { type: 'number', example: 10 }
                     }
                   }
@@ -84,7 +84,7 @@ const options = {
               }
             },
             500: {
-              description: 'Server error',
+              description: 'Erro do servidor',
               content: {
                 'application/json': {
                   schema: {
@@ -95,7 +95,7 @@ const options = {
                         type: 'object',
                         properties: {
                           code: { type: 'string', example: 'FETCH_ERROR' },
-                          message: { type: 'string', example: 'Error fetching health units' }
+                          message: { type: 'string', example: 'Erro ao buscar unidades de saúde' }
                         }
                       }
                     }
@@ -108,8 +108,8 @@ const options = {
       },
       '/api/public/auth/login': {
         post: {
-          summary: 'Login with email and password',
-          tags: ['Firebase Authentication'],
+          summary: 'Login com email e senha',
+          tags: ['Autenticação Firebase'],
           requestBody: {
             required: true,
             content: {
@@ -117,8 +117,8 @@ const options = {
                 schema: {
                   type: 'object',
                   properties: {
-                    email: { type: 'string', format: 'email', example: 'user@example.com' },
-                    password: { type: 'string', example: 'password123' }
+                    email: { type: 'string', format: 'email', example: 'usuario@exemplo.com' },
+                    password: { type: 'string', example: 'senha123' }
                   },
                   required: ['email', 'password']
                 }
@@ -127,7 +127,7 @@ const options = {
           },
           responses: {
             200: {
-              description: 'Login successful',
+              description: 'Login realizado com sucesso',
               content: {
                 'application/json': {
                   schema: {
@@ -143,7 +143,7 @@ const options = {
                           emailVerified: { type: 'boolean' },
                           role: { type: 'string', example: 'public' },
                           provider: { type: 'string', example: 'email' },
-                          customToken: { type: 'string', description: 'Use this token to authenticate with Firebase on client' },
+                          customToken: { type: 'string', description: 'Use este token para autenticar com Firebase no cliente' },
                           message: { type: 'string' }
                         }
                       }
@@ -152,15 +152,15 @@ const options = {
                 }
               }
             },
-            401: { description: 'Invalid credentials or user disabled' },
-            400: { description: 'Missing email or password' }
+            401: { description: 'Credenciais inválidas ou usuário desabilitado' },
+            400: { description: 'Email ou senha ausentes' }
           }
         }
       },
       '/api/public/auth/register': {
         post: {
-          summary: 'Register with email and password',
-          tags: ['Firebase Authentication'],
+          summary: 'Registrar com email e senha',
+          tags: ['Autenticação Firebase'],
           requestBody: {
             required: true,
             content: {
@@ -168,8 +168,8 @@ const options = {
                 schema: {
                   type: 'object',
                   properties: {
-                    email: { type: 'string', format: 'email', example: 'user@example.com' },
-                    password: { type: 'string', minLength: 6, example: 'password123' },
+                    email: { type: 'string', format: 'email', example: 'usuario@exemplo.com' },
+                    password: { type: 'string', minLength: 6, example: 'senha123' },
                     displayName: { type: 'string', example: 'João Silva' }
                   },
                   required: ['email', 'password']
@@ -179,7 +179,7 @@ const options = {
           },
           responses: {
             201: {
-              description: 'User registered successfully',
+              description: 'Usuário registrado com sucesso',
               content: {
                 'application/json': {
                   schema: {
@@ -201,15 +201,15 @@ const options = {
                 }
               }
             },
-            400: { description: 'Invalid input or weak password' },
-            409: { description: 'Email already exists' }
+            400: { description: 'Entrada inválida ou senha fraca' },
+            409: { description: 'Email já existe' }
           }
         }
       },
       '/api/public/auth/login/google': {
         post: {
-          summary: 'Login with Google',
-          tags: ['Firebase Authentication'],
+          summary: 'Login com Google',
+          tags: ['Autenticação Firebase'],
           requestBody: {
             required: true,
             content: {
@@ -226,7 +226,7 @@ const options = {
           },
           responses: {
             200: {
-              description: 'Google login successful',
+              description: 'Login com Google realizado com sucesso',
               content: {
                 'application/json': {
                   schema: {
@@ -251,14 +251,14 @@ const options = {
                 }
               }
             },
-            401: { description: 'Invalid Google token' }
+            401: { description: 'Token do Google inválido' }
           }
         }
       },
       '/api/public/auth/password-reset': {
         post: {
-          summary: 'Send password reset email',
-          tags: ['Firebase Authentication'],
+          summary: 'Enviar email de redefinição de senha',
+          tags: ['Autenticação Firebase'],
           requestBody: {
             required: true,
             content: {
@@ -266,7 +266,7 @@ const options = {
                 schema: {
                   type: 'object',
                   properties: {
-                    email: { type: 'string', format: 'email', example: 'user@example.com' }
+                    email: { type: 'string', format: 'email', example: 'usuario@exemplo.com' }
                   },
                   required: ['email']
                 }
@@ -275,7 +275,7 @@ const options = {
           },
           responses: {
             200: {
-              description: 'Password reset email sent',
+              description: 'Email de redefinição de senha enviado',
               content: {
                 'application/json': {
                   schema: {
@@ -283,7 +283,7 @@ const options = {
                     properties: {
                       success: { type: 'boolean', example: true },
                       message: { type: 'string' },
-                      resetLink: { type: 'string', description: 'Development only' }
+                      resetLink: { type: 'string', description: 'Apenas em desenvolvimento' }
                     }
                   }
                 }
@@ -294,8 +294,8 @@ const options = {
       },
       '/api/public/auth/verify-token': {
         post: {
-          summary: 'Verify Firebase ID token',
-          tags: ['Firebase Authentication'],
+          summary: 'Verificar token de ID do Firebase',
+          tags: ['Autenticação Firebase'],
           requestBody: {
             required: true,
             content: {
@@ -312,7 +312,7 @@ const options = {
           },
           responses: {
             200: {
-              description: 'Token verified successfully',
+              description: 'Token verificado com sucesso',
               content: {
                 'application/json': {
                   schema: {
@@ -333,18 +333,18 @@ const options = {
                 }
               }
             },
-            401: { description: 'Invalid or expired token' }
+            401: { description: 'Token inválido ou expirado' }
           }
         }
       },
       '/api/auth/profile': {
         get: {
-          summary: 'Get user profile',
-          tags: ['User Profile (Auth Required)'],
+          summary: 'Obter perfil do usuário',
+          tags: ['Perfil do Usuário (Autenticação Necessária)'],
           security: [{ bearerAuth: [] }],
           responses: {
             200: {
-              description: 'User profile retrieved',
+              description: 'Perfil do usuário recuperado',
               content: {
                 'application/json': {
                   schema: {
@@ -369,12 +369,12 @@ const options = {
                 }
               }
             },
-            401: { description: 'Unauthorized' }
+            401: { description: 'Não autorizado' }
           }
         },
         put: {
-          summary: 'Update user profile',
-          tags: ['User Profile (Auth Required)'],
+          summary: 'Atualizar perfil do usuário',
+          tags: ['Perfil do Usuário (Autenticação Necessária)'],
           security: [{ bearerAuth: [] }],
           requestBody: {
             required: true,
@@ -383,22 +383,22 @@ const options = {
                 schema: {
                   type: 'object',
                   properties: {
-                    displayName: { type: 'string', example: 'New Name' },
-                    photoURL: { type: 'string', format: 'uri', example: 'https://example.com/photo.jpg' }
+                    displayName: { type: 'string', example: 'Novo Nome' },
+                    photoURL: { type: 'string', format: 'uri', example: 'https://exemplo.com/foto.jpg' }
                   }
                 }
               }
             }
           },
           responses: {
-            200: { description: 'Profile updated successfully' },
-            401: { description: 'Unauthorized' }
+            200: { description: 'Perfil atualizado com sucesso' },
+            401: { description: 'Não autorizado' }
           }
         }
       },
       '/api/admin/firebase/users': {
         post: {
-          summary: 'Create Firebase user (Admin)',
+          summary: 'Criar usuário Firebase (Admin)',
           tags: ['Firebase Admin'],
           security: [{ bearerAuth: [] }],
           requestBody: {
@@ -419,16 +419,16 @@ const options = {
             }
           },
           responses: {
-            201: { description: 'User created successfully' },
-            401: { description: 'Unauthorized' },
-            409: { description: 'Email already exists' }
+            201: { description: 'Usuário criado com sucesso' },
+            401: { description: 'Não autorizado' },
+            409: { description: 'Email já existe' }
           }
         }
       },
       '/api/admin/users': {
         post: {
-          summary: 'Create user (Admin)',
-          tags: ['Admin Management'],
+          summary: 'Criar usuário (Admin)',
+          tags: ['Gerenciamento Admin'],
           security: [{ bearerAuth: [] }],
           requestBody: {
             required: true,
@@ -438,7 +438,7 @@ const options = {
                   type: 'object',
                   properties: {
                     name: { type: 'string', example: 'João Silva' },
-                    email: { type: 'string', format: 'email', example: 'joao@example.com' },
+                    email: { type: 'string', format: 'email', example: 'joao@exemplo.com' },
                     role: { type: 'string', enum: ['admin', 'agent', 'public'], example: 'agent' }
                   },
                   required: ['name', 'email', 'role']
@@ -447,16 +447,16 @@ const options = {
             }
           },
           responses: {
-            201: { description: 'User created successfully' },
-            401: { description: 'Unauthorized' },
-            400: { description: 'Invalid input data' }
+            201: { description: 'Usuário criado com sucesso' },
+            401: { description: 'Não autorizado' },
+            400: { description: 'Dados de entrada inválidos' }
           }
         }
       },
       '/api/admin/vaccines': {
         post: {
-          summary: 'Create vaccine (Admin)',
-          tags: ['Admin Management'],
+          summary: 'Criar vacina (Admin)',
+          tags: ['Gerenciamento Admin'],
           security: [{ bearerAuth: [] }],
           requestBody: {
             required: true,
@@ -477,40 +477,40 @@ const options = {
             }
           },
           responses: {
-            201: { description: 'Vaccine created successfully' },
-            401: { description: 'Unauthorized' },
-            400: { description: 'Invalid input data' }
+            201: { description: 'Vacina criada com sucesso' },
+            401: { description: 'Não autorizado' },
+            400: { description: 'Dados de entrada inválidos' }
           }
         }
       },
       '/api/admin/health-units': {
         get: {
-          summary: 'List health units (Admin)',
-          tags: ['Admin Management'],
+          summary: 'Listar unidades de saúde (Admin)',
+          tags: ['Gerenciamento Admin'],
           security: [{ bearerAuth: [] }],
           parameters: [
             {
               name: 'page',
               in: 'query',
-              description: 'Page number',
+              description: 'Número da página',
               schema: { type: 'number', example: 1 }
             },
             {
               name: 'limit',
               in: 'query',
-              description: 'Items per page',
+              description: 'Itens por página',
               schema: { type: 'number', example: 10, maximum: 100 }
             }
           ],
           responses: {
-            200: { description: 'List of health units retrieved' },
-            401: { description: 'Unauthorized' }
+            200: { description: 'Lista de unidades de saúde recuperada' },
+            401: { description: 'Não autorizado' }
           }
         }
       },
       '/api/admin/firebase/users/claims': {
         put: {
-          summary: 'Update user custom claims (Admin)',
+          summary: 'Atualizar claims customizados do usuário (Admin)',
           tags: ['Firebase Admin'],
           security: [{ bearerAuth: [] }],
           requestBody: {
@@ -535,15 +535,15 @@ const options = {
             }
           },
           responses: {
-            200: { description: 'User claims updated successfully' },
-            401: { description: 'Unauthorized' },
-            404: { description: 'User not found' }
+            200: { description: 'Claims do usuário atualizados com sucesso' },
+            401: { description: 'Não autorizado' },
+            404: { description: 'Usuário não encontrado' }
           }
         }
       },
       '/api/admin/firebase/users/{uid}/status': {
         patch: {
-          summary: 'Toggle user status (Admin)',
+          summary: 'Alternar status do usuário (Admin)',
           tags: ['Firebase Admin'],
           security: [{ bearerAuth: [] }],
           parameters: [
@@ -569,20 +569,20 @@ const options = {
             }
           },
           responses: {
-            200: { description: 'User status updated successfully' },
-            401: { description: 'Unauthorized' },
-            404: { description: 'User not found' }
+            200: { description: 'Status do usuário atualizado com sucesso' },
+            401: { description: 'Não autorizado' },
+            404: { description: 'Usuário não encontrado' }
           }
         }
       },
       '/api/admin/firebase/me': {
         get: {
-          summary: 'Get current admin user info',
+          summary: 'Obter informações do usuário admin atual',
           tags: ['Firebase Admin'],
           security: [{ bearerAuth: [] }],
           responses: {
             200: {
-              description: 'Current user information',
+              description: 'Informações do usuário atual',
               content: {
                 'application/json': {
                   schema: {
@@ -605,13 +605,13 @@ const options = {
                 }
               }
             },
-            401: { description: 'Unauthorized' }
+            401: { description: 'Não autorizado' }
           }
         }
       },
       '/api/admin/firebase/users/{uid}': {
         get: {
-          summary: 'Get Firebase user (Admin)',
+          summary: 'Obter usuário Firebase (Admin)',
           tags: ['Firebase Admin'],
           security: [{ bearerAuth: [] }],
           parameters: [
@@ -623,12 +623,12 @@ const options = {
             }
           ],
           responses: {
-            200: { description: 'User information retrieved' },
-            404: { description: 'User not found' }
+            200: { description: 'Informações do usuário recuperadas' },
+            404: { description: 'Usuário não encontrado' }
           }
         },
         delete: {
-          summary: 'Delete Firebase user (Admin)',
+          summary: 'Excluir usuário Firebase (Admin)',
           tags: ['Firebase Admin'],
           security: [{ bearerAuth: [] }],
           parameters: [
@@ -640,33 +640,33 @@ const options = {
             }
           ],
           responses: {
-            200: { description: 'User deleted successfully' },
-            404: { description: 'User not found' }
+            200: { description: 'Usuário excluído com sucesso' },
+            404: { description: 'Usuário não encontrado' }
           }
         }
       }
     }
   },
-  apis: [] // No file scanning to prevent timeout
+  apis: []
 };
 
-export const swaggerSpec = swaggerJsdoc(options);
+export const apiSpec = swaggerJsdoc(options);
 
-export function setupSwagger(app: Express) {
-  // JSON endpoint for OpenAPI specification
+export function setupApiDocs(app: Express) {
+  // Endpoint JSON para especificação OpenAPI
   app.get('/api-docs.json', (req: Request, res: Response) => {
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Cache-Control', 'public, max-age=3600');
-    res.json(swaggerSpec);
+    res.json(apiSpec);
   });
 
-  // Scalar API Reference - Modern alternative to Swagger UI
+  // Scalar API Reference - Interface moderna para documentação
   app.get('/api-docs', (req: Request, res: Response) => {
     const htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Baixada Vacinada API - Documentation</title>
+  <title>Baixada Vacinada API - Documentação</title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
@@ -688,13 +688,13 @@ export function setupSwagger(app: Express) {
     res.send(htmlContent);
   });
 
-  // Alternative endpoint with inline configuration
+  // Endpoint alternativo com configuração inline
   app.get('/docs', (req: Request, res: Response) => {
     const htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Baixada Vacinada API - Documentation</title>
+  <title>Baixada Vacinada API - Documentação</title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 </head>
@@ -714,7 +714,7 @@ export function setupSwagger(app: Express) {
       "customCss": "",
       "searchHotKey": "k",
       "metaData": {
-        "title": "🏥 Baixada Vacinada API",
+        "title": "Baixada Vacinada API",
         "description": "Sistema de Gerenciamento de Vacinação - Japeri, RJ",
         "ogDescription": "API completa para gerenciamento de vacinação com Firebase Authentication",
         "ogTitle": "Baixada Vacinada API Documentation",
