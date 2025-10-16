@@ -1,6 +1,7 @@
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
 import { Express, Request, Response, NextFunction } from 'express';
+import path from 'path';
 
 // Simplified swagger options optimized for Vercel
 const options = {
@@ -654,37 +655,16 @@ const options = {
 export const swaggerSpec = swaggerJsdoc(options);
 
 export function setupSwagger(app: Express) {
-  // JSON endpoint first (always works)
+  // Strategy: Completely inline Swagger UI to avoid Vercel serverless issues
+  
+  // JSON endpoint (always works)
   app.get('/api-docs.json', (req: Request, res: Response) => {
     res.setHeader('Content-Type', 'application/json');
-    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
     res.json(swaggerSpec);
   });
 
-  // Serve swagger-ui static files from node_modules
-  const swaggerUiAssetPath = require.resolve('swagger-ui-dist/package.json');
-  const swaggerUiDistPath = swaggerUiAssetPath.replace('/package.json', '');
-  
-  // Serve static files with proper MIME types
-  app.get('/api-docs/swagger-ui-bundle.js', (req: Request, res: Response) => {
-    res.setHeader('Content-Type', 'application/javascript');
-    res.setHeader('Cache-Control', 'public, max-age=86400');
-    res.sendFile(require('path').join(swaggerUiDistPath, 'swagger-ui-bundle.js'));
-  });
-
-  app.get('/api-docs/swagger-ui-standalone-preset.js', (req: Request, res: Response) => {
-    res.setHeader('Content-Type', 'application/javascript');
-    res.setHeader('Cache-Control', 'public, max-age=86400');
-    res.sendFile(require('path').join(swaggerUiDistPath, 'swagger-ui-standalone-preset.js'));
-  });
-
-  app.get('/api-docs/swagger-ui.css', (req: Request, res: Response) => {
-    res.setHeader('Content-Type', 'text/css');
-    res.setHeader('Cache-Control', 'public, max-age=86400');
-    res.sendFile(require('path').join(swaggerUiDistPath, 'swagger-ui.css'));
-  });
-
-  // Main documentation page with local assets
+  // Completely self-contained Swagger UI page
   app.get('/api-docs', (req: Request, res: Response) => {
     const htmlContent = `
 <!DOCTYPE html>
@@ -693,7 +673,7 @@ export function setupSwagger(app: Express) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Baixada Vacinada API - Documentation</title>
-  <link rel="stylesheet" type="text/css" href="/api-docs/swagger-ui.css" />
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui.css" />
   <style>
     html { box-sizing: border-box; overflow: -moz-scrollbars-vertical; overflow-y: scroll; }
     *, *:before, *:after { box-sizing: inherit; }
@@ -702,15 +682,34 @@ export function setupSwagger(app: Express) {
     .swagger-ui .info { margin: 20px 0; }
     .swagger-ui .scheme-container { background: #fff; padding: 10px; border-radius: 4px; }
     #swagger-ui { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .custom-header { 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 20px;
+      border-radius: 8px;
+    }
+    .loading { text-align: center; padding: 50px; font-size: 18px; color: #666; }
   </style>
 </head>
 <body>
-  <div id="swagger-ui"></div>
-  <script src="/api-docs/swagger-ui-bundle.js"></script>
-  <script src="/api-docs/swagger-ui-standalone-preset.js"></script>
+  <div class="custom-header">
+    <h1>🏥 Baixada Vacinada API</h1>
+    <p>Sistema de Gerenciamento de Vacinação - Japeri, RJ</p>
+  </div>
+  
+  <div id="swagger-ui">
+    <div class="loading">Carregando documentação da API...</div>
+  </div>
+
+  <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-bundle.js"></script>
+  <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-standalone-preset.js"></script>
   <script>
     window.onload = function() {
       try {
+        console.log('Inicializando Swagger UI...');
+        
         const ui = SwaggerUIBundle({
           url: window.location.origin + '/api-docs.json',
           dom_id: '#swagger-ui',
@@ -731,26 +730,46 @@ export function setupSwagger(app: Express) {
           defaultModelExpandDepth: 1,
           docExpansion: 'list',
           validatorUrl: null,
-          supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch', 'options', 'head']
+          supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch', 'options', 'head'],
+          onComplete: function() {
+            console.log('Swagger UI carregado com sucesso!');
+          },
+          onFailure: function(error) {
+            console.error('Erro ao carregar Swagger UI:', error);
+            document.getElementById('swagger-ui').innerHTML = 
+              '<div style="padding: 20px; background: white; margin: 20px; border-radius: 5px; border-left: 4px solid #f44336;">' +
+              '<h2>❌ Erro ao carregar documentação</h2>' +
+              '<p>Não foi possível carregar a interface do Swagger UI.</p>' +
+              '<p><strong>Alternativas:</strong></p>' +
+              '<ul>' +
+              '<li><a href="/api-docs.json" target="_blank">📄 Ver especificação JSON</a></li>' +
+              '<li><a href="https://editor.swagger.io/?url=' + encodeURIComponent(window.location.origin + '/api-docs.json') + '" target="_blank">🌐 Abrir no Swagger Editor</a></li>' +
+              '</ul>' +
+              '<h3>📋 Principais Endpoints:</h3>' +
+              '<div style="background: #f5f5f5; padding: 15px; border-radius: 4px; font-family: monospace;">' +
+              '<div><strong>🔓 Públicos:</strong></div>' +
+              '<div>GET /api/public/health-units - Listar unidades de saúde</div>' +
+              '<div>POST /api/public/auth/login - Login com email/senha</div>' +
+              '<div>POST /api/public/auth/register - Registro de usuário</div>' +
+              '<div>POST /api/public/auth/login/google - Login com Google</div><br>' +
+              '<div><strong>🔒 Protegidos (requer token):</strong></div>' +
+              '<div>GET /api/auth/profile - Perfil do usuário</div>' +
+              '<div>POST /api/admin/firebase/users - Criar usuário (admin)</div>' +
+              '<div>GET /api/admin/health-units - Gerenciar unidades (admin)</div>' +
+              '</div>' +
+              '<p><em>💡 Use o header Authorization: Bearer [seu-token] para endpoints protegidos.</em></p>' +
+              '</div>';
+          }
         });
         
-        console.log('Swagger UI loaded successfully');
+        window.ui = ui;
       } catch (error) {
-        console.error('Swagger UI error:', error);
+        console.error('Erro crítico no Swagger UI:', error);
         document.getElementById('swagger-ui').innerHTML = 
-          '<div style="padding: 20px; background: white; margin: 20px; border-radius: 5px;">' +
-          '<h1>Baixada Vacinada API</h1>' +
-          '<p>Swagger UI falhou ao carregar. <a href="/api-docs.json">Ver especificação JSON</a></p>' +
-          '<h2>Endpoints Principais:</h2>' +
-          '<ul>' +
-          '<li><strong>GET</strong> /api/public/health-units - Listar unidades de saúde</li>' +
-          '<li><strong>POST</strong> /api/public/auth/login - Login com email/senha</li>' +
-          '<li><strong>POST</strong> /api/public/auth/register - Registro de usuário</li>' +
-          '<li><strong>POST</strong> /api/public/auth/login/google - Login com Google</li>' +
-          '<li><strong>GET</strong> /api/auth/profile - Perfil do usuário (requer autenticação)</li>' +
-          '<li><strong>POST</strong> /api/admin/firebase/users - Criar usuário (admin only)</li>' +
-          '</ul>' +
-          '<p><em>Para testar os endpoints que requerem autenticação, use o token Bearer obtido no login.</em></p>' +
+          '<div style="padding: 20px; background: white; margin: 20px; border-radius: 5px; border-left: 4px solid #f44336;">' +
+          '<h2>❌ Falha crítica</h2>' +
+          '<p>Erro ao inicializar o Swagger UI: ' + error.message + '</p>' +
+          '<p><a href="/api-docs.json">📄 Acessar especificação JSON diretamente</a></p>' +
           '</div>';
       }
     };
@@ -759,6 +778,7 @@ export function setupSwagger(app: Express) {
 </html>`;
     
     res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
     res.send(htmlContent);
   });
 }
