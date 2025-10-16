@@ -1,4 +1,5 @@
 import express from 'express';
+import mongoose from 'mongoose';
 import { corsConfig } from '../src/config/cors';
 import publicRoutes from '../src/interfaces/routes/publicRoutes';
 import adminRoutes from '../src/interfaces/routes/adminRoutes';
@@ -6,7 +7,7 @@ import { setupSwagger } from '../src/config/swagger';
 import { connectDatabase } from "../src/config/database";
 import "dotenv/config";
 
-import { correlationIdMiddleware, requestLoggingMiddleware, healthCheckMiddleware, Logger } from '../src/middlewares/logging';
+import { correlationIdMiddleware, requestLoggingMiddleware, Logger } from '../src/middlewares/logging';
 import { errorHandlingMiddleware, notFoundMiddleware, jsonErrorHandler } from '../src/middlewares/errorHandling';
 import { securityHeaders, sanitizeRequest } from '../src/middlewares/security';
 
@@ -18,7 +19,6 @@ app.set('trust proxy', 1);
 
 // Middleware setup
 app.use(correlationIdMiddleware);
-app.use(healthCheckMiddleware);
 app.use(securityHeaders);
 
 app.use(express.json({ limit: '10mb' }));
@@ -37,7 +37,8 @@ app.get('/', (req, res) => {
     success: true,
     message: 'Baixada Vacinada API is running',
     timestamp: new Date().toISOString(),
-    version: '1.0.0'
+    version: '1.0.0',
+    environment: process.env.NODE_ENV || 'production'
   });
 });
 
@@ -52,7 +53,7 @@ app.use(errorHandlingMiddleware);
 let isConnected = false;
 
 async function initializeDatabase() {
-  if (!isConnected) {
+  if (!isConnected && mongoose.connection.readyState !== 1) {
     try {
       await connectDatabase();
       isConnected = true;
@@ -67,11 +68,25 @@ async function initializeDatabase() {
 // Vercel serverless function handler
 export default async function handler(req: any, res: any) {
   try {
+    // Set CORS headers before any processing
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    
+    // Handle preflight requests
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
+    }
+
+    // Initialize database only if needed
     await initializeDatabase();
+    
+    // Pass request to Express app
     app(req, res);
   } catch (error) {
-    logger.error('Serverless function error', error instanceof Error ? error : new Error(String(error)));
-    res.status(500).json({
+    console.error('Serverless function error:', error);
+    
+    return res.status(500).json({
       success: false,
       error: {
         code: 'SERVERLESS_ERROR',
