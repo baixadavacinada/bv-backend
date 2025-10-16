@@ -1,37 +1,24 @@
 import express from 'express';
 import mongoose from 'mongoose';
-import { corsConfig } from '../src/config/cors';
-import publicRoutes from '../src/interfaces/routes/publicRoutes';
-import adminRoutes from '../src/interfaces/routes/adminRoutes';
-import { setupSwagger } from '../src/config/swagger';
-import { connectDatabase } from "../src/config/database";
+import cors from 'cors';
 import "dotenv/config";
 
-import { correlationIdMiddleware, requestLoggingMiddleware, Logger } from '../src/middlewares/logging';
-import { errorHandlingMiddleware, notFoundMiddleware, jsonErrorHandler } from '../src/middlewares/errorHandling';
-import { securityHeaders, sanitizeRequest } from '../src/middlewares/security';
-
 const app = express();
-const logger = Logger.getInstance();
 
 // Configure Express to trust proxy (required for Vercel)
 app.set('trust proxy', 1);
 
-// Middleware setup
-app.use(correlationIdMiddleware);
-app.use(securityHeaders);
+// Basic middleware
+app.use(cors({
+  origin: '*',
+  methods: 'GET,POST,PUT,DELETE,OPTIONS',
+  credentials: true
+}));
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(jsonErrorHandler);
 
-app.use(corsConfig);
-app.use(requestLoggingMiddleware);
-app.use(sanitizeRequest);
-
-setupSwagger(app);
-
-// Health check route
+// Simple health check route
 app.get('/', (req, res) => {
   res.json({
     success: true,
@@ -42,24 +29,64 @@ app.get('/', (req, res) => {
   });
 });
 
-// Routes
-app.use('/api/public', publicRoutes);
-app.use('/api/admin', adminRoutes);
+// Import routes only when needed to avoid initialization timeout
+app.use('/api/public', async (req, res, next) => {
+  try {
+    const { default: publicRoutes } = await import('../src/interfaces/routes/publicRoutes');
+    publicRoutes(req, res, next);
+  } catch (error) {
+    console.error('Error loading public routes:', error);
+    res.status(500).json({ success: false, error: 'Route loading failed' });
+  }
+});
 
-app.use(notFoundMiddleware);
-app.use(errorHandlingMiddleware);
+app.use('/api/admin', async (req, res, next) => {
+  try {
+    const { default: adminRoutes } = await import('../src/interfaces/routes/adminRoutes');
+    adminRoutes(req, res, next);
+  } catch (error) {
+    console.error('Error loading admin routes:', error);
+    res.status(500).json({ success: false, error: 'Route loading failed' });
+  }
+});
 
-// Initialize database connection
+// 404 handler
+app.use('*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    error: {
+      code: 'NOT_FOUND',
+      message: `Route ${req.method} ${req.originalUrl} not found`,
+      timestamp: new Date().toISOString()
+    }
+  });
+});
+
+// Error handler
+app.use((error: any, req: any, res: any, next: any) => {
+  console.error('Error:', error);
+  res.status(500).json({
+    success: false,
+    error: {
+      code: 'INTERNAL_ERROR',
+      message: 'Internal server error',
+      timestamp: new Date().toISOString()
+    }
+  });
+});
+
+// Database connection state
 let isConnected = false;
 
 async function initializeDatabase() {
   if (!isConnected && mongoose.connection.readyState !== 1) {
     try {
+      const { connectDatabase } = await import("../src/config/database");
       await connectDatabase();
       isConnected = true;
-      logger.info('Database connected for serverless function');
+      console.log('Database connected for serverless function');
     } catch (error) {
-      logger.error('Failed to connect database in serverless function', error instanceof Error ? error : new Error(String(error)));
+      console.error('Failed to connect database:', error);
       throw error;
     }
   }
@@ -67,18 +94,30 @@ async function initializeDatabase() {
 
 // Vercel serverless function handler
 export default async function handler(req: any, res: any) {
+  const startTime = Date.now();
+  
   try {
-    // Set CORS headers before any processing
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    
-    // Handle preflight requests
+    // Handle preflight requests quickly
     if (req.method === 'OPTIONS') {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
       return res.status(200).end();
     }
 
-    // Initialize database only if needed
+    // For root path, respond immediately without database
+    if (req.url === '/' && req.method === 'GET') {
+      return res.json({
+        success: true,
+        message: 'Baixada Vacinada API is running',
+        timestamp: new Date().toISOString(),
+        version: '1.0.0',
+        environment: process.env.NODE_ENV || 'production',
+        initTime: Date.now() - startTime
+      });
+    }
+
+    // Initialize database only for non-root requests
     await initializeDatabase();
     
     // Pass request to Express app
@@ -91,7 +130,8 @@ export default async function handler(req: any, res: any) {
       error: {
         code: 'SERVERLESS_ERROR',
         message: 'Internal server error',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        initTime: Date.now() - startTime
       }
     });
   }
