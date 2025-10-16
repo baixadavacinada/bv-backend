@@ -654,85 +654,62 @@ const options = {
 export const swaggerSpec = swaggerJsdoc(options);
 
 export function setupSwagger(app: Express) {
-  // Swagger UI with optimized configuration for Vercel
-  const swaggerUiOptions = {
-    customCss: `
-      .swagger-ui .topbar { display: none; }
-      .swagger-ui .info { margin: 20px 0; }
-      .swagger-ui .info .title { color: #2e8b57; }
-    `,
-    customSiteTitle: 'Baixada Vacinada API',
-    swaggerOptions: {
-      persistAuthorization: true,
-      displayRequestDuration: true,
-      filter: true,
-      tryItOutEnabled: true,
-      supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch']
-    },
-    // Ensure proper CDN loading
-    customCssUrl: null,
-    customJs: null,
-    customfavIcon: null
-  };
-
-  // Serve Swagger with proper initialization
-  app.use('/api-docs', (req, res, next) => {
-    if (req.path === '/') {
-      // Serve custom HTML to ensure proper loading
-      const html = `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Baixada Vacinada API</title>
-  <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@4.15.5/swagger-ui.css" />
-  <style>
-    html { box-sizing: border-box; overflow: -moz-scrollbars-vertical; overflow-y: scroll; }
-    *, *:before, *:after { box-sizing: inherit; }
-    body { margin:0; background: #fafafa; }
-    .swagger-ui .topbar { display: none; }
-    .swagger-ui .info { margin: 20px 0; }
-    .swagger-ui .info .title { color: #2e8b57; }
-  </style>
-</head>
-<body>
-  <div id="swagger-ui"></div>
-  <script src="https://unpkg.com/swagger-ui-dist@4.15.5/swagger-ui-bundle.js"></script>
-  <script src="https://unpkg.com/swagger-ui-dist@4.15.5/swagger-ui-standalone-preset.js"></script>
-  <script>
-    window.onload = function() {
-      const ui = SwaggerUIBundle({
-        url: '/api-docs.json',
-        dom_id: '#swagger-ui',
-        deepLinking: true,
-        presets: [
-          SwaggerUIBundle.presets.apis,
-          SwaggerUIStandalonePreset
-        ],
-        plugins: [
-          SwaggerUIBundle.plugins.DownloadUrl
-        ],
-        layout: "StandaloneLayout",
-        persistAuthorization: true,
-        displayRequestDuration: true,
-        filter: true,
-        tryItOutEnabled: true,
-        supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch']
-      });
-    };
-  </script>
-</body>
-</html>`;
-      res.setHeader('Content-Type', 'text/html');
-      return res.send(html);
-    }
-    next();
-  });
-  
-  // JSON endpoint for programmatic access
+  // Simple JSON endpoint
   app.get('/api-docs.json', (req, res) => {
     res.setHeader('Content-Type', 'application/json');
     res.setHeader('Cache-Control', 'no-cache');
     res.json(swaggerSpec);
+  });
+
+  // Simple HTML page that loads Swagger UI
+  app.get('/api-docs', (req, res) => {
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <title>Baixada Vacinada API</title>
+  <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui.css" />
+  <style>
+    html { box-sizing: border-box; overflow: -moz-scrollbars-vertical; overflow-y: scroll; }
+    *, *:before, *:after { box-sizing: inherit; }
+    body { margin:0; background: #fafafa; }
+    .swagger-ui .topbar { display: none !important; }
+    .swagger-ui .info { margin: 20px 0; }
+    .swagger-ui .info .title { color: #2e8b57 !important; }
+  </style>
+</head>
+<body>
+  <div id="swagger-ui"></div>
+  <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-bundle.js" charset="UTF-8"></script>
+  <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-standalone-preset.js" charset="UTF-8"></script>
+  <script>
+    window.onload = function() {
+      try {
+        SwaggerUIBundle({
+          url: '/api-docs.json',
+          dom_id: '#swagger-ui',
+          deepLinking: true,
+          presets: [
+            SwaggerUIBundle.presets.apis,
+            SwaggerUIStandalonePreset
+          ],
+          plugins: [
+            SwaggerUIBundle.plugins.DownloadUrl
+          ],
+          layout: "StandaloneLayout",
+          persistAuthorization: true,
+          displayRequestDuration: true,
+          filter: true,
+          tryItOutEnabled: true
+        });
+      } catch (error) {
+        console.error('Swagger UI initialization error:', error);
+        document.getElementById('swagger-ui').innerHTML = '<h1>Error loading Swagger UI</h1><p>' + error.message + '</p>';
+      }
+    };
+  </script>
+</body>
+</html>`;
+    res.setHeader('Content-Type', 'text/html');
+    res.send(html);
   });
 }
