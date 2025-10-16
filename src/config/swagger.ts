@@ -1,6 +1,6 @@
 import swaggerJsdoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
-import { Express } from 'express';
+import { Express, Request, Response, NextFunction } from 'express';
 
 // Simplified swagger options optimized for Vercel
 const options = {
@@ -654,25 +654,84 @@ const options = {
 export const swaggerSpec = swaggerJsdoc(options);
 
 export function setupSwagger(app: Express) {
-  // Use the original swagger-ui-express but with minimal config
+  // Enhanced setup for Vercel serverless environment
   const swaggerUiOptions = {
-    customCss: '.swagger-ui .topbar { display: none !important; }',
+    customCss: `
+      .swagger-ui .topbar { display: none !important; }
+      .swagger-ui .info { margin: 20px 0; }
+      .swagger-ui .scheme-container { background: #fafafa; padding: 10px; }
+    `,
     customSiteTitle: 'Baixada Vacinada API',
     swaggerOptions: {
       persistAuthorization: true,
       displayRequestDuration: true,
       filter: true,
-      tryItOutEnabled: true
-    }
+      tryItOutEnabled: true,
+      defaultModelsExpandDepth: 1,
+      defaultModelExpandDepth: 1,
+      docExpansion: 'list'
+    },
+    customfavIcon: '/favicon.ico',
+    // Force using CDN assets for better reliability
+    swaggerUrl: undefined,
+    customJs: [],
+    customJsStr: `
+      window.onload = function() {
+        console.log('Swagger UI loaded successfully');
+      };
+    `
   };
 
-  // Serve swagger using the standard approach
-  app.use('/api-docs', swaggerUi.serve);
-  app.get('/api-docs', swaggerUi.setup(swaggerSpec, swaggerUiOptions));
-  
-  // Fallback JSON endpoint
+  // JSON endpoint first (always works)
   app.get('/api-docs.json', (req, res) => {
     res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
     res.json(swaggerSpec);
   });
+
+  // Try to serve Swagger UI with error handling
+  app.get('/api-docs', (req, res, next) => {
+    try {
+      const swaggerHtml = swaggerUi.generateHTML(swaggerSpec, swaggerUiOptions);
+      res.setHeader('Content-Type', 'text/html');
+      res.send(swaggerHtml);
+    } catch (error) {
+      console.error('Swagger UI error:', error);
+      // Fallback to simple JSON display
+      res.setHeader('Content-Type', 'text/html');
+      res.send(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Baixada Vacinada API</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 40px; }
+            pre { background: #f5f5f5; padding: 20px; overflow: auto; }
+            .header { color: #333; margin-bottom: 20px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>Baixada Vacinada API Documentation</h1>
+            <p>Swagger UI está temporariamente indisponível. Use os endpoints JSON abaixo:</p>
+          </div>
+          <h2>API Specification (JSON):</h2>
+          <p><a href="/api-docs.json" target="_blank">/api-docs.json</a></p>
+          <h2>Available Endpoints:</h2>
+          <pre>${JSON.stringify(Object.keys((swaggerSpec as any).paths || {}), null, 2)}</pre>
+        </body>
+        </html>
+      `);
+    }
+  });
+
+  // Serve static assets with proper error handling
+  app.use('/api-docs', (req: Request, res: Response, next: NextFunction) => {
+    // Handle static asset requests that might fail
+    if (req.url.includes('.js') || req.url.includes('.css') || req.url.includes('.png')) {
+      res.status(404).json({ error: 'Static asset not found', url: req.url });
+      return;
+    }
+    next();
+  }, swaggerUi.serve);
 }
