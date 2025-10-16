@@ -30,7 +30,7 @@ const options = {
       }
     },
     paths: {
-      '/api/public/health-unit': {
+      '/api/public/health-units': {
         get: {
           summary: 'List health units',
           tags: ['Public'],
@@ -109,8 +109,8 @@ const options = {
       },
       '/api/public/auth/login': {
         post: {
-          summary: 'User authentication',
-          tags: ['Authentication'],
+          summary: 'Login with email and password',
+          tags: ['Firebase Authentication'],
           requestBody: {
             required: true,
             content: {
@@ -118,16 +118,16 @@ const options = {
                 schema: {
                   type: 'object',
                   properties: {
-                    username: { type: 'string', example: 'admin' },
+                    email: { type: 'string', format: 'email', example: 'user@example.com' },
                     password: { type: 'string', example: 'password123' }
                   },
-                  required: ['username', 'password']
+                  required: ['email', 'password']
                 }
               }
             }
           },
           responses: {
-            200: { 
+            200: {
               description: 'Login successful',
               content: {
                 'application/json': {
@@ -135,12 +135,17 @@ const options = {
                     type: 'object',
                     properties: {
                       success: { type: 'boolean', example: true },
-                      token: { type: 'string', example: 'jwt.token.here' },
-                      user: {
+                      data: {
                         type: 'object',
                         properties: {
-                          id: { type: 'string' },
-                          username: { type: 'string' }
+                          uid: { type: 'string' },
+                          email: { type: 'string' },
+                          displayName: { type: 'string' },
+                          emailVerified: { type: 'boolean' },
+                          role: { type: 'string', example: 'public' },
+                          provider: { type: 'string', example: 'email' },
+                          customToken: { type: 'string', description: 'Use this token to authenticate with Firebase on client' },
+                          message: { type: 'string' }
                         }
                       }
                     }
@@ -148,26 +153,8 @@ const options = {
                 }
               }
             },
-            401: { 
-              description: 'Invalid credentials',
-              content: {
-                'application/json': {
-                  schema: {
-                    type: 'object',
-                    properties: {
-                      success: { type: 'boolean', example: false },
-                      error: {
-                        type: 'object',
-                        properties: {
-                          code: { type: 'string', example: 'UNAUTHORIZED' },
-                          message: { type: 'string', example: 'Invalid credentials' }
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
+            401: { description: 'Invalid credentials or user disabled' },
+            400: { description: 'Missing email or password' }
           }
         }
       },
@@ -351,10 +338,10 @@ const options = {
           }
         }
       },
-      '/api/public/auth/profile': {
+      '/api/auth/profile': {
         get: {
           summary: 'Get user profile',
-          tags: ['Firebase Authentication'],
+          tags: ['User Profile (Auth Required)'],
           security: [{ bearerAuth: [] }],
           responses: {
             200: {
@@ -388,7 +375,7 @@ const options = {
         },
         put: {
           summary: 'Update user profile',
-          tags: ['Firebase Authentication'],
+          tags: ['User Profile (Auth Required)'],
           security: [{ bearerAuth: [] }],
           requestBody: {
             required: true,

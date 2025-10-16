@@ -6,6 +6,14 @@ import { UserRole } from '../../../domain/entities/User';
 const logger = Logger.getInstance();
 
 /**
+ * Interface for email/password login
+ */
+export interface EmailPasswordLogin {
+  email: string;
+  password: string;
+}
+
+/**
  * Interface for user registration
  */
 export interface UserRegistration {
@@ -190,6 +198,109 @@ export const updateProfile = async (req: Request, res: Response) => {
       error: {
         code: 'SERVER_ERROR',
         message: 'Failed to update user profile'
+      }
+    });
+  }
+};
+
+/**
+ * Login with email and password
+ * Public endpoint - this endpoint explains how to use Firebase Client SDK for authentication
+ * Note: Firebase Admin SDK cannot validate passwords, only Firebase Client SDK can
+ */
+export const loginWithEmail = async (req: Request, res: Response) => {
+  try {
+    const { email, password }: EmailPasswordLogin = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_INPUT',
+          message: 'Email and password are required'
+        }
+      });
+    }
+
+    const auth = getFirebaseAuth();
+
+    // Check if user exists in Firebase
+    let userRecord;
+    try {
+      userRecord = await auth.getUserByEmail(email);
+    } catch (error: any) {
+      if (error.code === 'auth/user-not-found') {
+        return res.status(401).json({
+          success: false,
+          error: {
+            code: 'INVALID_CREDENTIALS',
+            message: 'Invalid email or password'
+          }
+        });
+      }
+      throw error;
+    }
+
+    // Check if user is disabled
+    if (userRecord.disabled) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'USER_DISABLED',
+          message: 'This account has been disabled'
+        }
+      });
+    }
+
+    // For Firebase Admin SDK, we cannot validate passwords directly
+    // The client should use Firebase Client SDK to authenticate
+    // Here we provide instructions and a custom token for development
+    
+    // Create a custom token that the client can use
+    const customToken = await auth.createCustomToken(userRecord.uid);
+
+    // Set default role if user doesn't have custom claims
+    if (!userRecord.customClaims || !userRecord.customClaims.role) {
+      await auth.setCustomUserClaims(userRecord.uid, {
+        role: 'public',
+        admin: false
+      });
+      // Refresh user record to get updated claims
+      userRecord = await auth.getUser(userRecord.uid);
+    }
+
+    logger.info('Custom token generated for email login', {
+      uid: userRecord.uid,
+      email: userRecord.email,
+      method: 'email_password_custom_token'
+    });
+
+    res.json({
+      success: true,
+      data: {
+        uid: userRecord.uid,
+        email: userRecord.email,
+        displayName: userRecord.displayName,
+        photoURL: userRecord.photoURL,
+        emailVerified: userRecord.emailVerified,
+        role: userRecord.customClaims?.role || 'public',
+        provider: 'email',
+        customToken, // Client will use this to get ID token
+      },
+      message: 'User found. Use the customToken with Firebase Client SDK to complete authentication.',
+      instructions: {
+        frontend: 'Use signInWithCustomToken(auth, customToken) on the frontend to get the ID token',
+        note: 'For production, implement proper email/password authentication using Firebase Client SDK'
+      }
+    });
+  } catch (error: any) {
+    logger.error('Error with email/password login', error);
+
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'SERVER_ERROR',
+        message: 'Failed to process login request'
       }
     });
   }

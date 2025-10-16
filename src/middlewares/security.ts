@@ -39,7 +39,7 @@ export const createRateLimiter = (windowMs: number, max: number, message: string
     },
     skip: (req: Request) => {
       // Skip rate limiting for health checks
-      return req.path === '/health' || req.path === '/api/health';
+      return req.path === '/api/health';
     }
   });
 };

@@ -5,7 +5,8 @@ import {
   verifyToken, 
   getProfile, 
   updateProfile, 
-  registerWithEmail, 
+  registerWithEmail,
+  loginWithEmail, 
   loginWithGoogle, 
   sendPasswordReset 
 } from '../controllers/public/authController';
@@ -15,13 +16,15 @@ import { asyncHandler } from '../../middlewares/errorHandling';
 
 const router = Router();
 
-// Traditional JWT authentication
-router.post('/auth/login', loginController);
-
 // Firebase authentication endpoints
 router.post('/auth/register', 
   validateBody(ValidationSchemas.firebaseRegistration), 
   asyncHandler(registerWithEmail)
+);
+
+router.post('/auth/login', 
+  validateBody(ValidationSchemas.firebaseEmailLogin), 
+  asyncHandler(loginWithEmail)
 );
 
 router.post('/auth/login/google', 
@@ -39,15 +42,7 @@ router.post('/auth/password-reset',
   asyncHandler(sendPasswordReset)
 );
 
-router.get('/auth/profile', requireAuth, asyncHandler(getProfile));
-
-router.put('/auth/profile', 
-  requireAuth, 
-  validateBody(ValidationSchemas.profileUpdate), 
-  asyncHandler(updateProfile)
-);
-
 // Public endpoints
-router.get('/health-unit', asyncHandler(listHealthUnitsController));
+router.get('/health-units', asyncHandler(listHealthUnitsController));
 
 export default router;

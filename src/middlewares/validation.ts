@@ -227,6 +227,11 @@ export const ValidationSchemas = {
     displayName: { required: false, type: 'string' as const, minLength: 2, maxLength: 100 }
   },
 
+  firebaseEmailLogin: {
+    email: { required: true, type: 'email' as const },
+    password: { required: true, type: 'string' as const, minLength: 1 }
+  },
+
   firebaseTokenVerify: {
     idToken: { required: true, type: 'string' as const, minLength: 10 }
   },
