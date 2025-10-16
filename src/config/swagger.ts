@@ -661,7 +661,30 @@ export function setupSwagger(app: Express) {
     res.json(swaggerSpec);
   });
 
-  // Simple HTML documentation that always works
+  // Serve swagger-ui static files from node_modules
+  const swaggerUiAssetPath = require.resolve('swagger-ui-dist/package.json');
+  const swaggerUiDistPath = swaggerUiAssetPath.replace('/package.json', '');
+  
+  // Serve static files with proper MIME types
+  app.get('/api-docs/swagger-ui-bundle.js', (req: Request, res: Response) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.sendFile(require('path').join(swaggerUiDistPath, 'swagger-ui-bundle.js'));
+  });
+
+  app.get('/api-docs/swagger-ui-standalone-preset.js', (req: Request, res: Response) => {
+    res.setHeader('Content-Type', 'application/javascript');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.sendFile(require('path').join(swaggerUiDistPath, 'swagger-ui-standalone-preset.js'));
+  });
+
+  app.get('/api-docs/swagger-ui.css', (req: Request, res: Response) => {
+    res.setHeader('Content-Type', 'text/css');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.sendFile(require('path').join(swaggerUiDistPath, 'swagger-ui.css'));
+  });
+
+  // Main documentation page with local assets
   app.get('/api-docs', (req: Request, res: Response) => {
     const htmlContent = `
 <!DOCTYPE html>
@@ -670,19 +693,21 @@ export function setupSwagger(app: Express) {
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Baixada Vacinada API - Documentation</title>
-  <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui.css" />
+  <link rel="stylesheet" type="text/css" href="/api-docs/swagger-ui.css" />
   <style>
     html { box-sizing: border-box; overflow: -moz-scrollbars-vertical; overflow-y: scroll; }
     *, *:before, *:after { box-sizing: inherit; }
     body { margin:0; background: #fafafa; }
     .swagger-ui .topbar { display: none !important; }
-    .info { padding: 20px; background: white; margin: 20px; border-radius: 5px; }
+    .swagger-ui .info { margin: 20px 0; }
+    .swagger-ui .scheme-container { background: #fff; padding: 10px; border-radius: 4px; }
+    #swagger-ui { max-width: 1200px; margin: 0 auto; padding: 20px; }
   </style>
 </head>
 <body>
   <div id="swagger-ui"></div>
-  <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-bundle.js"></script>
-  <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-standalone-preset.js"></script>
+  <script src="/api-docs/swagger-ui-bundle.js"></script>
+  <script src="/api-docs/swagger-ui-standalone-preset.js"></script>
   <script>
     window.onload = function() {
       try {
@@ -704,23 +729,28 @@ export function setupSwagger(app: Express) {
           tryItOutEnabled: true,
           defaultModelsExpandDepth: 1,
           defaultModelExpandDepth: 1,
-          docExpansion: 'list'
+          docExpansion: 'list',
+          validatorUrl: null,
+          supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch', 'options', 'head']
         });
+        
+        console.log('Swagger UI loaded successfully');
       } catch (error) {
         console.error('Swagger UI error:', error);
         document.getElementById('swagger-ui').innerHTML = 
-          '<div class="info">' +
+          '<div style="padding: 20px; background: white; margin: 20px; border-radius: 5px;">' +
           '<h1>Baixada Vacinada API</h1>' +
-          '<p>Swagger UI não pôde carregar. <a href="/api-docs.json">Clique aqui para ver a especificação JSON</a></p>' +
-          '<h2>Endpoints Disponíveis:</h2>' +
+          '<p>Swagger UI falhou ao carregar. <a href="/api-docs.json">Ver especificação JSON</a></p>' +
+          '<h2>Endpoints Principais:</h2>' +
           '<ul>' +
-          '<li>GET /api/public/health-units - Listar unidades de saúde</li>' +
-          '<li>POST /api/public/auth/login - Login</li>' +
-          '<li>POST /api/public/auth/register - Registro</li>' +
-          '<li>POST /api/public/auth/login/google - Login Google</li>' +
-          '<li>GET /api/auth/profile - Perfil do usuário (requer auth)</li>' +
-          '<li>POST /api/admin/firebase/users - Criar usuário (admin)</li>' +
+          '<li><strong>GET</strong> /api/public/health-units - Listar unidades de saúde</li>' +
+          '<li><strong>POST</strong> /api/public/auth/login - Login com email/senha</li>' +
+          '<li><strong>POST</strong> /api/public/auth/register - Registro de usuário</li>' +
+          '<li><strong>POST</strong> /api/public/auth/login/google - Login com Google</li>' +
+          '<li><strong>GET</strong> /api/auth/profile - Perfil do usuário (requer autenticação)</li>' +
+          '<li><strong>POST</strong> /api/admin/firebase/users - Criar usuário (admin only)</li>' +
           '</ul>' +
+          '<p><em>Para testar os endpoints que requerem autenticação, use o token Bearer obtido no login.</em></p>' +
           '</div>';
       }
     };
