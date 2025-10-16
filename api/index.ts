@@ -1,6 +1,10 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import cors from 'cors';
+import { connectDatabase } from "../src/config/database";
+import publicRoutes from '../src/interfaces/routes/publicRoutes';
+import adminRoutes from '../src/interfaces/routes/adminRoutes';
+import { setupSwagger } from '../src/config/swagger';
 import "dotenv/config";
 
 const app = express();
@@ -18,6 +22,9 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
+// Setup Swagger documentation
+setupSwagger(app);
+
 // Simple health check route
 app.get('/', (req, res) => {
   res.json({
@@ -29,28 +36,11 @@ app.get('/', (req, res) => {
   });
 });
 
-// Import routes only when needed to avoid initialization timeout
-app.use('/api/public', async (req, res, next) => {
-  try {
-    const { default: publicRoutes } = await import('../src/interfaces/routes/publicRoutes');
-    publicRoutes(req, res, next);
-  } catch (error) {
-    console.error('Error loading public routes:', error);
-    res.status(500).json({ success: false, error: 'Route loading failed' });
-  }
-});
+// Routes
+app.use('/api/public', publicRoutes);
+app.use('/api/admin', adminRoutes);
 
-app.use('/api/admin', async (req, res, next) => {
-  try {
-    const { default: adminRoutes } = await import('../src/interfaces/routes/adminRoutes');
-    adminRoutes(req, res, next);
-  } catch (error) {
-    console.error('Error loading admin routes:', error);
-    res.status(500).json({ success: false, error: 'Route loading failed' });
-  }
-});
-
-// 404 handler
+// Simple 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
@@ -62,9 +52,9 @@ app.use('*', (req, res) => {
   });
 });
 
-// Error handler
+// Simple error handler
 app.use((error: any, req: any, res: any, next: any) => {
-  console.error('Error:', error);
+  console.error('Error:', error.message || error);
   res.status(500).json({
     success: false,
     error: {
@@ -81,12 +71,11 @@ let isConnected = false;
 async function initializeDatabase() {
   if (!isConnected && mongoose.connection.readyState !== 1) {
     try {
-      const { connectDatabase } = await import("../src/config/database");
       await connectDatabase();
       isConnected = true;
-      console.log('Database connected for serverless function');
+      console.log('Database connected');
     } catch (error) {
-      console.error('Failed to connect database:', error);
+      console.error('Database connection failed:', error);
       throw error;
     }
   }
@@ -94,8 +83,6 @@ async function initializeDatabase() {
 
 // Vercel serverless function handler
 export default async function handler(req: any, res: any) {
-  const startTime = Date.now();
-  
   try {
     // Handle preflight requests quickly
     if (req.method === 'OPTIONS') {
@@ -105,33 +92,20 @@ export default async function handler(req: any, res: any) {
       return res.status(200).end();
     }
 
-    // For root path, respond immediately without database
-    if (req.url === '/' && req.method === 'GET') {
-      return res.json({
-        success: true,
-        message: 'Baixada Vacinada API is running',
-        timestamp: new Date().toISOString(),
-        version: '1.0.0',
-        environment: process.env.NODE_ENV || 'production',
-        initTime: Date.now() - startTime
-      });
-    }
-
-    // Initialize database only for non-root requests
+    // Initialize database
     await initializeDatabase();
     
     // Pass request to Express app
     app(req, res);
   } catch (error) {
-    console.error('Serverless function error:', error);
+    console.error('Serverless error:', error);
     
     return res.status(500).json({
       success: false,
       error: {
         code: 'SERVERLESS_ERROR',
         message: 'Internal server error',
-        timestamp: new Date().toISOString(),
-        initTime: Date.now() - startTime
+        timestamp: new Date().toISOString()
       }
     });
   }
