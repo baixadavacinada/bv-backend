@@ -1,6 +1,7 @@
 import express from 'express';
 import { corsConfig } from './config/cors';
 import publicRoutes from './interfaces/routes/publicRoutes';
+import authRoutes from './interfaces/routes/authRoutes';
 import adminRoutes from './interfaces/routes/adminRoutes';
 import { setupSwagger } from './config/swagger';
 import { connectDatabase } from "./config/database";
@@ -30,7 +31,19 @@ app.use(sanitizeRequest);
 
 setupSwagger(app);
 
+// Health check route
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Baixada Vacinada API is running',
+    timestamp: new Date().toISOString(),
+    version: '1.0.0',
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 app.use('/api/public', publicRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 
 app.use(notFoundMiddleware);

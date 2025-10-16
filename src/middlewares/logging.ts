@@ -253,7 +253,7 @@ export const requestLoggingMiddleware = (req: Request, res: Response, next: Next
  * Middleware de health check com logs estruturados
  */
 export const healthCheckMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  if (req.path === '/health' || req.path === '/api/health') {
+  if (req.path === '/api/health') {
     const logger = Logger.getInstance();
     const correlationId = req.correlationId || generateUUID();
     

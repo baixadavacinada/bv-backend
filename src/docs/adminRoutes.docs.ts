@@ -354,3 +354,255 @@
  *       401:
  *         description: Token ausente ou inválido
  */
+
+/**
+ * @openapi
+ * /admin/firebase/users:
+ *   post:
+ *     summary: Create a new Firebase user
+ *     tags:
+ *       - Firebase User Management
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: "user@example.com"
+ *               password:
+ *                 type: string
+ *                 minLength: 6
+ *                 example: "password123"
+ *               displayName:
+ *                 type: string
+ *                 example: "John Doe"
+ *               role:
+ *                 type: string
+ *                 enum: ["public", "agent", "admin"]
+ *                 default: "public"
+ *     responses:
+ *       201:
+ *         description: User created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     uid:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     displayName:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                     emailVerified:
+ *                       type: boolean
+ *                     createdAt:
+ *                       type: string
+ *       400:
+ *         description: Invalid input
+ *       409:
+ *         description: Email already exists
+ *       401:
+ *         description: Unauthorized
+ */
+
+/**
+ * @openapi
+ * /admin/firebase/users/{uid}:
+ *   get:
+ *     summary: Get Firebase user information
+ *     tags:
+ *       - Firebase User Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User information retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     uid:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     displayName:
+ *                       type: string
+ *                     emailVerified:
+ *                       type: boolean
+ *                     disabled:
+ *                       type: boolean
+ *                     customClaims:
+ *                       type: object
+ *                     createdAt:
+ *                       type: string
+ *                     lastSignInTime:
+ *                       type: string
+ *       404:
+ *         description: User not found
+ *       401:
+ *         description: Unauthorized
+ *   delete:
+ *     summary: Delete Firebase user
+ *     tags:
+ *       - Firebase User Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User deleted successfully
+ *       404:
+ *         description: User not found
+ *       401:
+ *         description: Unauthorized
+ */
+
+/**
+ * @openapi
+ * /admin/firebase/users/claims:
+ *   put:
+ *     summary: Update user custom claims (role management)
+ *     tags:
+ *       - Firebase User Management
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - uid
+ *               - claims
+ *             properties:
+ *               uid:
+ *                 type: string
+ *                 example: "firebase-user-uid"
+ *               claims:
+ *                 type: object
+ *                 properties:
+ *                   role:
+ *                     type: string
+ *                     enum: ["public", "agent", "admin"]
+ *                   admin:
+ *                     type: boolean
+ *                 example:
+ *                   role: "admin"
+ *                   admin: true
+ *     responses:
+ *       200:
+ *         description: Claims updated successfully
+ *       404:
+ *         description: User not found
+ *       401:
+ *         description: Unauthorized
+ */
+
+/**
+ * @openapi
+ * /admin/firebase/users/{uid}/status:
+ *   patch:
+ *     summary: Enable/disable Firebase user
+ *     tags:
+ *       - Firebase User Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - disabled
+ *             properties:
+ *               disabled:
+ *                 type: boolean
+ *                 example: false
+ *     responses:
+ *       200:
+ *         description: User status updated
+ *       404:
+ *         description: User not found
+ *       401:
+ *         description: Unauthorized
+ */
+
+/**
+ * @openapi
+ * /admin/firebase/me:
+ *   get:
+ *     summary: Get current user profile
+ *     tags:
+ *       - Firebase User Management
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Current user profile
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     uid:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     displayName:
+ *                       type: string
+ *                     emailVerified:
+ *                       type: boolean
+ *                     role:
+ *                       type: string
+ *                     customClaims:
+ *                       type: object
+ *       401:
+ *         description: Unauthorized
+ */

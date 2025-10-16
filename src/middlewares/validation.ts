@@ -211,5 +211,64 @@ export const ValidationSchemas = {
     limit: { required: false, type: 'number' as const, min: 1, max: 100 },
     sort: { required: false, type: 'string' as const },
     order: { required: false, type: 'string' as const, enum: ['asc', 'desc'] as any[] }
+  },
+
+  // Firebase validation schemas
+  firebaseUser: {
+    email: { required: true, type: 'email' as const },
+    password: { required: true, type: 'string' as const, minLength: 6 },
+    displayName: { required: false, type: 'string' as const, minLength: 2, maxLength: 100 },
+    role: { required: false, type: 'string' as const, enum: ['public', 'agent', 'admin'] as any[] }
+  },
+
+  firebaseRegistration: {
+    email: { required: true, type: 'email' as const },
+    password: { required: true, type: 'string' as const, minLength: 6 },
+    displayName: { required: false, type: 'string' as const, minLength: 2, maxLength: 100 }
+  },
+
+  firebaseEmailLogin: {
+    email: { required: true, type: 'email' as const },
+    password: { required: true, type: 'string' as const, minLength: 1 }
+  },
+
+  firebaseTokenVerify: {
+    idToken: { required: true, type: 'string' as const, minLength: 10 }
+  },
+
+  firebaseUserClaims: {
+    uid: { required: true, type: 'string' as const, minLength: 1 },
+    claims: { 
+      required: true, 
+      type: 'object' as const,
+      custom: (value: any) => {
+        if (!value || typeof value !== 'object') {
+          return 'Claims must be an object';
+        }
+        return true;
+      }
+    }
+  },
+
+  firebaseUserStatus: {
+    disabled: { required: true, type: 'boolean' as const }
+  },
+
+  profileUpdate: {
+    displayName: { required: false, type: 'string' as const, minLength: 2, maxLength: 100 },
+    photoURL: { 
+      required: false, 
+      type: 'string' as const,
+      pattern: /^https?:\/\/.+/,
+      custom: (value: any) => {
+        if (!value) return true;
+        try {
+          new URL(value);
+          return true;
+        } catch {
+          return 'photoURL must be a valid URL';
+        }
+      }
+    }
   }
 };
