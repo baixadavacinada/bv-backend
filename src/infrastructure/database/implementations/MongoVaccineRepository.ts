@@ -15,7 +15,25 @@ export class MongoVaccineRepository implements VaccineRepository {
   }
 
   async findAll(): Promise<Vaccine[]> {
-    const vaccines = await VaccineModel.find().lean();
+    const vaccines = await VaccineModel.find({ isActive: true }).sort({ name: 1 }).lean();
     return convertLeanArrayToString<Vaccine>(vaccines);
+  }
+
+  async update(id: string, data: Partial<Vaccine>): Promise<Vaccine | null> {
+    const updated = await VaccineModel.findByIdAndUpdate(
+      id,
+      { ...data, updatedAt: new Date() },
+      { new: true, runValidators: true }
+    ).lean();
+    return updated ? convertLeanDocumentToString<Vaccine>(updated) : null;
+  }
+
+  async delete(id: string): Promise<boolean> {
+    const result = await VaccineModel.findByIdAndUpdate(
+      id,
+      { isActive: false, updatedAt: new Date() },
+      { new: true }
+    );
+    return !!result;
   }
 }
