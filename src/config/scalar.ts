@@ -449,6 +449,264 @@ const apiSpec = {
         }
       }
     },
+
+    // Dashboard and Reports endpoints
+    '/api/admin/dashboard/stats': {
+      get: {
+        summary: 'Obter estatísticas completas do dashboard (Admin)',
+        tags: ['Dashboard e Relatórios'],
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: {
+            description: 'Estatísticas do dashboard recuperadas com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        totalUsers: { type: 'number' },
+                        totalAppointments: { type: 'number' },
+                        totalVaccinationRecords: { type: 'number' },
+                        totalHealthUnits: { type: 'number' },
+                        totalVaccines: { type: 'number' },
+                        totalFeedbacks: { type: 'number' },
+                        totalNotifications: { type: 'number' },
+                        activeHealthUnits: { type: 'number' },
+                        completedAppointments: { type: 'number' },
+                        cancelledAppointments: { type: 'number' },
+                        averageFeedbackRating: { type: 'number' },
+                        unreadNotifications: { type: 'number' },
+                        recentActivity: {
+                          type: 'object',
+                          properties: {
+                            newAppointmentsToday: { type: 'number' },
+                            vaccinationsToday: { type: 'number' },
+                            newFeedbacksToday: { type: 'number' }
+                          }
+                        },
+                        monthlyStats: {
+                          type: 'array',
+                          items: {
+                            type: 'object',
+                            properties: {
+                              month: { type: 'string' },
+                              appointments: { type: 'number' },
+                              vaccinations: { type: 'number' },
+                              feedbacks: { type: 'number' }
+                            }
+                          }
+                        },
+                        topHealthUnits: {
+                          type: 'array',
+                          items: {
+                            type: 'object',
+                            properties: {
+                              id: { type: 'string' },
+                              name: { type: 'string' },
+                              appointmentCount: { type: 'number' },
+                              averageRating: { type: 'number' }
+                            }
+                          }
+                        },
+                        vaccineDistribution: {
+                          type: 'array',
+                          items: {
+                            type: 'object',
+                            properties: {
+                              vaccineId: { type: 'string' },
+                              vaccineName: { type: 'string' },
+                              count: { type: 'number' },
+                              percentage: { type: 'number' }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    message: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          401: { description: 'Não autorizado' }
+        }
+      }
+    },
+    '/api/admin/dashboard/quick-stats': {
+      get: {
+        summary: 'Obter estatísticas rápidas (Admin)',
+        tags: ['Dashboard e Relatórios'],
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: {
+            description: 'Estatísticas rápidas recuperadas com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        totalAppointments: { type: 'number' },
+                        totalVaccinations: { type: 'number' },
+                        activeHealthUnits: { type: 'number' },
+                        todayAppointments: { type: 'number' },
+                        averageRating: { type: 'number' }
+                      }
+                    },
+                    message: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          401: { description: 'Não autorizado' }
+        }
+      }
+    },
+    '/api/admin/reports/vaccination': {
+      get: {
+        summary: 'Relatório de vacinação (Admin)',
+        tags: ['Dashboard e Relatórios'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'startDate',
+            in: 'query',
+            schema: { type: 'string', format: 'date' },
+            description: 'Data inicial para o relatório'
+          },
+          {
+            name: 'endDate',
+            in: 'query',
+            schema: { type: 'string', format: 'date' },
+            description: 'Data final para o relatório'
+          },
+          {
+            name: 'healthUnitId',
+            in: 'query',
+            schema: { type: 'string' },
+            description: 'ID da unidade de saúde'
+          },
+          {
+            name: 'vaccineId',
+            in: 'query',
+            schema: { type: 'string' },
+            description: 'ID da vacina'
+          }
+        ],
+        responses: {
+          200: {
+            description: 'Relatório de vacinação gerado com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        summary: {
+                          type: 'object',
+                          properties: {
+                            totalVaccinations: { type: 'number' },
+                            uniquePatients: { type: 'number' },
+                            averageAge: { type: 'number' },
+                            genderDistribution: { type: 'object' },
+                            doseDistribution: { type: 'object' }
+                          }
+                        },
+                        byHealthUnit: { type: 'array' },
+                        byVaccine: { type: 'array' },
+                        byDate: { type: 'array' },
+                        byAgeGroup: { type: 'array' },
+                        coverage: { type: 'object' }
+                      }
+                    },
+                    message: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          400: { description: 'Parâmetros inválidos' },
+          401: { description: 'Não autorizado' }
+        }
+      }
+    },
+    '/api/admin/reports/health-units': {
+      get: {
+        summary: 'Relatório de unidades de saúde (Admin)',
+        tags: ['Dashboard e Relatórios'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'startDate',
+            in: 'query',
+            schema: { type: 'string', format: 'date' },
+            description: 'Data inicial para o relatório'
+          },
+          {
+            name: 'endDate',
+            in: 'query',
+            schema: { type: 'string', format: 'date' },
+            description: 'Data final para o relatório'
+          },
+          {
+            name: 'isActive',
+            in: 'query',
+            schema: { type: 'boolean' },
+            description: 'Filtrar por status ativo'
+          },
+          {
+            name: 'city',
+            in: 'query',
+            schema: { type: 'string' },
+            description: 'Filtrar por cidade'
+          },
+          {
+            name: 'state',
+            in: 'query',
+            schema: { type: 'string' },
+            description: 'Filtrar por estado'
+          }
+        ],
+        responses: {
+          200: {
+            description: 'Relatório de unidades de saúde gerado com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        summary: { type: 'object' },
+                        performance: { type: 'array' },
+                        geographical: { type: 'array' },
+                        ratings: { type: 'array' }
+                      }
+                    },
+                    message: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          400: { description: 'Parâmetros inválidos' },
+          401: { description: 'Não autorizado' }
+        }
+      }
+    },
     
     // Public Vaccination Records endpoints
     '/api/public/vaccination-records/my': {

@@ -11,6 +11,7 @@ import { VaccinationRecordController } from "../controllers/admin/vaccinationRec
 import { FeedbackController } from "../controllers/admin/feedbackController";
 import { AdminNotificationController } from "../controllers/admin/notificationController";
 import { AdminHealthUnitsController } from "../controllers/admin/healthUnitsController";
+import { DashboardController } from "../controllers/admin/dashboardController";
 import { listHealthUnitsController } from "../controllers/healthUnitsController";
 import { 
   createFirebaseUser, 
@@ -44,6 +45,7 @@ const vaccinationRecordController = new VaccinationRecordController();
 const feedbackController = new FeedbackController();
 const adminNotificationController = new AdminNotificationController();
 const adminHealthUnitsController = new AdminHealthUnitsController();
+const dashboardController = new DashboardController();
 
 // Traditional user endpoints (JWT-based)
 router.post("/users",
@@ -272,6 +274,36 @@ router.get("/notifications/:id",
 
 router.delete("/notifications/:id",
   asyncHandler(adminNotificationController.delete.bind(adminNotificationController))
+);
+
+// Dashboard and Reports endpoints
+router.get("/dashboard/stats",
+  asyncHandler(dashboardController.getDashboardStats.bind(dashboardController))
+);
+
+router.get("/dashboard/quick-stats",
+  asyncHandler(dashboardController.getQuickStats.bind(dashboardController))
+);
+
+router.get("/reports/vaccination",
+  validateQuery({
+    startDate: { required: false, type: 'string' as const },
+    endDate: { required: false, type: 'string' as const },
+    healthUnitId: { required: false, type: 'string' as const },
+    vaccineId: { required: false, type: 'string' as const }
+  }),
+  asyncHandler(dashboardController.getVaccinationReport.bind(dashboardController))
+);
+
+router.get("/reports/health-units",
+  validateQuery({
+    startDate: { required: false, type: 'string' as const },
+    endDate: { required: false, type: 'string' as const },
+    isActive: { required: false, type: 'boolean' as const },
+    city: { required: false, type: 'string' as const },
+    state: { required: false, type: 'string' as const }
+  }),
+  asyncHandler(dashboardController.getHealthUnitReport.bind(dashboardController))
 );
 
 // Firebase User Management Endpoints
