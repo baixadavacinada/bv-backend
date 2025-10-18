@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { MongoAppointmentRepository } from "../../../infrastructure/database/implementations/MongoAppointmentRepository";
-import { ScheduleAppointmentUseCase } from "../../../application/use-cases/public/ScheduleAppointmentUseCase";
-import { ListAppointmentsUseCase } from "../../../application/use-cases/admin/ListAppointmentsUseCase";
-import { Logger } from "../../../middlewares/logging";
+import { MongoAppointmentRepository } from "../../infrastructure/database/implementations/MongoAppointmentRepository";
+import { ScheduleAppointmentUseCase } from "../../application/use-cases/public/ScheduleAppointmentUseCase";
+import { ListAppointmentsUseCase } from "../../application/use-cases/admin/ListAppointmentsUseCase";
+import { Logger } from "../../middlewares/logging";
 
 const logger = Logger.getInstance();
 const appointmentRepository = new MongoAppointmentRepository();

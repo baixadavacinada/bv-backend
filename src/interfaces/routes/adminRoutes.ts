@@ -7,6 +7,7 @@ import {
   updateVaccineController, 
   deleteVaccineController 
 } from "../controllers/admin/vaccineController";
+import { VaccinationRecordController } from "../controllers/admin/vaccinationRecordController";
 import { listHealthUnitsController } from "../controllers/healthUnitsController";
 import { 
   createFirebaseUser, 
@@ -32,6 +33,9 @@ const router = Router();
 // Use Firebase authentication for admin routes
 router.use(requireAdmin);
 router.use(adminRateLimit);
+
+// Initialize controllers
+const vaccinationRecordController = new VaccinationRecordController();
 
 // Traditional user endpoints (JWT-based)
 router.post("/users",
@@ -60,6 +64,48 @@ router.put("/vaccines/:id",
 
 router.delete("/vaccines/:id",
   asyncHandler(deleteVaccineController)
+);
+
+// Vaccination Record endpoints
+router.post("/vaccination-records",
+  validateBody({
+    residentId: { required: true, type: 'string' as const },
+    vaccineId: { required: true, type: 'string' as const },
+    healthUnitId: { required: true, type: 'string' as const },
+    appliedBy: { required: true, type: 'string' as const },
+    dose: { required: true, type: 'string' as const, enum: ['1ª dose', '2ª dose', '3ª dose', 'dose única', 'reforço'] as any[] },
+    date: { required: true, type: 'string' as const },
+    notes: { required: false, type: 'string' as const, maxLength: 500 }
+  }),
+  asyncHandler(vaccinationRecordController.create.bind(vaccinationRecordController))
+);
+
+router.get("/vaccination-records",
+  validateQuery({
+    healthUnitId: { required: false, type: 'string' as const },
+    startDate: { required: false, type: 'string' as const },
+    endDate: { required: false, type: 'string' as const },
+    residentId: { required: false, type: 'string' as const },
+    vaccineId: { required: false, type: 'string' as const }
+  }),
+  asyncHandler(vaccinationRecordController.list.bind(vaccinationRecordController))
+);
+
+router.get("/vaccination-records/:id",
+  asyncHandler(vaccinationRecordController.getById.bind(vaccinationRecordController))
+);
+
+router.put("/vaccination-records/:id",
+  validateBody({
+    notes: { required: false, type: 'string' as const, maxLength: 500 },
+    dose: { required: false, type: 'string' as const, enum: ['1ª dose', '2ª dose', '3ª dose', 'dose única', 'reforço'] as any[] },
+    date: { required: false, type: 'string' as const }
+  }),
+  asyncHandler(vaccinationRecordController.update.bind(vaccinationRecordController))
+);
+
+router.delete("/vaccination-records/:id",
+  asyncHandler(vaccinationRecordController.delete.bind(vaccinationRecordController))
 );
 
 // Appointment endpoints

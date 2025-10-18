@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import { loginController } from '../controllers/public/loginController';
 import { listHealthUnitsController } from '../controllers/healthUnitsController';
+import { listVaccinesController } from '../controllers/admin/vaccineController';
+import { PublicVaccinationRecordController } from '../controllers/public/vaccinationRecordController';
 import { 
   scheduleAppointmentController,
   listMyAppointmentsController,
@@ -21,6 +23,9 @@ import { validateBody, validateQuery, ValidationSchemas } from '../../middleware
 import { asyncHandler } from '../../middlewares/errorHandling';
 
 const router = Router();
+
+// Initialize controllers
+const publicVaccinationRecordController = new PublicVaccinationRecordController();
 
 // Firebase authentication endpoints
 router.post('/auth/register', 
@@ -50,6 +55,7 @@ router.post('/auth/password-reset',
 
 // Public endpoints
 router.get('/health-units', asyncHandler(listHealthUnitsController));
+router.get('/vaccines', asyncHandler(listVaccinesController));
 
 // Appointment endpoints (protected)
 router.post('/appointments',
@@ -88,6 +94,17 @@ router.patch('/appointments/:id/cancel',
     reason: { required: false, type: 'string' as const, maxLength: 500 }
   }),
   asyncHandler(cancelAppointmentController)
+);
+
+// Vaccination Record endpoints (protected)
+router.get('/vaccination-records/my',
+  requireAuth,
+  asyncHandler(publicVaccinationRecordController.getMyVaccinationRecords.bind(publicVaccinationRecordController))
+);
+
+router.get('/vaccination-records/user/:userId',
+  requireAuth,
+  asyncHandler(publicVaccinationRecordController.getVaccinationRecordsByUserId.bind(publicVaccinationRecordController))
 );
 
 export default router;

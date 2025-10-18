@@ -3,7 +3,7 @@ import { corsConfig } from './config/cors';
 import publicRoutes from './interfaces/routes/publicRoutes';
 import authRoutes from './interfaces/routes/authRoutes';
 import adminRoutes from './interfaces/routes/adminRoutes';
-import { setupSwagger } from './config/swagger';
+import { setupApiDocs } from './config/scalar';
 import { connectDatabase } from "./config/database";
 import "dotenv/config";
 
@@ -29,7 +29,7 @@ app.use(corsConfig);
 app.use(requestLoggingMiddleware);
 app.use(sanitizeRequest); 
 
-setupSwagger(app);
+setupApiDocs(app);
 
 // Health check route
 app.get('/', (req, res) => {
