@@ -9,6 +9,8 @@ import {
 } from "../controllers/admin/vaccineController";
 import { VaccinationRecordController } from "../controllers/admin/vaccinationRecordController";
 import { FeedbackController } from "../controllers/admin/feedbackController";
+import { AdminNotificationController } from "../controllers/admin/notificationController";
+import { AdminHealthUnitsController } from "../controllers/admin/healthUnitsController";
 import { listHealthUnitsController } from "../controllers/healthUnitsController";
 import { 
   createFirebaseUser, 
@@ -40,6 +42,8 @@ router.use(adminRateLimit);
 // Initialize controllers
 const vaccinationRecordController = new VaccinationRecordController();
 const feedbackController = new FeedbackController();
+const adminNotificationController = new AdminNotificationController();
+const adminHealthUnitsController = new AdminHealthUnitsController();
 
 // Traditional user endpoints (JWT-based)
 router.post("/users",
@@ -154,8 +158,58 @@ router.patch("/appointments/:id/complete-vaccination",
 
 // Health units endpoints
 router.get("/health-units",
-  validateQuery(ValidationSchemas.pagination),
-  asyncHandler(listHealthUnitsController)
+  validateQuery({
+    isActive: { required: false, type: 'boolean' as const },
+    isFavorite: { required: false, type: 'boolean' as const },
+    neighborhood: { required: false, type: 'string' as const },
+    city: { required: false, type: 'string' as const },
+    state: { required: false, type: 'string' as const }
+  }),
+  asyncHandler(adminHealthUnitsController.listAll.bind(adminHealthUnitsController))
+);
+
+router.post("/health-units",
+  validateBody({
+    name: { required: true, type: 'string' as const, minLength: 3, maxLength: 200 },
+    address: { required: true, type: 'string' as const, minLength: 10, maxLength: 500 },
+    neighborhood: { required: true, type: 'string' as const },
+    city: { required: true, type: 'string' as const },
+    state: { required: true, type: 'string' as const },
+    zipCode: { required: true, type: 'string' as const },
+    phone: { required: false, type: 'string' as const },
+    operatingHours: { required: false, type: 'object' as const },
+    availableVaccines: { required: false, type: 'array' as const },
+    geolocation: { required: false, type: 'object' as const },
+    isActive: { required: false, type: 'boolean' as const },
+    isFavorite: { required: false, type: 'boolean' as const }
+  }),
+  asyncHandler(adminHealthUnitsController.create.bind(adminHealthUnitsController))
+);
+
+router.get("/health-units/:id",
+  asyncHandler(adminHealthUnitsController.getById.bind(adminHealthUnitsController))
+);
+
+router.put("/health-units/:id",
+  validateBody({
+    name: { required: false, type: 'string' as const, minLength: 3, maxLength: 200 },
+    address: { required: false, type: 'string' as const, minLength: 10, maxLength: 500 },
+    neighborhood: { required: false, type: 'string' as const },
+    city: { required: false, type: 'string' as const },
+    state: { required: false, type: 'string' as const },
+    zipCode: { required: false, type: 'string' as const },
+    phone: { required: false, type: 'string' as const },
+    operatingHours: { required: false, type: 'object' as const },
+    availableVaccines: { required: false, type: 'array' as const },
+    geolocation: { required: false, type: 'object' as const },
+    isActive: { required: false, type: 'boolean' as const },
+    isFavorite: { required: false, type: 'boolean' as const }
+  }),
+  asyncHandler(adminHealthUnitsController.update.bind(adminHealthUnitsController))
+);
+
+router.delete("/health-units/:id",
+  asyncHandler(adminHealthUnitsController.delete.bind(adminHealthUnitsController))
 );
 
 // Feedback endpoints
@@ -182,6 +236,42 @@ router.patch("/feedback/:id/moderate",
     isActive: { required: true, type: 'boolean' as const }
   }),
   asyncHandler(feedbackController.moderate.bind(feedbackController))
+);
+
+// Notification endpoints
+router.post("/notifications",
+  validateBody({
+    userId: { required: true, type: 'string' as const },
+    title: { required: true, type: 'string' as const, minLength: 3, maxLength: 200 },
+    message: { required: true, type: 'string' as const, minLength: 10, maxLength: 1000 },
+    type: { 
+      required: true, 
+      type: 'string' as const, 
+      enum: ['appointment_reminder', 'vaccine_available', 'dose_due', 'system_update', 'general'] as any[]
+    },
+    data: { required: false, type: 'object' as const },
+    scheduledFor: { required: false, type: 'string' as const }
+  }),
+  asyncHandler(adminNotificationController.create.bind(adminNotificationController))
+);
+
+router.get("/notifications",
+  validateQuery({
+    userId: { required: false, type: 'string' as const },
+    isRead: { required: false, type: 'boolean' as const },
+    type: { required: false, type: 'string' as const },
+    startDate: { required: false, type: 'string' as const },
+    endDate: { required: false, type: 'string' as const }
+  }),
+  asyncHandler(adminNotificationController.listAll.bind(adminNotificationController))
+);
+
+router.get("/notifications/:id",
+  asyncHandler(adminNotificationController.getById.bind(adminNotificationController))
+);
+
+router.delete("/notifications/:id",
+  asyncHandler(adminNotificationController.delete.bind(adminNotificationController))
 );
 
 // Firebase User Management Endpoints

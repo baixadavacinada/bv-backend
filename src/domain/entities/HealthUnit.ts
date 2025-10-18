@@ -23,4 +23,6 @@ export interface HealthUnit {
   };
   isActive: boolean;
   isFavorite: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
 }

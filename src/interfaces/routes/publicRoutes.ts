@@ -4,6 +4,7 @@ import { listHealthUnitsController } from '../controllers/healthUnitsController'
 import { listVaccinesController } from '../controllers/admin/vaccineController';
 import { PublicVaccinationRecordController } from '../controllers/public/vaccinationRecordController';
 import { PublicFeedbackController } from '../controllers/public/feedbackController';
+import { NotificationController } from '../controllers/public/notificationController';
 import { 
   scheduleAppointmentController,
   listMyAppointmentsController,
@@ -28,6 +29,7 @@ const router = Router();
 // Initialize controllers
 const publicVaccinationRecordController = new PublicVaccinationRecordController();
 const publicFeedbackController = new PublicFeedbackController();
+const notificationController = new NotificationController();
 
 // Firebase authentication endpoints
 router.post('/auth/register', 
@@ -123,6 +125,22 @@ router.post('/feedback',
 
 router.get('/feedback/health-unit/:healthUnitId',
   asyncHandler(publicFeedbackController.listByHealthUnit.bind(publicFeedbackController))
+);
+
+// Notification endpoints
+router.get('/notifications',
+  requireAuth,
+  asyncHandler(notificationController.listUserNotifications.bind(notificationController))
+);
+
+router.patch('/notifications/:id/read',
+  requireAuth,
+  asyncHandler(notificationController.markAsRead.bind(notificationController))
+);
+
+router.patch('/notifications/mark-all-read',
+  requireAuth,
+  asyncHandler(notificationController.markAllAsRead.bind(notificationController))
 );
 
 export default router;

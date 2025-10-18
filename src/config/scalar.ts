@@ -817,6 +817,389 @@ const apiSpec = {
           400: { description: 'Status do agendamento inválido ou dados incorretos' }
         }
       }
+    },
+    
+    // Admin Health Units endpoints
+    '/api/admin/health-units': {
+      get: {
+        summary: 'Listar unidades de saúde (Admin)',
+        tags: ['Gerenciamento Admin - Unidades de Saúde'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'isActive',
+            in: 'query',
+            schema: { type: 'boolean' },
+            description: 'Filtrar por status ativo'
+          },
+          {
+            name: 'isFavorite',
+            in: 'query',
+            schema: { type: 'boolean' },
+            description: 'Filtrar por favoritas'
+          },
+          {
+            name: 'neighborhood',
+            in: 'query',
+            schema: { type: 'string' },
+            description: 'Filtrar por bairro'
+          },
+          {
+            name: 'city',
+            in: 'query',
+            schema: { type: 'string' },
+            description: 'Filtrar por cidade'
+          },
+          {
+            name: 'state',
+            in: 'query',
+            schema: { type: 'string' },
+            description: 'Filtrar por estado'
+          }
+        ],
+        responses: {
+          200: { description: 'Unidades de saúde listadas com sucesso' },
+          401: { description: 'Não autorizado' }
+        }
+      },
+      post: {
+        summary: 'Criar nova unidade de saúde (Admin)',
+        tags: ['Gerenciamento Admin - Unidades de Saúde'],
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string', minLength: 3, maxLength: 200, example: 'UBS Centro' },
+                  address: { type: 'string', minLength: 10, maxLength: 500, example: 'Rua das Flores, 123' },
+                  neighborhood: { type: 'string', example: 'Centro' },
+                  city: { type: 'string', example: 'São Paulo' },
+                  state: { type: 'string', example: 'SP' },
+                  zipCode: { type: 'string', example: '01234567' },
+                  phone: { type: 'string', example: '(11) 1234-5678' },
+                  operatingHours: {
+                    type: 'object',
+                    properties: {
+                      monday: { type: 'string', example: '08:00-17:00' },
+                      tuesday: { type: 'string', example: '08:00-17:00' },
+                      wednesday: { type: 'string', example: '08:00-17:00' },
+                      thursday: { type: 'string', example: '08:00-17:00' },
+                      friday: { type: 'string', example: '08:00-17:00' },
+                      saturday: { type: 'string', example: '08:00-12:00' },
+                      sunday: { type: 'string', example: 'Fechado' }
+                    }
+                  },
+                  availableVaccines: { type: 'array', items: { type: 'string' } },
+                  geolocation: {
+                    type: 'object',
+                    properties: {
+                      lat: { type: 'number', example: -23.5505 },
+                      lng: { type: 'number', example: -46.6333 }
+                    }
+                  },
+                  isActive: { type: 'boolean', default: true },
+                  isFavorite: { type: 'boolean', default: false }
+                },
+                required: ['name', 'address', 'neighborhood', 'city', 'state', 'zipCode']
+              }
+            }
+          }
+        },
+        responses: {
+          201: { description: 'Unidade de saúde criada com sucesso' },
+          400: { description: 'Dados de entrada inválidos' },
+          401: { description: 'Não autorizado' }
+        }
+      }
+    },
+    '/api/admin/health-units/{id}': {
+      get: {
+        summary: 'Obter unidade de saúde por ID (Admin)',
+        tags: ['Gerenciamento Admin - Unidades de Saúde'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' }
+          }
+        ],
+        responses: {
+          200: { description: 'Unidade de saúde encontrada' },
+          404: { description: 'Unidade de saúde não encontrada' },
+          401: { description: 'Não autorizado' }
+        }
+      },
+      put: {
+        summary: 'Atualizar unidade de saúde (Admin)',
+        tags: ['Gerenciamento Admin - Unidades de Saúde'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' }
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  name: { type: 'string', minLength: 3, maxLength: 200 },
+                  address: { type: 'string', minLength: 10, maxLength: 500 },
+                  neighborhood: { type: 'string' },
+                  city: { type: 'string' },
+                  state: { type: 'string' },
+                  zipCode: { type: 'string' },
+                  phone: { type: 'string' },
+                  operatingHours: { type: 'object' },
+                  availableVaccines: { type: 'array', items: { type: 'string' } },
+                  geolocation: { type: 'object' },
+                  isActive: { type: 'boolean' },
+                  isFavorite: { type: 'boolean' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          200: { description: 'Unidade de saúde atualizada com sucesso' },
+          404: { description: 'Unidade de saúde não encontrada' },
+          400: { description: 'Dados de entrada inválidos' },
+          401: { description: 'Não autorizado' }
+        }
+      },
+      delete: {
+        summary: 'Remover unidade de saúde (Admin)',
+        tags: ['Gerenciamento Admin - Unidades de Saúde'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' }
+          }
+        ],
+        responses: {
+          200: { description: 'Unidade de saúde removida com sucesso' },
+          404: { description: 'Unidade de saúde não encontrada' },
+          401: { description: 'Não autorizado' }
+        }
+      }
+    },
+    
+    // Admin Notifications endpoints
+    '/api/admin/notifications': {
+      get: {
+        summary: 'Listar todas as notificações (Admin)',
+        tags: ['Gerenciamento Admin - Notificações'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'userId',
+            in: 'query',
+            schema: { type: 'string' },
+            description: 'Filtrar por usuário'
+          },
+          {
+            name: 'isRead',
+            in: 'query',
+            schema: { type: 'boolean' },
+            description: 'Filtrar por status de leitura'
+          },
+          {
+            name: 'type',
+            in: 'query',
+            schema: { type: 'string' },
+            description: 'Filtrar por tipo de notificação'
+          },
+          {
+            name: 'startDate',
+            in: 'query',
+            schema: { type: 'string', format: 'date' },
+            description: 'Data inicial'
+          },
+          {
+            name: 'endDate',
+            in: 'query',
+            schema: { type: 'string', format: 'date' },
+            description: 'Data final'
+          }
+        ],
+        responses: {
+          200: { description: 'Notificações listadas com sucesso' },
+          401: { description: 'Não autorizado' }
+        }
+      },
+      post: {
+        summary: 'Criar nova notificação (Admin)',
+        tags: ['Gerenciamento Admin - Notificações'],
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  userId: { type: 'string', example: '60a1b2c3d4e5f67890123456' },
+                  title: { type: 'string', minLength: 3, maxLength: 200, example: 'Lembrete de Vacinação' },
+                  message: { 
+                    type: 'string', 
+                    minLength: 10, 
+                    maxLength: 1000,
+                    example: 'Sua segunda dose da vacina está agendada para amanhã às 14:00.'
+                  },
+                  type: { 
+                    type: 'string', 
+                    enum: ['appointment_reminder', 'vaccine_available', 'dose_due', 'system_update', 'general'],
+                    example: 'appointment_reminder'
+                  },
+                  data: {
+                    type: 'object',
+                    properties: {
+                      appointmentId: { type: 'string' },
+                      vaccineId: { type: 'string' },
+                      healthUnitId: { type: 'string' },
+                      actionUrl: { type: 'string' }
+                    }
+                  },
+                  scheduledFor: { type: 'string', format: 'date-time', example: '2024-01-15T14:00:00Z' }
+                },
+                required: ['userId', 'title', 'message', 'type']
+              }
+            }
+          }
+        },
+        responses: {
+          201: { description: 'Notificação criada com sucesso' },
+          400: { description: 'Dados de entrada inválidos' },
+          401: { description: 'Não autorizado' }
+        }
+      }
+    },
+    '/api/admin/notifications/{id}': {
+      get: {
+        summary: 'Obter notificação por ID (Admin)',
+        tags: ['Gerenciamento Admin - Notificações'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' }
+          }
+        ],
+        responses: {
+          200: { description: 'Notificação encontrada' },
+          404: { description: 'Notificação não encontrada' },
+          401: { description: 'Não autorizado' }
+        }
+      },
+      delete: {
+        summary: 'Excluir notificação (Admin)',
+        tags: ['Gerenciamento Admin - Notificações'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' }
+          }
+        ],
+        responses: {
+          200: { description: 'Notificação excluída com sucesso' },
+          404: { description: 'Notificação não encontrada' },
+          401: { description: 'Não autorizado' }
+        }
+      }
+    },
+    
+    // Public Notifications endpoints  
+    '/api/public/notifications': {
+      get: {
+        summary: 'Listar minhas notificações',
+        tags: ['Público - Notificações'],
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: { 
+            description: 'Notificações listadas com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    message: { type: 'string' },
+                    data: {
+                      type: 'array',
+                      items: { type: 'object' }
+                    },
+                    total: { type: 'number' },
+                    unread: { type: 'number' }
+                  }
+                }
+              }
+            }
+          },
+          401: { description: 'Não autorizado' }
+        }
+      }
+    },
+    '/api/public/notifications/{id}/read': {
+      patch: {
+        summary: 'Marcar notificação como lida',
+        tags: ['Público - Notificações'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' }
+          }
+        ],
+        responses: {
+          200: { description: 'Notificação marcada como lida' },
+          404: { description: 'Notificação não encontrada' },
+          403: { description: 'Não autorizado a modificar esta notificação' },
+          401: { description: 'Não autorizado' }
+        }
+      }
+    },
+    '/api/public/notifications/mark-all-read': {
+      patch: {
+        summary: 'Marcar todas as notificações como lidas',
+        tags: ['Público - Notificações'],
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: { 
+            description: 'Todas as notificações marcadas como lidas',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    message: { type: 'string' },
+                    count: { type: 'number' }
+                  }
+                }
+              }
+            }
+          },
+          401: { description: 'Não autorizado' }
+        }
+      }
     }
   }
 };

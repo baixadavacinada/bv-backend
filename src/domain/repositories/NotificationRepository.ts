@@ -5,6 +5,7 @@ export interface NotificationRepository {
   findById(id: string): Promise<Notification | null>;
   findByUserId(userId: string): Promise<Notification[]>;
   findUnreadByUserId(userId: string): Promise<Notification[]>;
+  findAll(filters?: any): Promise<Notification[]>;
   markAsRead(id: string): Promise<boolean>;
   markAllAsRead(userId: string): Promise<number>;
   delete(id: string): Promise<boolean>;

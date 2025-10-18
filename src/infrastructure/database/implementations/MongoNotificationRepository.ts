@@ -32,6 +32,38 @@ export class MongoNotificationRepository implements NotificationRepository {
     return convertLeanArrayToString<Notification>(notifications);
   }
 
+  async findAll(filters?: any): Promise<Notification[]> {
+    const query: any = {};
+    
+    if (filters?.userId) {
+      query.userId = filters.userId;
+    }
+    
+    if (filters?.isRead !== undefined) {
+      query.isRead = filters.isRead;
+    }
+    
+    if (filters?.type) {
+      query.type = filters.type;
+    }
+    
+    if (filters?.startDate || filters?.endDate) {
+      query.createdAt = {};
+      if (filters.startDate) {
+        query.createdAt.$gte = filters.startDate;
+      }
+      if (filters.endDate) {
+        query.createdAt.$lte = filters.endDate;
+      }
+    }
+
+    const notifications = await NotificationModel.find(query)
+      .sort({ createdAt: -1 })
+      .limit(100) // Limit for admin view
+      .lean();
+    return convertLeanArrayToString<Notification>(notifications);
+  }
+
   async markAsRead(id: string): Promise<boolean> {
     const result = await NotificationModel.findByIdAndUpdate(
       id,
