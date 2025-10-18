@@ -482,6 +482,341 @@ const apiSpec = {
           400: { description: 'ID de usuário inválido' }
         }
       }
+    },
+    
+    // Admin Feedback endpoints
+    '/api/admin/feedback': {
+      get: {
+        summary: 'Listar todos os feedbacks (Admin)',
+        tags: ['Gerenciamento Admin - Feedback'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'healthUnitId',
+            in: 'query',
+            schema: { type: 'string' },
+            description: 'Filtrar por unidade de saúde'
+          }
+        ],
+        responses: {
+          200: { description: 'Lista de feedbacks recuperada com sucesso' },
+          401: { description: 'Não autorizado' }
+        }
+      }
+    },
+    '/api/admin/feedback/health-unit': {
+      get: {
+        summary: 'Listar feedbacks por unidade de saúde (Admin)',
+        tags: ['Gerenciamento Admin - Feedback'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'healthUnitId',
+            in: 'query',
+            required: true,
+            schema: { type: 'string' },
+            description: 'ID da unidade de saúde'
+          }
+        ],
+        responses: {
+          200: { description: 'Feedbacks da unidade recuperados com sucesso' },
+          401: { description: 'Não autorizado' },
+          400: { description: 'ID da unidade de saúde é obrigatório' }
+        }
+      }
+    },
+    '/api/admin/feedback/{id}': {
+      get: {
+        summary: 'Obter feedback por ID (Admin)',
+        tags: ['Gerenciamento Admin - Feedback'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' }
+          }
+        ],
+        responses: {
+          200: { description: 'Feedback recuperado com sucesso' },
+          404: { description: 'Feedback não encontrado' },
+          401: { description: 'Não autorizado' }
+        }
+      }
+    },
+    '/api/admin/feedback/{id}/moderate': {
+      patch: {
+        summary: 'Moderar feedback (Admin)',
+        tags: ['Gerenciamento Admin - Feedback'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' }
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  isActive: { type: 'boolean', example: true }
+                },
+                required: ['isActive']
+              }
+            }
+          }
+        },
+        responses: {
+          200: { description: 'Feedback moderado com sucesso' },
+          404: { description: 'Feedback não encontrado' },
+          401: { description: 'Não autorizado' }
+        }
+      }
+    },
+    
+    // Public Feedback endpoints
+    '/api/public/feedback': {
+      post: {
+        summary: 'Criar feedback sobre unidade de saúde',
+        tags: ['Público - Feedback'],
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  healthUnitId: { type: 'string', example: '60a1b2c3d4e5f6789012347' },
+                  comment: { 
+                    type: 'string', 
+                    minLength: 10,
+                    maxLength: 1000,
+                    example: 'Excelente atendimento, equipe muito atenciosa e rápida'
+                  },
+                  rating: { 
+                    type: 'number', 
+                    minimum: 1, 
+                    maximum: 5,
+                    example: 5
+                  },
+                  isAnonymous: { type: 'boolean', example: false }
+                },
+                required: ['healthUnitId', 'comment', 'rating']
+              }
+            }
+          }
+        },
+        responses: {
+          201: { description: 'Feedback criado com sucesso' },
+          401: { description: 'Não autorizado' },
+          400: { description: 'Dados de entrada inválidos' }
+        }
+      }
+    },
+    '/api/public/feedback/health-unit/{healthUnitId}': {
+      get: {
+        summary: 'Listar feedbacks de uma unidade de saúde',
+        tags: ['Público - Feedback'],
+        parameters: [
+          {
+            name: 'healthUnitId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'ID da unidade de saúde'
+          }
+        ],
+        responses: {
+          200: { 
+            description: 'Feedbacks da unidade recuperados com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    message: { type: 'string' },
+                    data: {
+                      type: 'array',
+                      items: { type: 'object' }
+                    },
+                    total: { type: 'number' },
+                    averageRating: { type: 'number', example: 4.2 }
+                  }
+                }
+              }
+            }
+          },
+          400: { description: 'ID da unidade de saúde inválido' }
+        }
+      }
+    },
+    
+    // Enhanced Appointment Admin endpoints
+    '/api/admin/appointments/stats': {
+      get: {
+        summary: 'Obter estatísticas de agendamentos (Admin)',
+        tags: ['Gerenciamento Admin - Agendamentos'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'startDate',
+            in: 'query',
+            schema: { type: 'string', format: 'date' },
+            description: 'Data inicial para filtro (padrão: 1 ano atrás)'
+          },
+          {
+            name: 'endDate',
+            in: 'query',
+            schema: { type: 'string', format: 'date' },
+            description: 'Data final para filtro (padrão: hoje)'
+          }
+        ],
+        responses: {
+          200: { 
+            description: 'Estatísticas recuperadas com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        totalAppointments: { type: 'number' },
+                        scheduledAppointments: { type: 'number' },
+                        confirmedAppointments: { type: 'number' },
+                        completedAppointments: { type: 'number' },
+                        cancelledAppointments: { type: 'number' },
+                        noShowAppointments: { type: 'number' },
+                        averageCompletionRate: { type: 'number' },
+                        appointmentsByHealthUnit: {
+                          type: 'array',
+                          items: {
+                            type: 'object',
+                            properties: {
+                              healthUnitId: { type: 'string' },
+                              count: { type: 'number' }
+                            }
+                          }
+                        },
+                        appointmentsByVaccine: {
+                          type: 'array',
+                          items: {
+                            type: 'object',
+                            properties: {
+                              vaccineId: { type: 'string' },
+                              count: { type: 'number' }
+                            }
+                          }
+                        },
+                        appointmentsByMonth: {
+                          type: 'array',
+                          items: {
+                            type: 'object',
+                            properties: {
+                              month: { type: 'string' },
+                              count: { type: 'number' }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    message: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          401: { description: 'Não autorizado' },
+          400: { description: 'Datas inválidas' }
+        }
+      }
+    },
+    '/api/admin/appointments/{id}/complete-vaccination': {
+      patch: {
+        summary: 'Completar agendamento e criar registro de vacinação (Admin)',
+        tags: ['Gerenciamento Admin - Agendamentos'],
+        security: [{ bearerAuth: [] }],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'ID do agendamento'
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  appliedBy: { 
+                    type: 'string', 
+                    example: 'Dr. João Silva',
+                    description: 'Nome do profissional que aplicou a vacina'
+                  },
+                  vaccinationNotes: { 
+                    type: 'string', 
+                    maxLength: 1000,
+                    example: 'Vacinação aplicada sem intercorrências',
+                    description: 'Observações sobre a vacinação'
+                  },
+                  reactions: { 
+                    type: 'string', 
+                    maxLength: 500,
+                    example: 'Sem reações adversas observadas',
+                    description: 'Reações ou efeitos observados'
+                  },
+                  nextDoseDate: { 
+                    type: 'string', 
+                    format: 'date',
+                    example: '2024-02-15',
+                    description: 'Data prevista para próxima dose (se aplicável)'
+                  }
+                },
+                required: ['appliedBy']
+              }
+            }
+          }
+        },
+        responses: {
+          200: { 
+            description: 'Agendamento completado e registro de vacinação criado com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        appointment: { type: 'object' },
+                        vaccinationRecord: { type: 'object' }
+                      }
+                    },
+                    message: { type: 'string' }
+                  }
+                }
+              }
+            }
+          },
+          404: { description: 'Agendamento não encontrado' },
+          401: { description: 'Não autorizado' },
+          400: { description: 'Status do agendamento inválido ou dados incorretos' }
+        }
+      }
     }
   }
 };

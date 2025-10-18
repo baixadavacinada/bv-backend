@@ -15,12 +15,33 @@ export class MongoFeedbackRepository implements FeedbackRepository {
   }
 
   async findAll(): Promise<Feedback[]> {
-    const feedbacks = await FeedbackModel.find().lean();
+    const feedbacks = await FeedbackModel.find({ isActive: true })
+      .sort({ createdAt: -1 })
+      .lean();
     return convertLeanArrayToString<Feedback>(feedbacks);
   }
 
   async listByHealthUnit(healthUnitId: string): Promise<Feedback[]> {
-    const feedbacks = await FeedbackModel.find({ healthUnitId }).lean();
+    const feedbacks = await FeedbackModel.find({ 
+      healthUnitId, 
+      isActive: true 
+    })
+      .sort({ createdAt: -1 })
+      .lean();
     return convertLeanArrayToString<Feedback>(feedbacks);
+  }
+
+  async update(id: string, data: Partial<Feedback>): Promise<boolean> {
+    const result = await FeedbackModel.findByIdAndUpdate(
+      id,
+      { ...data, updatedAt: new Date() },
+      { new: true }
+    );
+    return !!result;
+  }
+
+  async delete(id: string): Promise<boolean> {
+    const result = await FeedbackModel.findByIdAndDelete(id);
+    return !!result;
   }
 }

@@ -1,13 +1,22 @@
 import { Request, Response } from "express";
 import { MongoAppointmentRepository } from "../../infrastructure/database/implementations/MongoAppointmentRepository";
+import { MongoVaccinationRecordRepository } from "../../infrastructure/database/implementations/MongoVaccinationRecordRepository";
 import { ScheduleAppointmentUseCase } from "../../application/use-cases/public/ScheduleAppointmentUseCase";
 import { ListAppointmentsUseCase } from "../../application/use-cases/admin/ListAppointmentsUseCase";
+import { GetAppointmentStatsUseCase } from "../../application/use-cases/admin/GetAppointmentStatsUseCase";
+import { CompleteAppointmentWithVaccinationUseCase } from "../../application/use-cases/admin/CompleteAppointmentWithVaccinationUseCase";
 import { Logger } from "../../middlewares/logging";
 
 const logger = Logger.getInstance();
 const appointmentRepository = new MongoAppointmentRepository();
+const vaccinationRecordRepository = new MongoVaccinationRecordRepository();
 const scheduleAppointmentUseCase = new ScheduleAppointmentUseCase(appointmentRepository);
 const listAppointmentsUseCase = new ListAppointmentsUseCase(appointmentRepository);
+const getAppointmentStatsUseCase = new GetAppointmentStatsUseCase(appointmentRepository);
+const completeAppointmentWithVaccinationUseCase = new CompleteAppointmentWithVaccinationUseCase(
+  appointmentRepository,
+  vaccinationRecordRepository
+);
 
 export async function scheduleAppointmentController(req: Request, res: Response) {
   try {
@@ -268,6 +277,145 @@ export async function cancelAppointmentController(req: Request, res: Response) {
       error: {
         code: 'CANCEL_ERROR',
         message: 'Erro ao cancelar agendamento'
+      }
+    });
+  }
+}
+
+export async function getAppointmentStatsController(req: Request, res: Response) {
+  try {
+    const { startDate, endDate } = req.query;
+
+    let start: Date | undefined;
+    let end: Date | undefined;
+
+    if (startDate) {
+      start = new Date(startDate as string);
+      if (isNaN(start.getTime())) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'INVALID_START_DATE',
+            message: 'Data inicial inválida'
+          }
+        });
+      }
+    }
+
+    if (endDate) {
+      end = new Date(endDate as string);
+      if (isNaN(end.getTime())) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'INVALID_END_DATE',
+            message: 'Data final inválida'
+          }
+        });
+      }
+    }
+
+    const stats = await getAppointmentStatsUseCase.execute(start, end);
+    
+    logger.info('Appointment stats retrieved successfully', { 
+      startDate: start?.toISOString(), 
+      endDate: end?.toISOString(),
+      totalAppointments: stats.totalAppointments
+    });
+    
+    return res.status(200).json({
+      success: true,
+      data: stats,
+      message: 'Estatísticas de agendamentos recuperadas com sucesso'
+    });
+  } catch (error) {
+    logger.error('Error getting appointment stats', error instanceof Error ? error : new Error(String(error)));
+    
+    return res.status(500).json({ 
+      success: false,
+      error: {
+        code: 'STATS_ERROR',
+        message: 'Erro ao obter estatísticas de agendamentos'
+      }
+    });
+  }
+}
+
+export async function completeAppointmentWithVaccinationController(req: Request, res: Response) {
+  try {
+    const { id } = req.params;
+    const { appliedBy, vaccinationNotes, reactions, nextDoseDate } = req.body;
+    const completedBy = req.user?.id;
+
+    if (!completedBy) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'Usuário não autenticado'
+        }
+      });
+    }
+
+    if (!appliedBy) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'MISSING_REQUIRED_FIELD',
+          message: 'Campo appliedBy é obrigatório'
+        }
+      });
+    }
+
+    const result = await completeAppointmentWithVaccinationUseCase.execute({
+      appointmentId: id,
+      completedBy,
+      appliedBy,
+      vaccinationNotes,
+      reactions,
+      nextDoseDate: nextDoseDate ? new Date(nextDoseDate) : undefined
+    });
+    
+    logger.info('Appointment completed with vaccination record', { 
+      appointmentId: id,
+      vaccinationRecordId: result.vaccinationRecord._id
+    });
+    
+    return res.status(200).json({
+      success: true,
+      data: result,
+      message: 'Agendamento completado e registro de vacinação criado com sucesso'
+    });
+  } catch (error) {
+    logger.error('Error completing appointment with vaccination', error instanceof Error ? error : new Error(String(error)));
+    
+    if (error instanceof Error) {
+      if (error.message.includes('not found')) {
+        return res.status(404).json({
+          success: false,
+          error: {
+            code: 'NOT_FOUND',
+            message: 'Agendamento não encontrado'
+          }
+        });
+      }
+      
+      if (error.message.includes('Only confirmed or scheduled')) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'INVALID_STATUS',
+            message: 'Apenas agendamentos confirmados ou agendados podem ser completados'
+          }
+        });
+      }
+    }
+    
+    return res.status(500).json({ 
+      success: false,
+      error: {
+        code: 'COMPLETION_ERROR',
+        message: 'Erro ao completar agendamento'
       }
     });
   }

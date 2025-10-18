@@ -3,6 +3,7 @@ import { loginController } from '../controllers/public/loginController';
 import { listHealthUnitsController } from '../controllers/healthUnitsController';
 import { listVaccinesController } from '../controllers/admin/vaccineController';
 import { PublicVaccinationRecordController } from '../controllers/public/vaccinationRecordController';
+import { PublicFeedbackController } from '../controllers/public/feedbackController';
 import { 
   scheduleAppointmentController,
   listMyAppointmentsController,
@@ -26,6 +27,7 @@ const router = Router();
 
 // Initialize controllers
 const publicVaccinationRecordController = new PublicVaccinationRecordController();
+const publicFeedbackController = new PublicFeedbackController();
 
 // Firebase authentication endpoints
 router.post('/auth/register', 
@@ -105,6 +107,22 @@ router.get('/vaccination-records/my',
 router.get('/vaccination-records/user/:userId',
   requireAuth,
   asyncHandler(publicVaccinationRecordController.getVaccinationRecordsByUserId.bind(publicVaccinationRecordController))
+);
+
+// Feedback endpoints
+router.post('/feedback',
+  requireAuth,
+  validateBody({
+    healthUnitId: { required: true, type: 'string' as const },
+    comment: { required: true, type: 'string' as const, minLength: 10, maxLength: 1000 },
+    rating: { required: true, type: 'number' as const, min: 1, max: 5 },
+    isAnonymous: { required: false, type: 'boolean' as const }
+  }),
+  asyncHandler(publicFeedbackController.create.bind(publicFeedbackController))
+);
+
+router.get('/feedback/health-unit/:healthUnitId',
+  asyncHandler(publicFeedbackController.listByHealthUnit.bind(publicFeedbackController))
 );
 
 export default router;

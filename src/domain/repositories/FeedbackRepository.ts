@@ -5,4 +5,6 @@ export interface FeedbackRepository {
   findById(id: string): Promise<Feedback | null>;
   findAll(): Promise<Feedback[]>;
   listByHealthUnit(healthUnitId: string): Promise<Feedback[]>;
+  update(id: string, data: Partial<Feedback>): Promise<boolean>;
+  delete(id: string): Promise<boolean>;
 }

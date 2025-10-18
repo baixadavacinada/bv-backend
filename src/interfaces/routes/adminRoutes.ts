@@ -8,6 +8,7 @@ import {
   deleteVaccineController 
 } from "../controllers/admin/vaccineController";
 import { VaccinationRecordController } from "../controllers/admin/vaccinationRecordController";
+import { FeedbackController } from "../controllers/admin/feedbackController";
 import { listHealthUnitsController } from "../controllers/healthUnitsController";
 import { 
   createFirebaseUser, 
@@ -19,7 +20,9 @@ import {
 } from "../controllers/admin/firebaseUserController";
 import { 
   listAllAppointmentsController,
-  updateAppointmentStatusController 
+  updateAppointmentStatusController,
+  getAppointmentStatsController,
+  completeAppointmentWithVaccinationController
 } from "../controllers/appointmentController";
 
 import { authMiddleware, requireRole, requireActiveUser } from "../../middlewares/auth";
@@ -36,6 +39,7 @@ router.use(adminRateLimit);
 
 // Initialize controllers
 const vaccinationRecordController = new VaccinationRecordController();
+const feedbackController = new FeedbackController();
 
 // Traditional user endpoints (JWT-based)
 router.post("/users",
@@ -130,10 +134,54 @@ router.patch("/appointments/:id/status",
   asyncHandler(updateAppointmentStatusController)
 );
 
+router.get("/appointments/stats",
+  validateQuery({
+    startDate: { required: false, type: 'string' as const },
+    endDate: { required: false, type: 'string' as const }
+  }),
+  asyncHandler(getAppointmentStatsController)
+);
+
+router.patch("/appointments/:id/complete-vaccination",
+  validateBody({
+    appliedBy: { required: true, type: 'string' as const },
+    vaccinationNotes: { required: false, type: 'string' as const, maxLength: 1000 },
+    reactions: { required: false, type: 'string' as const, maxLength: 500 },
+    nextDoseDate: { required: false, type: 'string' as const }
+  }),
+  asyncHandler(completeAppointmentWithVaccinationController)
+);
+
 // Health units endpoints
 router.get("/health-units",
   validateQuery(ValidationSchemas.pagination),
   asyncHandler(listHealthUnitsController)
+);
+
+// Feedback endpoints
+router.get("/feedback",
+  validateQuery({
+    healthUnitId: { required: false, type: 'string' as const }
+  }),
+  asyncHandler(feedbackController.listAll.bind(feedbackController))
+);
+
+router.get("/feedback/health-unit",
+  validateQuery({
+    healthUnitId: { required: true, type: 'string' as const }
+  }),
+  asyncHandler(feedbackController.listByHealthUnit.bind(feedbackController))
+);
+
+router.get("/feedback/:id",
+  asyncHandler(feedbackController.getById.bind(feedbackController))
+);
+
+router.patch("/feedback/:id/moderate",
+  validateBody({
+    isActive: { required: true, type: 'boolean' as const }
+  }),
+  asyncHandler(feedbackController.moderate.bind(feedbackController))
 );
 
 // Firebase User Management Endpoints
