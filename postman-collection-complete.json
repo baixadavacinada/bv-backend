@@ -1,593 +1,557 @@
 {
- "info": {
- "name": "Baixada Vacinada API - Complete Test Collection",
- "description": "Collection completa para testar todas as rotas da API Baixada Vacinada com Firebase Authentication",
- "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
- },
- "variable": [
- {
- "key": "baseUrl",
- "value": "http://localhost:3000/api",
- "type": "string"
- },
- {
- "key": "prodUrl",
- "value": "https://bv-backend.vercel.app/api",
- "type": "string"
- },
- {
- "key": "firebaseToken",
- "value": "",
- "type": "string"
- },
- {
- "key": "adminToken",
- "value": "",
- "type": "string"
- },
- {
- "key": "userId",
- "value": "",
- "type": "string"
- }
- ],
- "item": [
- {
- "name": " Firebase Authentication",
- "item": [
- {
- "name": "Register with Email",
- "request": {
- "method": "POST",
- "header": [
- {
- "key": "Content-Type",
- "value": "application/json"
- }
- ],
- "body": {
- "mode": "raw",
- "raw": "{\n \"email\": \"user@example.com\",\n \"password\": \"password123\",\n \"displayName\": \"Test User\"\n}"
- },
- "url": {
- "raw": "{{baseUrl}}/public/auth/register",
- "host": ["{{baseUrl}}"],
- "path": ["public", "auth", "register"]
- }
- },
- "response": []
- },
- {
- "name": "Login with Google",
- "request": {
- "method": "POST",
- "header": [
- {
- "key": "Content-Type",
- "value": "application/json"
- }
- ],
- "body": {
- "mode": "raw",
- "raw": "{\n \"idToken\": \"GOOGLE_FIREBASE_ID_TOKEN_HERE\"\n}"
- },
- "url": {
- "raw": "{{baseUrl}}/public/auth/login/google",
- "host": ["{{baseUrl}}"],
- "path": ["public", "auth", "login", "google"]
- }
- },
- "response": []
- },
- {
- "name": "Verify Token",
- "request": {
- "method": "POST",
- "header": [
- {
- "key": "Content-Type",
- "value": "application/json"
- }
- ],
- "body": {
- "mode": "raw",
- "raw": "{\n \"idToken\": \"{{firebaseToken}}\"\n}"
- },
- "url": {
- "raw": "{{baseUrl}}/public/auth/verify-token",
- "host": ["{{baseUrl}}"],
- "path": ["public", "auth", "verify-token"]
- }
- },
- "response": []
- },
- {
- "name": "Send Password Reset",
- "request": {
- "method": "POST",
- "header": [
- {
- "key": "Content-Type",
- "value": "application/json"
- }
- ],
- "body": {
- "mode": "raw",
- "raw": "{\n \"email\": \"user@example.com\"\n}"
- },
- "url": {
- "raw": "{{baseUrl}}/public/auth/password-reset",
- "host": ["{{baseUrl}}"],
- "path": ["public", "auth", "password-reset"]
- }
- },
- "response": []
- },
- {
- "name": "Get User Profile",
- "request": {
- "method": "GET",
- "header": [
- {
- "key": "Authorization",
- "value": "Bearer {{firebaseToken}}"
- }
- ],
- "url": {
- "raw": "{{baseUrl}}/public/auth/profile",
- "host": ["{{baseUrl}}"],
- "path": ["public", "auth", "profile"]
- }
- },
- "response": []
- },
- {
- "name": "Update User Profile",
- "request": {
- "method": "PUT",
- "header": [
- {
- "key": "Content-Type",
- "value": "application/json"
- },
- {
- "key": "Authorization",
- "value": "Bearer {{firebaseToken}}"
- }
- ],
- "body": {
- "mode": "raw",
- "raw": "{\n \"displayName\": \"Updated Name\",\n \"photoURL\": \"https://example.com/photo.jpg\"\n}"
- },
- "url": {
- "raw": "{{baseUrl}}/public/auth/profile",
- "host": ["{{baseUrl}}"],
- "path": ["public", "auth", "profile"]
- }
- },
- "response": []
- }
- ]
- },
- {
- "name": " Public Health Units",
- "item": [
- {
- "name": "List All Health Units",
- "request": {
- "method": "GET",
- "url": {
- "raw": "{{baseUrl}}/api/public/health-units",
- "host": ["{{baseUrl}}"],
- "path": ["public", "health-unit"]
- }
- },
- "response": []
- },
- {
- "name": "Filter Health Units by City",
- "request": {
- "method": "GET",
- "url": {
- "raw": "{{baseUrl}}/api/public/health-units?city=Japeri",
- "host": ["{{baseUrl}}"],
- "path": ["public", "health-unit"],
- "query": [
- {
- "key": "city",
- "value": "Japeri"
- }
- ]
- }
- },
- "response": []
- },
- {
- "name": "Filter Active Health Units",
- "request": {
- "method": "GET",
- "url": {
- "raw": "{{baseUrl}}/api/public/health-units?isActive=true",
- "host": ["{{baseUrl}}"],
- "path": ["public", "health-unit"],
- "query": [
- {
- "key": "isActive",
- "value": "true"
- }
- ]
- }
- },
- "response": []
- },
- {
- "name": "Filter by Neighborhood",
- "request": {
- "method": "GET",
- "url": {
- "raw": "{{baseUrl}}/api/public/health-units?neighborhood=Centro",
- "host": ["{{baseUrl}}"],
- "path": ["public", "health-unit"],
- "query": [
- {
- "key": "neighborhood",
- "value": "Centro"
- }
- ]
- }
- },
- "response": []
- }
- ]
- },
- {
- "name": " Traditional JWT Auth",
- "item": [
- {
- "name": "JWT Login",
- "request": {
- "method": "POST",
- "header": [
- {
- "key": "Content-Type",
- "value": "application/json"
- }
- ],
- "body": {
- "mode": "raw",
- "raw": "{\n \"username\": \"admin\",\n \"password\": \"password123\"\n}"
- },
- "url": {
- "raw": "{{baseUrl}}/public/auth/login",
- "host": ["{{baseUrl}}"],
- "path": ["public", "auth", "login"]
- }
- },
- "response": []
- }
- ]
- },
- {
- "name": " Firebase Admin - User Management",
- "item": [
- {
- "name": "Create Firebase User (Admin)",
- "request": {
- "method": "POST",
- "header": [
- {
- "key": "Content-Type",
- "value": "application/json"
- },
- {
- "key": "Authorization",
- "value": "Bearer {{adminToken}}"
- }
- ],
- "body": {
- "mode": "raw",
- "raw": "{\n \"email\": \"newuser@example.com\",\n \"password\": \"password123\",\n \"displayName\": \"New User\",\n \"role\": \"public\"\n}"
- },
- "url": {
- "raw": "{{baseUrl}}/admin/firebase/users",
- "host": ["{{baseUrl}}"],
- "path": ["admin", "firebase", "users"]
- }
- },
- "response": []
- },
- {
- "name": "Get Firebase User (Admin)",
- "request": {
- "method": "GET",
- "header": [
- {
- "key": "Authorization",
- "value": "Bearer {{adminToken}}"
- }
- ],
- "url": {
- "raw": "{{baseUrl}}/admin/firebase/users/{{userId}}",
- "host": ["{{baseUrl}}"],
- "path": ["admin", "firebase", "users", "{{userId}}"]
- }
- },
- "response": []
- },
- {
- "name": "Update User Claims (Admin)",
- "request": {
- "method": "PUT",
- "header": [
- {
- "key": "Content-Type",
- "value": "application/json"
- },
- {
- "key": "Authorization",
- "value": "Bearer {{adminToken}}"
- }
- ],
- "body": {
- "mode": "raw",
- "raw": "{\n \"uid\": \"{{userId}}\",\n \"claims\": {\n \"role\": \"admin\",\n \"admin\": true\n }\n}"
- },
- "url": {
- "raw": "{{baseUrl}}/admin/firebase/users/claims",
- "host": ["{{baseUrl}}"],
- "path": ["admin", "firebase", "users", "claims"]
- }
- },
- "response": []
- },
- {
- "name": "Disable User (Admin)",
- "request": {
- "method": "PATCH",
- "header": [
- {
- "key": "Content-Type",
- "value": "application/json"
- },
- {
- "key": "Authorization",
- "value": "Bearer {{adminToken}}"
- }
- ],
- "body": {
- "mode": "raw",
- "raw": "{\n \"disabled\": true\n}"
- },
- "url": {
- "raw": "{{baseUrl}}/admin/firebase/users/{{userId}}/status",
- "host": ["{{baseUrl}}"],
- "path": ["admin", "firebase", "users", "{{userId}}", "status"]
- }
- },
- "response": []
- },
- {
- "name": "Enable User (Admin)",
- "request": {
- "method": "PATCH",
- "header": [
- {
- "key": "Content-Type",
- "value": "application/json"
- },
- {
- "key": "Authorization",
- "value": "Bearer {{adminToken}}"
- }
- ],
- "body": {
- "mode": "raw",
- "raw": "{\n \"disabled\": false\n}"
- },
- "url": {
- "raw": "{{baseUrl}}/admin/firebase/users/{{userId}}/status",
- "host": ["{{baseUrl}}"],
- "path": ["admin", "firebase", "users", "{{userId}}", "status"]
- }
- },
- "response": []
- },
- {
- "name": "Delete Firebase User (Admin)",
- "request": {
- "method": "DELETE",
- "header": [
- {
- "key": "Authorization",
- "value": "Bearer {{adminToken}}"
- }
- ],
- "url": {
- "raw": "{{baseUrl}}/admin/firebase/users/{{userId}}",
- "host": ["{{baseUrl}}"],
- "path": ["admin", "firebase", "users", "{{userId}}"]
- }
- },
- "response": []
- },
- {
- "name": "Get Current Admin Profile",
- "request": {
- "method": "GET",
- "header": [
- {
- "key": "Authorization",
- "value": "Bearer {{adminToken}}"
- }
- ],
- "url": {
- "raw": "{{baseUrl}}/admin/firebase/me",
- "host": ["{{baseUrl}}"],
- "path": ["admin", "firebase", "me"]
- }
- },
- "response": []
- }
- ]
- },
- {
- "name": " Admin Health Units (JWT)",
- "item": [
- {
- "name": "List Health Units (Admin)",
- "request": {
- "method": "GET",
- "header": [
- {
- "key": "Authorization",
- "value": "Bearer {{adminToken}}"
- }
- ],
- "url": {
- "raw": "{{baseUrl}}/api/admin/health-units",
- "host": ["{{baseUrl}}"],
- "path": ["admin", "health-units"]
- }
- },
- "response": []
- }
- ]
- },
- {
- "name": " Admin User Management (JWT)",
- "item": [
- {
- "name": "Create User (Admin)",
- "request": {
- "method": "POST",
- "header": [
- {
- "key": "Content-Type",
- "value": "application/json"
- },
- {
- "key": "Authorization",
- "value": "Bearer {{adminToken}}"
- }
- ],
- "body": {
- "mode": "raw",
- "raw": "{\n \"name\": \"Test User\",\n \"email\": \"testuser@example.com\",\n \"password\": \"password123\",\n \"role\": \"public\"\n}"
- },
- "url": {
- "raw": "{{baseUrl}}/admin/users",
- "host": ["{{baseUrl}}"],
- "path": ["admin", "users"]
- }
- },
- "response": []
- }
- ]
- },
- {
- "name": " Admin Vaccines (JWT)",
- "item": [
- {
- "name": "Create Vaccine (Admin)",
- "request": {
- "method": "POST",
- "header": [
- {
- "key": "Content-Type",
- "value": "application/json"
- },
- {
- "key": "Authorization",
- "value": "Bearer {{adminToken}}"
- }
- ],
- "body": {
- "mode": "raw",
- "raw": "{\n \"name\": \"COVID-19 Vaccine\",\n \"manufacturer\": \"Pfizer\",\n \"ageGroup\": \"12+\",\n \"doses\": [\"Dose 1\", \"Dose 2\", \"Booster\"]\n}"
- },
- "url": {
- "raw": "{{baseUrl}}/admin/vaccines",
- "host": ["{{baseUrl}}"],
- "path": ["admin", "vaccines"]
- }
- },
- "response": []
- }
- ]
- },
- {
- "name": " API Health Check",
- "item": [
- {
- "name": "Health Check",
- "request": {
- "method": "GET",
- "url": {
- "raw": "{{baseUrl}}/",
- "host": ["{{baseUrl}}"],
- "path": [""]
- }
- },
- "response": []
- },
- {
- "name": "Swagger Documentation",
- "request": {
- "method": "GET",
- "url": {
- "raw": "{{baseUrl}}/api-docs",
- "host": ["{{baseUrl}}"],
- "path": ["api-docs"]
- }
- },
- "response": []
- }
- ]
- }
- ],
- "event": [
- {
- "listen": "prerequest",
- "script": {
- "type": "text/javascript",
- "exec": [
- "// Auto-set variables based on response",
- "pm.globals.set('timestamp', Date.now());"
- ]
- }
- },
- {
- "listen": "test",
- "script": {
- "type": "text/javascript",
- "exec": [
- "// Auto-extract tokens from responses",
- "if (pm.response.json() && pm.response.json().data) {",
- " const data = pm.response.json().data;",
- " ",
- " // Set Firebase token",
- " if (data.token) {",
- " pm.collectionVariables.set('firebaseToken', data.token);",
- " }",
- " ",
- " // Set user ID",
- " if (data.uid) {",
- " pm.collectionVariables.set('userId', data.uid);",
- " }",
- "}",
- "",
- "// Check if response is successful",
- "pm.test('Status code is successful', function () {",
- " pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
- "});",
- "",
- "// Check response structure",
- "pm.test('Response has success field', function () {",
- " const jsonData = pm.response.json();",
- " pm.expect(jsonData).to.have.property('success');",
- "});"
- ]
- }
- }
- ]
+	"info": {
+		"name": "Baixada Vacinada API - Complete Collection",
+		"description": "Collection completa para testar todas as rotas da API Baixada Vacinada com Dashboard e Relatórios",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000/api",
+			"type": "string"
+		},
+		{
+			"key": "prodUrl",
+			"value": "https://bv-backend.vercel.app/api",
+			"type": "string"
+		},
+		{
+			"key": "firebaseToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "adminToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "healthUnitId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "appointmentId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "notificationId",
+			"value": "",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "🔐 Firebase Authentication",
+			"item": [
+				{
+					"name": "Register with Email",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"admin@baixadavacinada.com\",\n\t\"password\": \"Admin123!\",\n\t\"displayName\": \"Admin User\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Login with Email",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"email\": \"admin@baixadavacinada.com\",\n\t\"password\": \"Admin123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": ["{{baseUrl}}"],
+							"path": ["auth", "login"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🏥 Public Health Units",
+			"item": [
+				{
+					"name": "List Health Units",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/public/health-units",
+							"host": ["{{baseUrl}}"],
+							"path": ["public", "health-units"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "📅 Public Appointments",
+			"item": [
+				{
+					"name": "Schedule Appointment",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{firebaseToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"healthUnitId\": \"{{healthUnitId}}\",\n\t\"vaccineId\": \"vaccine_id_here\",\n\t\"appointmentDate\": \"2024-12-20T10:00:00.000Z\",\n\t\"notes\": \"First dose appointment\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/public/appointments",
+							"host": ["{{baseUrl}}"],
+							"path": ["public", "appointments"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "💬 Public Feedback",
+			"item": [
+				{
+					"name": "Create Feedback",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{firebaseToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"healthUnitId\": \"{{healthUnitId}}\",\n\t\"comment\": \"Excelente atendimento!\",\n\t\"rating\": 5,\n\t\"isAnonymous\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/public/feedback",
+							"host": ["{{baseUrl}}"],
+							"path": ["public", "feedback"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🔔 Public Notifications",
+			"item": [
+				{
+					"name": "List User Notifications",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{firebaseToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/public/notifications",
+							"host": ["{{baseUrl}}"],
+							"path": ["public", "notifications"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "👑 Admin - Dashboard & Reports",
+			"item": [
+				{
+					"name": "Get Dashboard Stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/dashboard/stats",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "dashboard", "stats"]
+						}
+					}
+				},
+				{
+					"name": "Get Quick Stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/dashboard/quick-stats",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "dashboard", "quick-stats"]
+						}
+					}
+				},
+				{
+					"name": "Get Vaccination Report",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/reports/vaccination?startDate=2024-01-01&endDate=2024-12-31",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "reports", "vaccination"],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2024-01-01"
+								},
+								{
+									"key": "endDate",
+									"value": "2024-12-31"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Health Units Report",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/reports/health-units?startDate=2024-01-01&endDate=2024-12-31&isActive=true",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "reports", "health-units"],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2024-01-01"
+								},
+								{
+									"key": "endDate",
+									"value": "2024-12-31"
+								},
+								{
+									"key": "isActive",
+									"value": "true"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "👑 Admin - Health Units Management",
+			"item": [
+				{
+					"name": "Create Health Unit",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"UBS Centro de Japeri\",\n\t\"address\": {\n\t\t\"street\": \"Rua Principal, 123\",\n\t\t\"neighborhood\": \"Centro\",\n\t\t\"city\": \"Japeri\",\n\t\t\"state\": \"RJ\",\n\t\t\"zipCode\": \"26445-000\"\n\t},\n\t\"phone\": \"(21) 3333-4444\",\n\t\"email\": \"ubs.centro@japeri.rj.gov.br\",\n\t\"operatingHours\": {\n\t\t\"monday\": { \"open\": \"08:00\", \"close\": \"17:00\" },\n\t\t\"tuesday\": { \"open\": \"08:00\", \"close\": \"17:00\" },\n\t\t\"wednesday\": { \"open\": \"08:00\", \"close\": \"17:00\" },\n\t\t\"thursday\": { \"open\": \"08:00\", \"close\": \"17:00\" },\n\t\t\"friday\": { \"open\": \"08:00\", \"close\": \"17:00\" }\n\t},\n\t\"location\": {\n\t\t\"latitude\": -22.6464,\n\t\t\"longitude\": -43.6533\n\t},\n\t\"capacity\": 100,\n\t\"services\": [\"Vacinação COVID-19\", \"Vacinação Influenza\"]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/health-units",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "health-units"]
+						}
+					}
+				},
+				{
+					"name": "Update Health Unit",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"name\": \"UBS Centro de Japeri - Atualizada\",\n\t\"capacity\": 150\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/health-units/{{healthUnitId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "health-units", "{{healthUnitId}}"]
+						}
+					}
+				},
+				{
+					"name": "Delete Health Unit",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/health-units/{{healthUnitId}}",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "health-units", "{{healthUnitId}}"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "👑 Admin - Notifications",
+			"item": [
+				{
+					"name": "Create Notification",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"userId\": \"{{userId}}\",\n\t\"title\": \"Lembrete de Vacinação\",\n\t\"message\": \"Sua segunda dose está agendada para amanhã.\",\n\t\"type\": \"appointment_reminder\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/notifications",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "notifications"]
+						}
+					}
+				},
+				{
+					"name": "List All Notifications (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/notifications",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "notifications"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "👑 Admin - Appointments",
+			"item": [
+				{
+					"name": "List Appointments (Admin)",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/appointments",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "appointments"]
+						}
+					}
+				},
+				{
+					"name": "Complete Appointment with Vaccination",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"appliedBy\": \"Dr. João Silva\",\n\t\"vaccinationNotes\": \"Vacinação aplicada sem intercorrências\",\n\t\"reactions\": \"Sem reações adversas\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/admin/appointments/{{appointmentId}}/complete-vaccination",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "appointments", "{{appointmentId}}", "complete-vaccination"]
+						}
+					}
+				},
+				{
+					"name": "Get Appointment Stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{adminToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/admin/appointments/stats",
+							"host": ["{{baseUrl}}"],
+							"path": ["admin", "appointments", "stats"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "🔧 API Health Check",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/../health",
+							"host": ["{{baseUrl}}"],
+							"path": ["..", "health"]
+						}
+					}
+				},
+				{
+					"name": "API Documentation",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{baseUrl}}/../api-docs",
+							"host": ["{{baseUrl}}"],
+							"path": ["..", "api-docs"]
+						}
+					}
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Set base URL based on environment",
+					"if (pm.environment.get('environment') === 'production') {",
+					"    pm.collectionVariables.set('baseUrl', pm.collectionVariables.get('prodUrl'));",
+					"} else {",
+					"    pm.collectionVariables.set('baseUrl', 'http://localhost:3000/api');",
+					"}"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Auto-extract tokens and IDs from responses",
+					"if (pm.response.json() && pm.response.json().data) {",
+					"    const data = pm.response.json().data;",
+					"    ",
+					"    // Set Firebase token",
+					"    if (data.token) {",
+					"        pm.collectionVariables.set('firebaseToken', data.token);",
+					"        if (data.user && data.user.role === 'admin') {",
+					"            pm.collectionVariables.set('adminToken', data.token);",
+					"        }",
+					"    }",
+					"    ",
+					"    // Set IDs",
+					"    if (data.uid) pm.collectionVariables.set('userId', data.uid);",
+					"    if (data._id && pm.request.url.toString().includes('health-units')) {",
+					"        pm.collectionVariables.set('healthUnitId', data._id);",
+					"    }",
+					"    if (data._id && pm.request.url.toString().includes('appointments')) {",
+					"        pm.collectionVariables.set('appointmentId', data._id);",
+					"    }",
+					"}",
+					"",
+					"// Basic tests",
+					"pm.test('Status code is successful', function () {",
+					"    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+					"});",
+					"",
+					"pm.test('Response time is acceptable', function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});"
+				]
+			}
+		}
+	]
 }
