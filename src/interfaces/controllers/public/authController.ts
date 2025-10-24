@@ -2,8 +2,10 @@ import { Request, Response } from 'express';
 import { getFirebaseAuth } from '../../../config/firebase';
 import { Logger } from '../../../middlewares/logging';
 import { UserRole } from '../../../domain/entities/User';
+import { MongoUserRepository } from '../../../infrastructure/database/implementations/MongoUserRepository';
 
 const logger = Logger.getInstance();
+const userRepository = new MongoUserRepository();
 
 /**
  * Interface for email/password login
@@ -339,6 +341,30 @@ export const registerWithEmail = async (req: Request, res: Response) => {
       role: 'public',
       admin: false
     });
+
+    // Save user to MongoDB as well (without password - Firebase handles auth)
+    try {
+      await userRepository.create({
+        _id: userRecord.uid, // Use Firebase UID as MongoDB _id
+        name: displayName || userRecord.email?.split('@')[0] || 'User',
+        email: userRecord.email!,
+        role: 'public', // Default role
+        isActive: true
+      });
+      
+      logger.info('User saved to MongoDB', {
+        uid: userRecord.uid,
+        email: userRecord.email
+      });
+    } catch (mongoError) {
+      // If MongoDB save fails, log but don't fail the registration
+      // Firebase user is already created
+      logger.warn('Failed to save user to MongoDB', {
+        uid: userRecord.uid,
+        email: userRecord.email,
+        error: mongoError
+      });
+    }
 
     logger.info('User registered successfully', {
       uid: userRecord.uid,
