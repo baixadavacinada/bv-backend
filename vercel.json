@@ -1,20 +1,34 @@
 {
   "version": 2,
+  "builds": [
+    {
+      "src": "api/index.ts",
+      "use": "@vercel/node"
+    }
+  ],
   "routes": [
     {
-      "src": "/api-docs",
+      "src": "^/api-docs$",
+      "dest": "/api/index.ts",
+      "methods": ["GET"],
+      "headers": {
+        "Cache-Control": "public, max-age=3600"
+      }
+    },
+    {
+      "src": "^/api-docs\\.json$",
+      "dest": "/api/index.ts",
+      "methods": ["GET"],
+      "headers": {
+        "Cache-Control": "public, max-age=3600"
+      }
+    },
+    {
+      "src": "^/api/(.*)$",
       "dest": "/api/index.ts"
     },
     {
-      "src": "/api-docs.json",
-      "dest": "/api/index.ts"
-    },
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/index.ts"
-    },
-    {
-      "src": "/(.*)",
+      "src": "^/(.*)$",
       "dest": "/api/index.ts"
     }
   ],

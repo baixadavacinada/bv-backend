@@ -31,18 +31,18 @@ app.use((req, res, next) => {
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Setup API Documentation
+// Setup API Documentation - this will create /api-docs and /api-docs.json routes
 setupApiDocs(app);
 
-// Handle Vercel routing for documentation
+// Handle Vercel routing for documentation - map /api/api-docs to /api-docs
 app.get('/api/api-docs', (req, res) => {
   // Redirect to the correct documentation route
-  res.redirect('/api-docs');
+  res.redirect(301, '/api-docs');
 });
 
 app.get('/api/api-docs.json', (req, res) => {
-  // Redirect to the correct JSON spec route
-  res.redirect('/api-docs.json');
+  // Redirect to the correct JSON spec route  
+  res.redirect(301, '/api-docs.json');
 });
 
 // Simple health check route
