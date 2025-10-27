@@ -2,8 +2,10 @@ import { Request, Response } from 'express';
 import { getFirebaseAuth } from '../../../config/firebase';
 import { Logger } from '../../../middlewares/logging';
 import { UserRole } from '../../../domain/entities/User';
+import { MongoUserRepository } from '../../../infrastructure/database/implementations/MongoUserRepository';
 
 const logger = Logger.getInstance();
+const userRepository = new MongoUserRepository();
 
 /**
  * Interface for user registration with Firebase
@@ -62,6 +64,32 @@ export const createFirebaseUser = async (req: Request, res: Response) => {
     };
 
     await auth.setCustomUserClaims(userRecord.uid, customClaims);
+
+    // Save user to MongoDB as well (without password - Firebase handles auth)
+    try {
+      await userRepository.create({
+        _id: userRecord.uid, // Use Firebase UID as MongoDB _id
+        name: displayName || userRecord.email?.split('@')[0] || 'User',
+        email: userRecord.email!,
+        role: role as UserRole,
+        isActive: true
+      });
+      
+      logger.info('Admin-created user saved to MongoDB', {
+        adminId: req.user?.id,
+        createdUserId: userRecord.uid,
+        email: userRecord.email,
+        role
+      });
+    } catch (mongoError) {
+      // If MongoDB save fails, log but don't fail the user creation
+      logger.warn('Failed to save admin-created user to MongoDB', {
+        adminId: req.user?.id,
+        createdUserId: userRecord.uid,
+        email: userRecord.email,
+        error: mongoError
+      });
+    }
 
     logger.info('Firebase user created successfully', {
       adminId: req.user?.id,

@@ -1,9 +1,10 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface UserDocument extends Document {
+  _id: string; // Firebase UID
   name: string;
   email: string;
-  password: string;
+  // Note: password is handled by Firebase Auth, not stored in MongoDB
   role: "public" | "agent" | "admin";
   profile?: {
     assignedUnitsIds?: Types.ObjectId[];
@@ -20,6 +21,10 @@ export interface UserDocument extends Document {
 }
 
 const UserSchema = new Schema<UserDocument>({
+  _id: {
+    type: String,
+    required: true
+  },
   name: {
     type: String,
     required: [true, 'Name is required'],
@@ -34,11 +39,7 @@ const UserSchema = new Schema<UserDocument>({
     trim: true,
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Invalid email']
   },
-  password: {
-    type: String,
-    required: [true, 'Password is required'],
-    minLength: [6, 'Password must have at least 6 characters']
-  },
+  // Note: password is managed by Firebase Auth, not stored in MongoDB for security
   role: {
     type: String,
     enum: {

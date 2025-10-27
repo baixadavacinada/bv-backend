@@ -20,7 +20,14 @@ import {
   loginWithGoogle, 
   sendPasswordReset 
 } from '../controllers/public/authController';
+import { 
+  getProfile as getProfileFromController,
+  createProfile,
+  updateUserRole,
+  listUsers
+} from '../controllers/public/profileController';
 import { requireAuth, optionalAuth } from '../../middlewares/firebaseAuth';
+import { firebaseAuthAdvanced } from '../../middlewares/firebaseAuthAdvanced';
 import { validateBody, validateQuery, ValidationSchemas } from '../../middlewares/validation';
 import { asyncHandler } from '../../middlewares/errorHandling';
 
@@ -141,6 +148,48 @@ router.patch('/notifications/:id/read',
 router.patch('/notifications/mark-all-read',
   requireAuth,
   asyncHandler(notificationController.markAllAsRead.bind(notificationController))
+);
+
+// Profile management endpoints (compatible with roles-service.ts)
+router.get('/profile',
+  firebaseAuthAdvanced(), // Use new middleware for token validation and claims
+  asyncHandler(getProfileFromController)
+);
+
+router.post('/profile',
+  firebaseAuthAdvanced({ required: true, roles: ['public', 'agent', 'admin'] }), // Allow authenticated users to create profiles
+  validateBody({
+    firebaseUid: { required: true, type: 'string' as const },
+    email: { required: true, type: 'email' as const },
+    name: { required: false, type: 'string' as const },
+    phone: { required: false, type: 'string' as const },
+    birthDate: { required: false, type: 'string' as const },
+    cpf: { required: false, type: 'string' as const },
+    address: { required: false, type: 'object' as const },
+    emergencyContact: { required: false, type: 'object' as const },
+    healthConditions: { required: false, type: 'array' as const }
+  }),
+  asyncHandler(createProfile)
+);
+
+router.put('/users/:uid/role',
+  firebaseAuthAdvanced({ required: true, roles: ['admin'] }), // Only admins can update roles
+  validateBody({
+    role: { required: true, type: 'string' as const, enum: ['admin', 'agent', 'public'] },
+    permissions: { required: false, type: 'array' as const },
+    reason: { required: false, type: 'string' as const }
+  }),
+  asyncHandler(updateUserRole)
+);
+
+router.get('/users',
+  firebaseAuthAdvanced({ required: true, roles: ['admin'] }), // Only admins can list users
+  validateQuery({
+    page: { required: false, type: 'string' as const },
+    limit: { required: false, type: 'string' as const },
+    role: { required: false, type: 'string' as const }
+  }),
+  asyncHandler(listUsers)
 );
 
 export default router;

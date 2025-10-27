@@ -30,6 +30,15 @@ import {
 
 import { authMiddleware, requireRole, requireActiveUser } from "../../middlewares/auth";
 import { firebaseAuth, requireAdmin } from "../../middlewares/firebaseAuth";
+import { requireUserManagement, requireAuth as requireAuthAdvanced } from "../../middlewares/firebaseAuthAdvanced";
+import { 
+  updateUserClaims as updateClaimsAdvanced, 
+  getUserClaims as getClaimsAdvanced, 
+  updateUserRole as updateRoleAdvanced, 
+  deactivateUser, 
+  reactivateUser, 
+  bulkUpdateClaims 
+} from "../controllers/admin/claimsController";
 import { validateBody, validateQuery, ValidationSchemas } from "../../middlewares/validation";
 import { asyncHandler } from "../../middlewares/errorHandling";
 import { adminRateLimit } from "../../middlewares/security";
@@ -332,6 +341,57 @@ router.delete("/firebase/users/:uid",
 
 router.get("/firebase/me",
   asyncHandler(getCurrentUser)
+);
+
+// === NOVO SISTEMA DE CLAIMS AVANÇADO ===
+
+// Buscar claims de um usuário específico
+router.get("/claims/:uid",
+  requireUserManagement,
+  asyncHandler(getClaimsAdvanced)
+);
+
+// Atualizar claims completas de um usuário
+router.put("/claims",
+  requireUserManagement,
+  validateBody({
+    uid: { required: true, type: 'string' as const },
+    role: { required: false, type: 'string' as const, enum: ['admin', 'agent', 'public'] as any[] },
+    permissions: { required: false, type: 'array' as const },
+    ubsId: { required: false, type: 'string' as const },
+    isActive: { required: false, type: 'boolean' as const }
+  }),
+  asyncHandler(updateClaimsAdvanced)
+);
+
+// Atualizar apenas role de um usuário (shortcut)
+router.patch("/users/:uid/role",
+  requireUserManagement,
+  validateBody({
+    role: { required: true, type: 'string' as const, enum: ['admin', 'agent', 'public'] as any[] }
+  }),
+  asyncHandler(updateRoleAdvanced)
+);
+
+// Desativar usuário
+router.patch("/users/:uid/deactivate",
+  requireUserManagement,
+  asyncHandler(deactivateUser)
+);
+
+// Reativar usuário  
+router.patch("/users/:uid/reactivate",
+  requireUserManagement,
+  asyncHandler(reactivateUser)
+);
+
+// Atualização em lote
+router.post("/claims/bulk-update",
+  requireUserManagement,
+  validateBody({
+    updates: { required: true, type: 'array' as const }
+  }),
+  asyncHandler(bulkUpdateClaims)
 );
 
 export default router;
