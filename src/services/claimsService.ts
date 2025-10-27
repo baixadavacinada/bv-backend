@@ -1,49 +1,59 @@
 import { getFirebaseAuth } from '../config/firebase';
 import { Logger } from '../middlewares/logging';
 
-// Tipos unificados (replicados aqui para evitar dependência externa)
+// Tipos unificados para sistema de claims
 export type UserRole = 'admin' | 'agent' | 'public';
 
 export type Permission = 
-  | 'manage_users'
-  | 'manage_health_units'
-  | 'manage_vaccines'
-  | 'view_reports'
-  | 'edit_appointments'
-  | 'manage_notifications'
-  | 'view_analytics'
-  | 'export_data';
+  | 'read_users' | 'write_users' | 'delete_users'
+  | 'read_health_units' | 'write_health_units'
+  | 'read_vaccines' | 'write_vaccines'
+  | 'read_appointments' | 'write_appointments'
+  | 'read_records' | 'write_records'
+  | 'read_feedback' | 'moderate_feedback'
+  | 'read_notifications' | 'send_notifications';
 
 export interface UserClaims {
   role: UserRole;
   permissions: Permission[];
-  ubsId?: string;
-  isActive: boolean;
-  metadata?: {
-    lastRoleUpdate: string;
-    updatedBy?: string;
-    department?: string;
-    region?: string;
+  profile: {
+    hasBasicInfo: boolean;
+    hasHealthInfo: boolean;
+    profileCompleteness: number;
   };
+  metadata: {
+    lastLogin: string;
+    createdAt: string;
+    updatedAt: string;
+    updatedBy?: string;
+    lastRoleUpdate?: string;
+  };
+  isActive: boolean;
+  ubsId?: string;
 }
 
 export const ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
   admin: [
-    'manage_users',
-    'manage_health_units', 
-    'manage_vaccines',
-    'view_reports',
-    'edit_appointments',
-    'manage_notifications',
-    'view_analytics',
-    'export_data'
+    'read_users', 'write_users', 'delete_users',
+    'read_health_units', 'write_health_units',
+    'read_vaccines', 'write_vaccines',
+    'read_appointments', 'write_appointments',
+    'read_records', 'write_records',
+    'read_feedback', 'moderate_feedback',
+    'read_notifications', 'send_notifications'
   ],
   agent: [
-    'manage_vaccines',
-    'edit_appointments',
-    'view_reports'
+    'read_health_units',
+    'read_vaccines', 
+    'read_appointments', 'write_appointments',
+    'read_records', 'write_records',
+    'read_feedback',
+    'read_notifications'
   ],
-  public: []
+  public: [
+    'read_health_units',
+    'read_vaccines'
+  ]
 };
 
 const logger = Logger.getInstance();
@@ -65,12 +75,14 @@ export class ClaimsService {
       const currentClaims = (userRecord.customClaims as UserClaims) || this.getDefaultClaims();
 
       // Merge com novas claims, preservando campos obrigatórios
+      const now = new Date().toISOString();
       const newClaims: UserClaims = {
         ...currentClaims,
         ...claims,
         metadata: {
           ...currentClaims.metadata,
-          lastRoleUpdate: new Date().toISOString(),
+          updatedAt: now,
+          lastRoleUpdate: now,
           updatedBy,
         }
       };
@@ -228,12 +240,21 @@ export class ClaimsService {
    * Claims padrão para novos usuários
    */
   private getDefaultClaims(): UserClaims {
+    const now = new Date().toISOString();
     return {
       role: 'public',
       permissions: [],
       isActive: true,
+      profile: {
+        hasBasicInfo: false,
+        hasHealthInfo: false,
+        profileCompleteness: 0
+      },
       metadata: {
-        lastRoleUpdate: new Date().toISOString(),
+        lastLogin: now,
+        createdAt: now,
+        updatedAt: now,
+        lastRoleUpdate: now,
       }
     };
   }

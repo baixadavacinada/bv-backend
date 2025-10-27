@@ -28,9 +28,7 @@ import {
   completeAppointmentWithVaccinationController
 } from "../controllers/appointmentController";
 
-import { authMiddleware, requireRole, requireActiveUser } from "../../middlewares/auth";
-import { firebaseAuth, requireAdmin } from "../../middlewares/firebaseAuth";
-import { requireUserManagement, requireAuth as requireAuthAdvanced } from "../../middlewares/firebaseAuthAdvanced";
+import { firebaseAuthAdvanced } from "../../middlewares/firebaseAuthAdvanced";
 import { 
   updateUserClaims as updateClaimsAdvanced, 
   getUserClaims as getClaimsAdvanced, 
@@ -45,8 +43,8 @@ import { adminRateLimit } from "../../middlewares/security";
 
 const router = Router();
 
-// Use Firebase authentication for admin routes
-router.use(requireAdmin);
+// Use Firebase advanced authentication for admin routes - all routes require admin role
+router.use(firebaseAuthAdvanced({ roles: ['admin'] }));
 router.use(adminRateLimit);
 
 // Initialize controllers
@@ -347,13 +345,11 @@ router.get("/firebase/me",
 
 // Buscar claims de um usuário específico
 router.get("/claims/:uid",
-  requireUserManagement,
   asyncHandler(getClaimsAdvanced)
 );
 
 // Atualizar claims completas de um usuário
 router.put("/claims",
-  requireUserManagement,
   validateBody({
     uid: { required: true, type: 'string' as const },
     role: { required: false, type: 'string' as const, enum: ['admin', 'agent', 'public'] as any[] },
@@ -366,7 +362,6 @@ router.put("/claims",
 
 // Atualizar apenas role de um usuário (shortcut)
 router.patch("/users/:uid/role",
-  requireUserManagement,
   validateBody({
     role: { required: true, type: 'string' as const, enum: ['admin', 'agent', 'public'] as any[] }
   }),
@@ -375,19 +370,16 @@ router.patch("/users/:uid/role",
 
 // Desativar usuário
 router.patch("/users/:uid/deactivate",
-  requireUserManagement,
   asyncHandler(deactivateUser)
 );
 
 // Reativar usuário  
 router.patch("/users/:uid/reactivate",
-  requireUserManagement,
   asyncHandler(reactivateUser)
 );
 
 // Atualização em lote
 router.post("/claims/bulk-update",
-  requireUserManagement,
   validateBody({
     updates: { required: true, type: 'array' as const }
   }),

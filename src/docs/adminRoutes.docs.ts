@@ -606,3 +606,224 @@
  *       401:
  *         description: Unauthorized
  */
+
+/**
+ * @openapi
+ * /admin/claims/{uid}:
+ *   get:
+ *     summary: Get user claims information
+ *     tags:
+ *       - Advanced Claims Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User claims retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     role:
+ *                       type: string
+ *                       enum: [admin, agent, public]
+ *                     permissions:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                     profile:
+ *                       type: object
+ *                       properties:
+ *                         hasBasicInfo:
+ *                           type: boolean
+ *                         hasHealthInfo:
+ *                           type: boolean
+ *                         profileCompleteness:
+ *                           type: number
+ *                     isActive:
+ *                       type: boolean
+ *                     metadata:
+ *                       type: object
+ *       404:
+ *         description: User not found
+ *       401:
+ *         description: Unauthorized
+ */
+
+/**
+ * @openapi
+ * /admin/claims:
+ *   put:
+ *     summary: Update user claims with advanced options
+ *     tags:
+ *       - Advanced Claims Management
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - uid
+ *             properties:
+ *               uid:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *                 enum: [admin, agent, public]
+ *               permissions:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               ubsId:
+ *                 type: string
+ *               isActive:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Claims updated successfully
+ *       404:
+ *         description: User not found
+ *       401:
+ *         description: Unauthorized
+ */
+
+/**
+ * @openapi
+ * /admin/users/{uid}/role:
+ *   patch:
+ *     summary: Update user role (shortcut)
+ *     tags:
+ *       - Advanced Claims Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - role
+ *             properties:
+ *               role:
+ *                 type: string
+ *                 enum: [admin, agent, public]
+ *     responses:
+ *       200:
+ *         description: Role updated successfully
+ *       404:
+ *         description: User not found
+ *       401:
+ *         description: Unauthorized
+ */
+
+/**
+ * @openapi
+ * /admin/users/{uid}/deactivate:
+ *   patch:
+ *     summary: Deactivate user
+ *     tags:
+ *       - Advanced Claims Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User deactivated successfully
+ *       404:
+ *         description: User not found
+ *       401:
+ *         description: Unauthorized
+ */
+
+/**
+ * @openapi
+ * /admin/users/{uid}/reactivate:
+ *   patch:
+ *     summary: Reactivate user
+ *     tags:
+ *       - Advanced Claims Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User reactivated successfully
+ *       404:
+ *         description: User not found
+ *       401:
+ *         description: Unauthorized
+ */
+
+/**
+ * @openapi
+ * /admin/claims/bulk-update:
+ *   post:
+ *     summary: Bulk update multiple users claims
+ *     tags:
+ *       - Advanced Claims Management
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - updates
+ *             properties:
+ *               updates:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     uid:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                       enum: [admin, agent, public]
+ *                     permissions:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                     isActive:
+ *                       type: boolean
+ *     responses:
+ *       200:
+ *         description: Bulk update completed
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Unauthorized
+ */

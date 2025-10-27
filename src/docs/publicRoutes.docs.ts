@@ -263,3 +263,237 @@
  *       400:
  *         description: Missing ID token
  */
+
+/**
+ * @openapi
+ * /public/profile:
+ *   get:
+ *     summary: Get user profile with claims
+ *     tags:
+ *       - Profile Management
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     user:
+ *                       type: object
+ *                       properties:
+ *                         uid:
+ *                           type: string
+ *                         email:
+ *                           type: string
+ *                         name:
+ *                           type: string
+ *                         role:
+ *                           type: string
+ *                           enum: [admin, agent, public]
+ *                         permissions:
+ *                           type: array
+ *                           items:
+ *                             type: string
+ *                         profile:
+ *                           type: object
+ *                           properties:
+ *                             hasBasicInfo:
+ *                               type: boolean
+ *                             hasHealthInfo:
+ *                               type: boolean
+ *                             profileCompleteness:
+ *                               type: number
+ *                         isActive:
+ *                           type: boolean
+ *                         mongoProfile:
+ *                           type: object
+ *       401:
+ *         description: Unauthorized
+ *   post:
+ *     summary: Create user profile in MongoDB
+ *     tags:
+ *       - Profile Management
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - firebaseUid
+ *               - email
+ *             properties:
+ *               firebaseUid:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               name:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               birthDate:
+ *                 type: string
+ *                 format: date
+ *               cpf:
+ *                 type: string
+ *               address:
+ *                 type: object
+ *                 properties:
+ *                   street:
+ *                     type: string
+ *                   neighborhood:
+ *                     type: string
+ *                   city:
+ *                     type: string
+ *                   state:
+ *                     type: string
+ *                   zipCode:
+ *                     type: string
+ *               emergencyContact:
+ *                 type: object
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                   phone:
+ *                     type: string
+ *                   relationship:
+ *                     type: string
+ *               healthConditions:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       201:
+ *         description: Profile created successfully
+ *       409:
+ *         description: User profile already exists
+ *       401:
+ *         description: Unauthorized
+ */
+
+/**
+ * @openapi
+ * /public/users/{uid}/role:
+ *   put:
+ *     summary: Update user role (Admin only)
+ *     tags:
+ *       - Profile Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - role
+ *             properties:
+ *               role:
+ *                 type: string
+ *                 enum: [admin, agent, public]
+ *               permissions:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               reason:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Role updated successfully
+ *       403:
+ *         description: Admin access required
+ *       404:
+ *         description: User not found
+ *       401:
+ *         description: Unauthorized
+ */
+
+/**
+ * @openapi
+ * /public/users:
+ *   get:
+ *     summary: List users with pagination (Admin only)
+ *     tags:
+ *       - Profile Management
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *           maximum: 100
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *           enum: [admin, agent, public]
+ *     responses:
+ *       200:
+ *         description: Users list retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     users:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           uid:
+ *                             type: string
+ *                           email:
+ *                             type: string
+ *                           name:
+ *                             type: string
+ *                           role:
+ *                             type: string
+ *                           permissions:
+ *                             type: array
+ *                             items:
+ *                               type: string
+ *                           isActive:
+ *                             type: boolean
+ *                           metadata:
+ *                             type: object
+ *                     total:
+ *                       type: integer
+ *                     page:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *       403:
+ *         description: Admin access required
+ *       401:
+ *         description: Unauthorized
+ */

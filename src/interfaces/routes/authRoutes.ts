@@ -3,14 +3,14 @@ import {
   getProfile, 
   updateProfile 
 } from '../controllers/public/authController';
-import { requireAuth } from '../../middlewares/firebaseAuth';
+import { firebaseAuthAdvanced } from '../../middlewares/firebaseAuthAdvanced';
 import { validateBody, ValidationSchemas } from '../../middlewares/validation';
 import { asyncHandler } from '../../middlewares/errorHandling';
 
 const router = Router();
 
 // All routes in this file require authentication
-router.use(requireAuth);
+router.use(firebaseAuthAdvanced());
 
 // User profile management
 router.get('/profile', asyncHandler(getProfile));

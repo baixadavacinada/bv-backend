@@ -204,23 +204,23 @@ export const requirePermission = (...permissions: Permission[]) =>
 // Gerenciamento de usuários
 export const requireUserManagement = firebaseAuthAdvanced({ 
   required: true, 
-  permissions: ['manage_users'] 
+  permissions: ['write_users'] 
 });
 
 // Gerenciamento de UBS
 export const requireHealthUnitManagement = firebaseAuthAdvanced({ 
   required: true, 
-  permissions: ['manage_health_units'] 
+  permissions: ['write_health_units'] 
 });
 
 // Edição de vacinas
 export const requireVaccineManagement = firebaseAuthAdvanced({ 
   required: true, 
-  permissions: ['manage_vaccines'] 
+  permissions: ['write_vaccines'] 
 });
 
 // Visualização de relatórios
 export const requireReportsAccess = firebaseAuthAdvanced({ 
   required: true, 
-  permissions: ['view_reports'] 
+  permissions: ['read_appointments'] 
 });

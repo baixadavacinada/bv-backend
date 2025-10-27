@@ -26,7 +26,6 @@ import {
   updateUserRole,
   listUsers
 } from '../controllers/public/profileController';
-import { requireAuth, optionalAuth } from '../../middlewares/firebaseAuth';
 import { firebaseAuthAdvanced } from '../../middlewares/firebaseAuthAdvanced';
 import { validateBody, validateQuery, ValidationSchemas } from '../../middlewares/validation';
 import { asyncHandler } from '../../middlewares/errorHandling';
@@ -70,7 +69,7 @@ router.get('/vaccines', asyncHandler(listVaccinesController));
 
 // Appointment endpoints (protected)
 router.post('/appointments',
-  requireAuth,
+  firebaseAuthAdvanced(),
   validateBody({
     vaccineId: { required: true, type: 'string' as const },
     healthUnitId: { required: true, type: 'string' as const },
@@ -87,7 +86,7 @@ router.post('/appointments',
 );
 
 router.get('/appointments/my',
-  requireAuth,
+  firebaseAuthAdvanced(),
   asyncHandler(listMyAppointmentsController)
 );
 
@@ -100,7 +99,7 @@ router.get('/appointments/available-slots',
 );
 
 router.patch('/appointments/:id/cancel',
-  requireAuth,
+  firebaseAuthAdvanced(),
   validateBody({
     reason: { required: false, type: 'string' as const, maxLength: 500 }
   }),
@@ -109,18 +108,18 @@ router.patch('/appointments/:id/cancel',
 
 // Vaccination Record endpoints (protected)
 router.get('/vaccination-records/my',
-  requireAuth,
+  firebaseAuthAdvanced(),
   asyncHandler(publicVaccinationRecordController.getMyVaccinationRecords.bind(publicVaccinationRecordController))
 );
 
 router.get('/vaccination-records/user/:userId',
-  requireAuth,
+  firebaseAuthAdvanced(),
   asyncHandler(publicVaccinationRecordController.getVaccinationRecordsByUserId.bind(publicVaccinationRecordController))
 );
 
 // Feedback endpoints
 router.post('/feedback',
-  requireAuth,
+  firebaseAuthAdvanced(),
   validateBody({
     healthUnitId: { required: true, type: 'string' as const },
     comment: { required: true, type: 'string' as const, minLength: 10, maxLength: 1000 },
@@ -136,17 +135,17 @@ router.get('/feedback/health-unit/:healthUnitId',
 
 // Notification endpoints
 router.get('/notifications',
-  requireAuth,
+  firebaseAuthAdvanced(),
   asyncHandler(notificationController.listUserNotifications.bind(notificationController))
 );
 
 router.patch('/notifications/:id/read',
-  requireAuth,
+  firebaseAuthAdvanced(),
   asyncHandler(notificationController.markAsRead.bind(notificationController))
 );
 
 router.patch('/notifications/mark-all-read',
-  requireAuth,
+  firebaseAuthAdvanced(),
   asyncHandler(notificationController.markAllAsRead.bind(notificationController))
 );
 
