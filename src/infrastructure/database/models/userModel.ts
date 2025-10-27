@@ -2,6 +2,7 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface UserDocument extends Document {
   _id: string; // Firebase UID
+  uid: string; // Firebase UID (redundant but explicit)
   name: string;
   email: string;
   // Note: password is handled by Firebase Auth, not stored in MongoDB
@@ -24,6 +25,11 @@ const UserSchema = new Schema<UserDocument>({
   _id: {
     type: String,
     required: true
+  },
+  uid: {
+    type: String,
+    required: true,
+    unique: true
   },
   name: {
     type: String,

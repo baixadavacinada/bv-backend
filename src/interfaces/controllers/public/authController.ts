@@ -3,6 +3,7 @@ import { getFirebaseAuth } from '../../../config/firebase';
 import { Logger } from '../../../middlewares/logging';
 import { User, UserRole } from '../../../domain/entities/User';
 import { MongoUserRepository } from '../../../infrastructure/database/implementations/MongoUserRepository';
+import { claimsService } from '../../../services/claimsService';
 
 const logger = Logger.getInstance();
 const userRepository = new MongoUserRepository();
@@ -263,10 +264,7 @@ export const loginWithEmail = async (req: Request, res: Response) => {
 
     // Set default role if user doesn't have custom claims
     if (!userRecord.customClaims || !userRecord.customClaims.role) {
-      await auth.setCustomUserClaims(userRecord.uid, {
-        role: 'public',
-        admin: false
-      });
+      await claimsService.setDefaultClaimsForNewUser(userRecord.uid);
       // Refresh user record to get updated claims
       userRecord = await auth.getUser(userRecord.uid);
     }
@@ -336,16 +334,14 @@ export const registerWithEmail = async (req: Request, res: Response) => {
       emailVerified: false // User will need to verify email
     });
 
-    // Set default role as 'public'
-    await auth.setCustomUserClaims(userRecord.uid, {
-      role: 'public',
-      admin: false
-    });
+    // Set default role as 'public' with proper claims structure
+    await claimsService.setDefaultClaimsForNewUser(userRecord.uid);
 
     // Save user to MongoDB as well (without password - Firebase handles auth)
     try {
       await userRepository.create({
         _id: userRecord.uid, // Use Firebase UID as MongoDB _id
+        uid: userRecord.uid, // Also store Firebase UID in uid field
         name: displayName || userRecord.email?.split('@')[0] || 'User',
         email: userRecord.email!,
         role: 'public', // Default role
@@ -453,10 +449,7 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
 
     // Set default role if user doesn't have custom claims
     if (!userRecord.customClaims || !userRecord.customClaims.role) {
-      await auth.setCustomUserClaims(userRecord.uid, {
-        role: 'public',
-        admin: false
-      });
+      await claimsService.setDefaultClaimsForNewUser(userRecord.uid);
     }
 
     logger.info('Google login successful', {

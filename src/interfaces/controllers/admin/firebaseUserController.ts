@@ -69,6 +69,7 @@ export const createFirebaseUser = async (req: Request, res: Response) => {
     try {
       await userRepository.create({
         _id: userRecord.uid, // Use Firebase UID as MongoDB _id
+        uid: userRecord.uid, // Also store Firebase UID in uid field
         name: displayName || userRecord.email?.split('@')[0] || 'User',
         email: userRecord.email!,
         role: role as UserRole,

@@ -2,6 +2,7 @@ export type UserRole = "admin" | "agent" | "public";
 
 export interface User {
   _id?: string;
+  uid: string; // Firebase UID
   name: string;
   email: string;
   role: UserRole;

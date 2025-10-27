@@ -13,6 +13,7 @@ const router = Router();
 router.use(firebaseAuthAdvanced());
 
 // User profile management
+router.get('/me', asyncHandler(getProfile));
 router.get('/profile', asyncHandler(getProfile));
 
 router.put('/profile', 
