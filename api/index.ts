@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import { connectDatabase } from "../src/config/database";
 import publicRoutes from '../src/interfaces/routes/publicRoutes';
 import adminRoutes from '../src/interfaces/routes/adminRoutes';
+import { setupApiDocs } from '../src/config/scalar';
 import "dotenv/config";
 
 const app = express();
@@ -29,6 +30,20 @@ app.use((req, res, next) => {
 // Basic middleware with simple CORS (headers set in handler)
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Setup API Documentation
+setupApiDocs(app);
+
+// Handle Vercel routing for documentation
+app.get('/api/api-docs', (req, res) => {
+  // Redirect to the correct documentation route
+  res.redirect('/api-docs');
+});
+
+app.get('/api/api-docs.json', (req, res) => {
+  // Redirect to the correct JSON spec route
+  res.redirect('/api-docs.json');
+});
 
 // Simple health check route
 app.get('/', (req, res) => {
