@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { getFirebaseAuth } from '../../../config/firebase';
 import { Logger } from '../../../middlewares/logging';
-import { UserRole } from '../../../domain/entities/User';
+import { User, UserRole } from '../../../domain/entities/User';
 import { MongoUserRepository } from '../../../infrastructure/database/implementations/MongoUserRepository';
 
 const logger = Logger.getInstance();
