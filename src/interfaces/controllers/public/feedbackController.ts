@@ -20,7 +20,6 @@ export class PublicFeedbackController {
         return;
       }
 
-      // If not anonymous, userId is required
       if (!isAnonymous && !userId) {
         res.status(401).json({ message: 'Usuário não autenticado' });
         return;
@@ -73,7 +72,6 @@ export class PublicFeedbackController {
 
       const feedbacks = await this.listFeedbackUseCase.executeByHealthUnit(healthUnitId);
 
-      // Calculate average rating
       const averageRating = feedbacks.length > 0 
         ? feedbacks.reduce((sum, f) => sum + f.rating, 0) / feedbacks.length
         : 0;
@@ -82,7 +80,7 @@ export class PublicFeedbackController {
         message: 'Feedbacks da unidade listados com sucesso',
         data: feedbacks,
         total: feedbacks.length,
-        averageRating: Math.round(averageRating * 10) / 10 // Round to 1 decimal
+        averageRating: Math.round(averageRating * 10) / 10
       });
     } catch (error) {
       console.error('Erro ao listar feedbacks da unidade:', error);

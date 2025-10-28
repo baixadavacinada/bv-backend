@@ -59,13 +59,11 @@ export class GetHealthUnitReportUseCase {
     const { VaccinationRecordModel } = await import('../../../infrastructure/database/models/vaccinationRecordModel');
     const { FeedbackModel } = await import('../../../infrastructure/database/models/feedbackModel');
 
-    // Build health units query
     const healthUnitsQuery: any = {};
     if (filters.isActive !== undefined) healthUnitsQuery.isActive = filters.isActive;
     if (filters.city) healthUnitsQuery.city = { $regex: filters.city, $options: 'i' };
     if (filters.state) healthUnitsQuery.state = filters.state;
 
-    // Get health units
     const healthUnits = await HealthUnitModel.find(healthUnitsQuery);
     const healthUnitIds = healthUnits.map(hu => hu._id);
 
@@ -73,30 +71,24 @@ export class GetHealthUnitReportUseCase {
       return this.getEmptyReport();
     }
 
-    // Build date filter for time-based data
     const dateFilter: any = {};
     if (filters.startDate || filters.endDate) {
       if (filters.startDate) dateFilter.$gte = filters.startDate;
       if (filters.endDate) dateFilter.$lte = filters.endDate;
     }
 
-    // Get aggregated data
     const [appointmentStats, vaccinationStats, feedbackStats] = await Promise.all([
       this.getAppointmentStats(healthUnitIds, dateFilter),
       this.getVaccinationStats(healthUnitIds, dateFilter),
       this.getFeedbackStats(healthUnitIds, dateFilter)
     ]);
 
-    // Calculate summary
     const summary = this.calculateSummary(healthUnits, appointmentStats, vaccinationStats, feedbackStats);
 
-    // Calculate performance metrics
     const performance = this.calculatePerformance(healthUnits, appointmentStats, vaccinationStats, feedbackStats);
 
-    // Calculate geographical distribution
     const geographical = this.calculateGeographical(healthUnits, appointmentStats, vaccinationStats);
 
-    // Calculate ratings
     const ratings = await this.calculateRatings(healthUnitIds);
 
     return {
@@ -209,7 +201,6 @@ export class GetHealthUnitReportUseCase {
   }
 
   private calculatePerformance(healthUnits: any[], appointmentStats: any[], vaccinationStats: any[], feedbackStats: any[]) {
-    // Create maps for quick lookup
     const appointmentMap = new Map();
     appointmentStats.forEach(stat => {
       appointmentMap.set(stat._id.toString(), stat);
@@ -251,7 +242,6 @@ export class GetHealthUnitReportUseCase {
   }
 
   private calculateGeographical(healthUnits: any[], appointmentStats: any[], vaccinationStats: any[]) {
-    // Create maps for quick lookup
     const appointmentMap = new Map();
     appointmentStats.forEach(stat => {
       appointmentMap.set(stat._id.toString(), stat.totalAppointments);
@@ -262,7 +252,6 @@ export class GetHealthUnitReportUseCase {
       vaccinationMap.set(stat._id.toString(), stat.totalVaccinations);
     });
 
-    // Group by state
     const stateMap = new Map();
     healthUnits.forEach(hu => {
       const id = hu._id.toString();

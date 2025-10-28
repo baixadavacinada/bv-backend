@@ -43,24 +43,20 @@ import { adminRateLimit } from "../../middlewares/security";
 
 const router = Router();
 
-// Use Firebase advanced authentication for admin routes - all routes require admin role
 router.use(firebaseAuthAdvanced({ roles: ['admin'] }));
 router.use(adminRateLimit);
 
-// Initialize controllers
 const vaccinationRecordController = new VaccinationRecordController();
 const feedbackController = new FeedbackController();
 const adminNotificationController = new AdminNotificationController();
 const adminHealthUnitsController = new AdminHealthUnitsController();
 const dashboardController = new DashboardController();
 
-// Traditional user endpoints (JWT-based)
 router.post("/users",
   validateBody(ValidationSchemas.user),
   asyncHandler(createUserController)
 );
 
-// Vaccine endpoints
 router.post("/vaccines",
   validateBody(ValidationSchemas.vaccine),
   asyncHandler(createVaccineController)
@@ -83,7 +79,6 @@ router.delete("/vaccines/:id",
   asyncHandler(deleteVaccineController)
 );
 
-// Vaccination Record endpoints
 router.post("/vaccination-records",
   validateBody({
     residentId: { required: true, type: 'string' as const },
@@ -125,7 +120,6 @@ router.delete("/vaccination-records/:id",
   asyncHandler(vaccinationRecordController.delete.bind(vaccinationRecordController))
 );
 
-// Appointment endpoints
 router.get("/appointments",
   validateQuery({
     healthUnitId: { required: false, type: 'string' as const },
@@ -165,7 +159,6 @@ router.patch("/appointments/:id/complete-vaccination",
   asyncHandler(completeAppointmentWithVaccinationController)
 );
 
-// Health units endpoints
 router.get("/health-units",
   validateQuery({
     isActive: { required: false, type: 'boolean' as const },
@@ -221,7 +214,6 @@ router.delete("/health-units/:id",
   asyncHandler(adminHealthUnitsController.delete.bind(adminHealthUnitsController))
 );
 
-// Feedback endpoints
 router.get("/feedback",
   validateQuery({
     healthUnitId: { required: false, type: 'string' as const }
@@ -247,7 +239,6 @@ router.patch("/feedback/:id/moderate",
   asyncHandler(feedbackController.moderate.bind(feedbackController))
 );
 
-// Notification endpoints
 router.post("/notifications",
   validateBody({
     userId: { required: true, type: 'string' as const },
@@ -283,7 +274,6 @@ router.delete("/notifications/:id",
   asyncHandler(adminNotificationController.delete.bind(adminNotificationController))
 );
 
-// Dashboard and Reports endpoints
 router.get("/dashboard/stats",
   asyncHandler(dashboardController.getDashboardStats.bind(dashboardController))
 );
@@ -313,7 +303,6 @@ router.get("/reports/health-units",
   asyncHandler(dashboardController.getHealthUnitReport.bind(dashboardController))
 );
 
-// Firebase User Management Endpoints
 router.post("/firebase/users",
   validateBody(ValidationSchemas.firebaseUser),
   asyncHandler(createFirebaseUser)
@@ -341,14 +330,10 @@ router.get("/firebase/me",
   asyncHandler(getCurrentUser)
 );
 
-// === NOVO SISTEMA DE CLAIMS AVANÇADO ===
-
-// Buscar claims de um usuário específico
 router.get("/claims/:uid",
   asyncHandler(getClaimsAdvanced)
 );
 
-// Atualizar claims completas de um usuário
 router.put("/claims",
   validateBody({
     uid: { required: true, type: 'string' as const },
@@ -360,7 +345,6 @@ router.put("/claims",
   asyncHandler(updateClaimsAdvanced)
 );
 
-// Atualizar apenas role de um usuário (shortcut)
 router.patch("/users/:uid/role",
   validateBody({
     role: { required: true, type: 'string' as const, enum: ['admin', 'agent', 'public'] as any[] }
@@ -368,17 +352,14 @@ router.patch("/users/:uid/role",
   asyncHandler(updateRoleAdvanced)
 );
 
-// Desativar usuário
 router.patch("/users/:uid/deactivate",
   asyncHandler(deactivateUser)
 );
 
-// Reativar usuário  
 router.patch("/users/:uid/reactivate",
   asyncHandler(reactivateUser)
 );
 
-// Atualização em lote
 router.post("/claims/bulk-update",
   validateBody({
     updates: { required: true, type: 'array' as const }

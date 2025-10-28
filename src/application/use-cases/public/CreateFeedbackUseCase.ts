@@ -13,12 +13,10 @@ export class CreateFeedbackUseCase {
   constructor(private feedbackRepository: FeedbackRepository) {}
 
   async execute(data: CreateFeedbackRequest): Promise<Feedback> {
-    // Validate rating range
     if (data.rating < 1 || data.rating > 5) {
       throw new Error('Rating must be between 1 and 5');
     }
 
-    // Validate comment length
     if (data.comment.trim().length < 10) {
       throw new Error('Comment must have at least 10 characters');
     }

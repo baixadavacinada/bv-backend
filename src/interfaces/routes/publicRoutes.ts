@@ -18,7 +18,8 @@ import {
   registerWithEmail,
   loginWithEmail, 
   loginWithGoogle, 
-  sendPasswordReset 
+  sendPasswordReset,
+  syncFirebaseUser
 } from '../controllers/public/authController';
 import { 
   getProfile as getProfileFromController,
@@ -32,15 +33,22 @@ import { asyncHandler } from '../../middlewares/errorHandling';
 
 const router = Router();
 
-// Initialize controllers
 const publicVaccinationRecordController = new PublicVaccinationRecordController();
 const publicFeedbackController = new PublicFeedbackController();
 const notificationController = new NotificationController();
 
-// Firebase authentication endpoints
 router.post('/auth/register', 
   validateBody(ValidationSchemas.firebaseRegistration), 
   asyncHandler(registerWithEmail)
+);
+
+router.post('/auth/sync', 
+  firebaseAuthAdvanced(),
+  validateBody({
+    email: { required: false, type: 'email' as const },
+    displayName: { required: false, type: 'string' as const }
+  }),
+  asyncHandler(syncFirebaseUser)
 );
 
 router.post('/auth/login', 
@@ -63,11 +71,9 @@ router.post('/auth/password-reset',
   asyncHandler(sendPasswordReset)
 );
 
-// Public endpoints
 router.get('/health-units', asyncHandler(listHealthUnitsController));
 router.get('/vaccines', asyncHandler(listVaccinesController));
 
-// Appointment endpoints (protected)
 router.post('/appointments',
   firebaseAuthAdvanced(),
   validateBody({
@@ -106,7 +112,6 @@ router.patch('/appointments/:id/cancel',
   asyncHandler(cancelAppointmentController)
 );
 
-// Vaccination Record endpoints (protected)
 router.get('/vaccination-records/my',
   firebaseAuthAdvanced(),
   asyncHandler(publicVaccinationRecordController.getMyVaccinationRecords.bind(publicVaccinationRecordController))
@@ -117,7 +122,6 @@ router.get('/vaccination-records/user/:userId',
   asyncHandler(publicVaccinationRecordController.getVaccinationRecordsByUserId.bind(publicVaccinationRecordController))
 );
 
-// Feedback endpoints
 router.post('/feedback',
   firebaseAuthAdvanced(),
   validateBody({
@@ -133,7 +137,6 @@ router.get('/feedback/health-unit/:healthUnitId',
   asyncHandler(publicFeedbackController.listByHealthUnit.bind(publicFeedbackController))
 );
 
-// Notification endpoints
 router.get('/notifications',
   firebaseAuthAdvanced(),
   asyncHandler(notificationController.listUserNotifications.bind(notificationController))
@@ -149,14 +152,13 @@ router.patch('/notifications/mark-all-read',
   asyncHandler(notificationController.markAllAsRead.bind(notificationController))
 );
 
-// Profile management endpoints (compatible with roles-service.ts)
 router.get('/profile',
-  firebaseAuthAdvanced(), // Use new middleware for token validation and claims
+  firebaseAuthAdvanced(),
   asyncHandler(getProfileFromController)
 );
 
 router.post('/profile',
-  firebaseAuthAdvanced({ required: true, roles: ['public', 'agent', 'admin'] }), // Allow authenticated users to create profiles
+  firebaseAuthAdvanced({ required: true, roles: ['public', 'agent', 'admin'] }),
   validateBody({
     firebaseUid: { required: true, type: 'string' as const },
     email: { required: true, type: 'email' as const },
@@ -172,7 +174,7 @@ router.post('/profile',
 );
 
 router.put('/users/:uid/role',
-  firebaseAuthAdvanced({ required: true, roles: ['admin'] }), // Only admins can update roles
+  firebaseAuthAdvanced({ required: true, roles: ['admin'] }), 
   validateBody({
     role: { required: true, type: 'string' as const, enum: ['admin', 'agent', 'public'] },
     permissions: { required: false, type: 'array' as const },
@@ -182,7 +184,7 @@ router.put('/users/:uid/role',
 );
 
 router.get('/users',
-  firebaseAuthAdvanced({ required: true, roles: ['admin'] }), // Only admins can list users
+  firebaseAuthAdvanced({ required: true, roles: ['admin'] }),
   validateQuery({
     page: { required: false, type: 'string' as const },
     limit: { required: false, type: 'string' as const },

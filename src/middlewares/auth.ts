@@ -18,9 +18,7 @@ declare global {
   }
 }
 
-/**
- * Interface para payload do JWT
- */
+
 interface JWTPayload {
   sub: string;
   email: string;
@@ -30,10 +28,7 @@ interface JWTPayload {
   exp: number;
 }
 
-/**
- * Middleware de autenticação flexível com logs de segurança
- * Suporta JWT tradicional e Firebase (futuro)
- */
+
 export const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers.authorization;
@@ -75,10 +70,7 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
   }
 };
 
-/**
- * Middleware de autorização baseado em roles (RBAC)
- * Segue o princípio Open/Closed (SOLID) com logs de segurança
- */
+
 export const requireRole = (...allowedRoles: UserRole[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
@@ -95,10 +87,7 @@ export const requireRole = (...allowedRoles: UserRole[]) => {
   };
 };
 
-/**
- * Middleware para verificar se usuário está ativo
- * Com logs de segurança para usuários inativos
- */
+
 export const requireActiveUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -106,23 +95,13 @@ export const requireActiveUser = async (req: Request, res: Response, next: NextF
       throw new UnauthorizedError('User not authenticated.');
     }
 
-    // TODO: Aqui seria verificado no banco se o usuário está ativo
-    // const user = await UserRepository.findById(req.user.id);
-    // if (!user || !user.isActive) {
-    //   securityEventLogger.logUnauthorizedAccess(req, 'Inactive user attempted access');
-    //   throw new ForbiddenError('Inactive user.');
-    // }
-
     next();
   } catch (error) {
     throw error;
   }
 };
 
-/**
- * Middleware para verificar ownership de recursos
- * Útil para endpoints como /users/:id onde user só pode acessar próprios dados
- */
+
 export const requireOwnership = (resourceIdParam: string = 'id') => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {

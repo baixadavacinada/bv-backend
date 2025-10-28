@@ -8,7 +8,7 @@ const logger = Logger.getInstance();
 declare global {
   namespace Express {
     interface Request {
-      userClaims?: UserClaims; // Nova propriedade para claims avançadas
+      userClaims?: UserClaims;
     }
   }
 }
@@ -20,15 +20,11 @@ export interface AuthOptions {
   allowInactive?: boolean;
 }
 
-/**
- * Middleware avançado de autenticação Firebase com sistema de claims
- */
 export function firebaseAuthAdvanced(options: AuthOptions = { required: true }) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authHeader = req.headers.authorization;
       
-      // Verifica se token está presente
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
         if (options.required) {
           logger.warn('Firebase auth failed: Missing authorization header', {
@@ -63,14 +59,11 @@ export function firebaseAuthAdvanced(options: AuthOptions = { required: true }) 
         return next();
       }
 
-      // Verifica token Firebase
       const auth = getFirebaseAuth();
       const decodedToken = await auth.verifyIdToken(idToken);
       
-      // Busca claims atualizadas do usuário
       const userClaims = await claimsService.getUserClaims(decodedToken.uid);
       
-      // Verifica se usuário está ativo
       if (!userClaims.isActive && !options.allowInactive) {
         logger.warn('Inactive user attempted access', {
           uid: decodedToken.uid,
@@ -87,7 +80,6 @@ export function firebaseAuthAdvanced(options: AuthOptions = { required: true }) 
         });
       }
 
-      // Verifica roles se especificadas
       if (options.roles && options.roles.length > 0) {
         const hasValidRole = await claimsService.hasRole(decodedToken.uid, options.roles[0]);
         
@@ -109,7 +101,6 @@ export function firebaseAuthAdvanced(options: AuthOptions = { required: true }) 
         }
       }
 
-      // Verifica permissões se especificadas
       if (options.permissions && options.permissions.length > 0) {
         const hasAllPermissions = options.permissions.every(
           permission => userClaims.permissions.includes(permission)
@@ -133,7 +124,6 @@ export function firebaseAuthAdvanced(options: AuthOptions = { required: true }) 
         }
       }
 
-      // Anexa dados do usuário na requisição (mantém compatibilidade com interface existente)
       req.user = {
         id: decodedToken.uid,
         email: decodedToken.email || '',
@@ -141,7 +131,6 @@ export function firebaseAuthAdvanced(options: AuthOptions = { required: true }) 
         firebaseUid: decodedToken.uid
       };
 
-      // Anexa claims avançadas em propriedade separada
       req.userClaims = userClaims;
 
       logger.info('Firebase authentication successful', {
@@ -172,54 +161,41 @@ export function firebaseAuthAdvanced(options: AuthOptions = { required: true }) 
   };
 }
 
-/**
- * Middlewares pré-configurados para casos comuns
- */
-
-// Autenticação obrigatória
 export const requireAuth = firebaseAuthAdvanced({ required: true });
 
-// Apenas admins
 export const requireAdmin = firebaseAuthAdvanced({ 
   required: true, 
   roles: ['admin'] 
 });
 
-// Admin ou agente
 export const requireAdminOrAgent = firebaseAuthAdvanced({ 
   required: true, 
   roles: ['admin', 'agent'] 
 });
 
-// Autenticação opcional
 export const optionalAuth = firebaseAuthAdvanced({ required: false });
 
-// Verificação de permissão específica
 export const requirePermission = (...permissions: Permission[]) => 
   firebaseAuthAdvanced({ 
     required: true, 
     permissions 
   });
 
-// Gerenciamento de usuários
 export const requireUserManagement = firebaseAuthAdvanced({ 
   required: true, 
   permissions: ['write_users'] 
 });
 
-// Gerenciamento de UBS
 export const requireHealthUnitManagement = firebaseAuthAdvanced({ 
   required: true, 
   permissions: ['write_health_units'] 
 });
 
-// Edição de vacinas
 export const requireVaccineManagement = firebaseAuthAdvanced({ 
   required: true, 
   permissions: ['write_vaccines'] 
 });
 
-// Visualização de relatórios
 export const requireReportsAccess = firebaseAuthAdvanced({ 
   required: true, 
   permissions: ['read_appointments'] 

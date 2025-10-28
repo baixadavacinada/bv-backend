@@ -5,7 +5,6 @@ import { UserRole } from '../domain/entities/User';
 
 const logger = Logger.getInstance();
 
-// Firebase user info interface (extended from existing Express Request user)
 export interface FirebaseUserInfo {
   uid: string;
   email?: string;
@@ -20,11 +19,6 @@ export interface FirebaseAuthOptions {
   adminOnly?: boolean;
 }
 
-/**
- * Firebase Authentication Middleware
- * Validates Firebase ID tokens and converts to system user format
- * Compatible with existing JWT authentication interface
- */
 export function firebaseAuth(options: FirebaseAuthOptions = { required: true }) {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -47,7 +41,6 @@ export function firebaseAuth(options: FirebaseAuthOptions = { required: true }) 
           });
         }
         
-        // If auth is optional, continue without user
         return next();
       }
 
@@ -66,20 +59,16 @@ export function firebaseAuth(options: FirebaseAuthOptions = { required: true }) 
         return next();
       }
 
-      // Verify the Firebase ID token
       const auth = getFirebaseAuth();
       const decodedToken = await auth.verifyIdToken(idToken);
       
-      // Get additional user info
       const userRecord = await auth.getUser(decodedToken.uid);
       
-      // Determine user role from custom claims
       const isAdmin = decodedToken.admin === true || 
                      (decodedToken.customClaims && decodedToken.customClaims.admin === true);
       
       const userRole: UserRole = isAdmin ? 'admin' : 'public';
       
-      // Check if admin access is required
       if (options.adminOnly && userRole !== 'admin') {
         logger.warn('Firebase auth failed: Admin access required', {
           uid: decodedToken.uid,
@@ -98,10 +87,9 @@ export function firebaseAuth(options: FirebaseAuthOptions = { required: true }) 
         });
       }
 
-      // Convert Firebase user to system user format (compatible with existing interface)
       req.user = {
-        id: decodedToken.uid, // Map Firebase UID to system ID
-        email: decodedToken.email || '', // Ensure email is always string
+        id: decodedToken.uid, 
+        email: decodedToken.email || '', 
         role: userRole,
         firebaseUid: decodedToken.uid
       };
@@ -128,23 +116,13 @@ export function firebaseAuth(options: FirebaseAuthOptions = { required: true }) 
         });
       }
       
-      // If auth is optional, continue without user
       next();
     }
   };
 }
 
-/**
- * Require Firebase authentication
- */
 export const requireAuth = firebaseAuth({ required: true });
 
-/**
- * Require admin authentication
- */
 export const requireAdmin = firebaseAuth({ required: true, adminOnly: true });
 
-/**
- * Optional Firebase authentication
- */
 export const optionalAuth = firebaseAuth({ required: false });

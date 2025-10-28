@@ -256,7 +256,7 @@ export const errorHandlingMiddleware = (
       type: 'UNHANDLED',
       name: error.name,
       message: error.message,
-      stack: error.stack?.split('\n').slice(0, 10), // Primeiras 10 linhas do stack
+      stack: error.stack?.split('\n').slice(0, 10),
       constructor: error.constructor.name
     },
     request: {
@@ -295,10 +295,6 @@ export const errorHandlingMiddleware = (
   });
 };
 
-/**
- * Middleware para capturar 404s
- * Log detalhado para análise de rotas não encontradas
- */
 export const notFoundMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const logger = Logger.getInstance();
   const correlationId = req.correlationId || 'unknown';
@@ -323,20 +319,14 @@ export const notFoundMiddleware = (req: Request, res: Response, next: NextFuncti
   next(error);
 };
 
-/**
- * Wrapper para async handlers (evita try/catch repetitivo)
- * Implementa o padrão de Higher-Order Function
- */
+
 export const asyncHandler = (fn: Function) => {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 };
 
-/**
- * Middleware de validação de JSON malformado
- * Captura erros de parsing e log detalhado
- */
+
 export const jsonErrorHandler = (error: any, req: Request, res: Response, next: NextFunction) => {
   if (
     error instanceof SyntaxError &&

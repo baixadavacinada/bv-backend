@@ -20,9 +20,6 @@ export interface UpdateRoleRequest {
   isActive?: boolean;
 }
 
-/**
- * Get user profile (compatible with roles-service.ts)
- */
 export const getProfile = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
@@ -37,12 +34,10 @@ export const getProfile = async (req: Request, res: Response) => {
 
     const claims = await claimsService.getUserClaims(req.user.id);
     
-    // Try to get MongoDB user data for additional fields
     let mongoUser = null;
     try {
       mongoUser = await userRepository.findById(req.user.id);
     } catch {
-      // User might not exist in MongoDB yet
     }
 
     const profile = {
@@ -79,9 +74,6 @@ export const getProfile = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Create user profile in backend (for new Firebase users)
- */
 export const createProfile = async (req: Request, res: Response) => {
   try {
     const { uid, email, displayName, role = 'public' }: CreateProfileRequest = req.body;
@@ -96,13 +88,12 @@ export const createProfile = async (req: Request, res: Response) => {
       });
     }
 
-    // Set default claims in Firebase
     const claims = await claimsService.setDefaultClaimsForNewUser(uid);
 
-    // Create user in MongoDB
     try {
       await userRepository.create({
         _id: uid,
+        uid: uid,
         name: displayName || email?.split('@')[0] || 'User',
         email: email || '',
         role: claims.role,
@@ -111,7 +102,6 @@ export const createProfile = async (req: Request, res: Response) => {
         lastLoginAt: new Date()
       });
     } catch (error) {
-      // User might already exist in MongoDB, that's ok
       logger.warn('User already exists in MongoDB', { uid });
     }
 
@@ -148,9 +138,6 @@ export const createProfile = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Update user role (Admin only - compatible with roles-service.ts)
- */
 export const updateUserRole = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
@@ -163,7 +150,6 @@ export const updateUserRole = async (req: Request, res: Response) => {
       });
     }
 
-    // Check if user is admin
     const adminClaims = await claimsService.getUserClaims(req.user.id);
     if (adminClaims.role !== 'admin') {
       return res.status(403).json({
@@ -187,7 +173,6 @@ export const updateUserRole = async (req: Request, res: Response) => {
       });
     }
 
-    // Update claims
     const claimsUpdate: any = { role };
     if (ubsId !== undefined) claimsUpdate.ubsId = ubsId;
     if (isActive !== undefined) claimsUpdate.isActive = isActive;
@@ -198,7 +183,6 @@ export const updateUserRole = async (req: Request, res: Response) => {
       req.user.id
     );
 
-    // Update MongoDB user if exists
     try {
       await userRepository.updateProfile(uid, {
         role: updatedClaims.role,
@@ -206,13 +190,12 @@ export const updateUserRole = async (req: Request, res: Response) => {
         updatedAt: new Date()
       });
     } catch {
-      // User might not exist in MongoDB yet
     }
 
     const profile = {
       uid,
-      email: null, // Will be filled by client
-      displayName: null, // Will be filled by client
+      email: null,
+      displayName: null,
       role: updatedClaims.role,
       permissions: updatedClaims.permissions,
       ubsId: updatedClaims.ubsId,
@@ -243,9 +226,6 @@ export const updateUserRole = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * List all users with pagination (Admin only)
- */
 export const listUsers = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
@@ -258,7 +238,6 @@ export const listUsers = async (req: Request, res: Response) => {
       });
     }
 
-    // Check if user is admin
     const adminClaims = await claimsService.getUserClaims(req.user.id);
     if (adminClaims.role !== 'admin') {
       return res.status(403).json({
@@ -273,16 +252,13 @@ export const listUsers = async (req: Request, res: Response) => {
     const page = parseInt(req.query.page as string) || 1;
     const limit = Math.min(parseInt(req.query.limit as string) || 20, 100);
 
-    // Get all users from MongoDB (simple implementation - could be optimized with pagination)
     const allUsers = await userRepository.findAll();
     
-    // Manual pagination
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
     const users = allUsers.slice(startIndex, endIndex);
     const total = allUsers.length;
 
-    // Enrich with Firebase claims for each user
     const enrichedUsers = await Promise.all(
       users.map(async (user) => {
         try {
@@ -299,7 +275,6 @@ export const listUsers = async (req: Request, res: Response) => {
             lastSignIn: user.lastLoginAt?.toISOString()
           };
         } catch {
-          // If can't get claims, use MongoDB data
           return {
             uid: user._id,
             email: user.email,

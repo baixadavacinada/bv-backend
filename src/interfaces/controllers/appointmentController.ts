@@ -200,7 +200,6 @@ export async function updateAppointmentStatusController(req: Request, res: Respo
       updatedBy: req.user?.firebaseUid || req.user?.id
     };
 
-    // Add specific fields based on status
     if (status === 'confirmed') {
       updateData.confirmedBy = req.user?.firebaseUid || req.user?.id;
     } else if (status === 'completed') {

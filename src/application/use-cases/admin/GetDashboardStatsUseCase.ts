@@ -53,7 +53,6 @@ export class GetDashboardStatsUseCase {
     const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
     const last6Months = new Date(today.getFullYear(), today.getMonth() - 6, 1);
 
-    // Parallel execution for better performance
     const [
       totalUsers,
       appointments,
@@ -107,8 +106,6 @@ export class GetDashboardStatsUseCase {
   }
 
   private async getTotalUsers(): Promise<number> {
-    // This would need implementation based on user management
-    // For now, return a placeholder
     return 0;
   }
 
@@ -238,7 +235,6 @@ export class GetDashboardStatsUseCase {
       ])
     ]);
 
-    // Merge results by month
     const monthlyMap = new Map();
     
     appointmentStats.forEach(stat => {
@@ -286,13 +282,11 @@ export class GetDashboardStatsUseCase {
       ])
     ]);
 
-    // Create a map for quick rating lookup
     const ratingMap = new Map();
     feedbackRatings.forEach(rating => {
       ratingMap.set(rating._id, Math.round(rating.averageRating * 10) / 10);
     });
 
-    // Get health unit names
     const { HealthUnitModel } = await import('../../../infrastructure/database/models/healthUnitModel');
     const healthUnits = await HealthUnitModel.find({
       _id: { $in: appointmentCounts.map(ac => ac._id) }
@@ -327,7 +321,6 @@ export class GetDashboardStatsUseCase {
 
     const totalVaccinations = vaccinationCounts.reduce((sum, vc) => sum + vc.count, 0);
 
-    // Get vaccine names
     const vaccines = await VaccineModel.find({
       _id: { $in: vaccinationCounts.map(vc => vc._id) }
     }).select('name');

@@ -11,7 +11,6 @@ export function initializeFirebase(): admin.app.App {
   }
 
   try {
-    // In test environment, don't initialize Firebase
     if (process.env.NODE_ENV === 'test') {
       logger.info('Test environment detected, skipping Firebase initialization');
       return {} as admin.app.App;
@@ -23,7 +22,6 @@ export function initializeFirebase(): admin.app.App {
       throw new Error('FIREBASE_SERVICE_ACCOUNT_KEY environment variable is required');
     }
 
-    // Parse the service account key from environment variable
     const serviceAccountKey = JSON.parse(serviceAccount);
 
     firebaseApp = admin.initializeApp({
@@ -44,7 +42,6 @@ export function initializeFirebase(): admin.app.App {
 
 export function getFirebaseAuth(): admin.auth.Auth {
   if (process.env.NODE_ENV === 'test') {
-    // Return a mock auth object in test environment
     return {} as admin.auth.Auth;
   }
   
@@ -65,7 +62,6 @@ export function getFirebaseApp(): admin.app.App {
   return firebaseApp;
 }
 
-// Initialize Firebase on module load only if not in test environment
 if (process.env.NODE_ENV !== 'test') {
   initializeFirebase();
 }

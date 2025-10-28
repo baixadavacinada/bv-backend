@@ -8,34 +8,21 @@ import { claimsService } from '../../../services/claimsService';
 const logger = Logger.getInstance();
 const userRepository = new MongoUserRepository();
 
-/**
- * Interface for email/password login
- */
 export interface EmailPasswordLogin {
   email: string;
   password: string;
 }
 
-/**
- * Interface for user registration
- */
 export interface UserRegistration {
   email: string;
   password: string;
   displayName?: string;
 }
 
-/**
- * Interface for Google login
- */
 export interface GoogleLogin {
   idToken: string;
 }
 
-/**
- * Verify Firebase ID token
- * Public endpoint to validate tokens
- */
 export const verifyToken = async (req: Request, res: Response) => {
   try {
     const { idToken } = req.body;
@@ -100,9 +87,6 @@ export const verifyToken = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Get user profile (authenticated endpoint)
- */
 export const getProfile = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
@@ -144,9 +128,6 @@ export const getProfile = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Update user profile
- */
 export const updateProfile = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
@@ -206,11 +187,6 @@ export const updateProfile = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Login with email and password
- * Public endpoint - this endpoint explains how to use Firebase Client SDK for authentication
- * Note: Firebase Admin SDK cannot validate passwords, only Firebase Client SDK can
- */
 export const loginWithEmail = async (req: Request, res: Response) => {
   try {
     const { email, password }: EmailPasswordLogin = req.body;
@@ -227,7 +203,6 @@ export const loginWithEmail = async (req: Request, res: Response) => {
 
     const auth = getFirebaseAuth();
 
-    // Check if user exists in Firebase
     let userRecord;
     try {
       userRecord = await auth.getUserByEmail(email);
@@ -244,7 +219,6 @@ export const loginWithEmail = async (req: Request, res: Response) => {
       throw error;
     }
 
-    // Check if user is disabled
     if (userRecord.disabled) {
       return res.status(401).json({
         success: false,
@@ -255,17 +229,10 @@ export const loginWithEmail = async (req: Request, res: Response) => {
       });
     }
 
-    // For Firebase Admin SDK, we cannot validate passwords directly
-    // The client should use Firebase Client SDK to authenticate
-    // Here we provide instructions and a custom token for development
-    
-    // Create a custom token that the client can use
     const customToken = await auth.createCustomToken(userRecord.uid);
 
-    // Set default role if user doesn't have custom claims
     if (!userRecord.customClaims || !userRecord.customClaims.role) {
       await claimsService.setDefaultClaimsForNewUser(userRecord.uid);
-      // Refresh user record to get updated claims
       userRecord = await auth.getUser(userRecord.uid);
     }
 
@@ -285,7 +252,7 @@ export const loginWithEmail = async (req: Request, res: Response) => {
         emailVerified: userRecord.emailVerified,
         role: userRecord.customClaims?.role || 'public',
         provider: 'email',
-        customToken, // Client will use this to get ID token
+        customToken,
       },
       message: 'User found. Use the customToken with Firebase Client SDK to complete authentication.',
       instructions: {
@@ -306,10 +273,6 @@ export const loginWithEmail = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Register new user with email and password
- * Public endpoint - creates user account in Firebase
- */
 export const registerWithEmail = async (req: Request, res: Response) => {
   try {
     const { email, password, displayName }: UserRegistration = req.body;
@@ -326,25 +289,22 @@ export const registerWithEmail = async (req: Request, res: Response) => {
 
     const auth = getFirebaseAuth();
 
-    // Create user in Firebase
     const userRecord = await auth.createUser({
       email,
       password,
       displayName,
-      emailVerified: false // User will need to verify email
+      emailVerified: false
     });
 
-    // Set default role as 'public' with proper claims structure
     await claimsService.setDefaultClaimsForNewUser(userRecord.uid);
 
-    // Save user to MongoDB as well (without password - Firebase handles auth)
     try {
       await userRepository.create({
-        _id: userRecord.uid, // Use Firebase UID as MongoDB _id
-        uid: userRecord.uid, // Also store Firebase UID in uid field
+        _id: userRecord.uid,
+        uid: userRecord.uid,
         name: displayName || userRecord.email?.split('@')[0] || 'User',
         email: userRecord.email!,
-        role: 'public', // Default role
+        role: 'public',
         isActive: true
       });
       
@@ -353,8 +313,6 @@ export const registerWithEmail = async (req: Request, res: Response) => {
         email: userRecord.email
       });
     } catch (mongoError) {
-      // If MongoDB save fails, log but don't fail the registration
-      // Firebase user is already created
       logger.warn('Failed to save user to MongoDB', {
         uid: userRecord.uid,
         email: userRecord.email,
@@ -421,10 +379,74 @@ export const registerWithEmail = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Login with Google ID token
- * Public endpoint - verifies Google token and returns user info
- */
+export const syncFirebaseUser = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'User not authenticated'
+        }
+      });
+    }
+
+    const { email, displayName } = req.body;
+    const firebaseUid = req.user.id;
+
+    try {
+      await claimsService.setDefaultClaimsForNewUser(firebaseUid);
+    } catch (claimsError) {
+      logger.warn('Claims already exist for user', {
+        uid: firebaseUid,
+        error: claimsError
+      });
+    }
+
+    try {
+      await userRepository.create({
+        _id: firebaseUid,
+        uid: firebaseUid,
+        name: displayName || email?.split('@')[0] || 'User',
+        email: email || req.user.email,
+        role: 'public',
+        isActive: true
+      });
+      
+      logger.info('Firebase user synced to MongoDB', {
+        uid: firebaseUid,
+        email: email || req.user.email
+      });
+    } catch (mongoError) {
+      logger.warn('User might already exist in MongoDB', {
+        uid: firebaseUid,
+        email: email || req.user.email,
+        error: mongoError
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      data: {
+        uid: firebaseUid,
+        email: email || req.user.email,
+        displayName: displayName,
+        message: 'User synced to backend successfully'
+      }
+    });
+  } catch (error: any) {
+    logger.error('Error syncing Firebase user', error);
+
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'SERVER_ERROR',
+        message: 'Failed to sync user to backend'
+      }
+    });
+  }
+};
+
 export const loginWithGoogle = async (req: Request, res: Response) => {
   try {
     const { idToken }: GoogleLogin = req.body;
@@ -440,14 +462,9 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
     }
 
     const auth = getFirebaseAuth();
-
-    // Verify Google ID token
     const decodedToken = await auth.verifyIdToken(idToken);
-    
-    // Get user record
     const userRecord = await auth.getUser(decodedToken.uid);
 
-    // Set default role if user doesn't have custom claims
     if (!userRecord.customClaims || !userRecord.customClaims.role) {
       await claimsService.setDefaultClaimsForNewUser(userRecord.uid);
     }
@@ -468,7 +485,7 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
         emailVerified: userRecord.emailVerified,
         role: userRecord.customClaims?.role || 'public',
         provider: 'google',
-        token: idToken // Return the same token for client use
+        token: idToken
       }
     });
   } catch (error: any) {
@@ -504,10 +521,6 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Send password reset email
- * Public endpoint - sends password reset link to user's email
- */
 export const sendPasswordReset = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
@@ -523,8 +536,6 @@ export const sendPasswordReset = async (req: Request, res: Response) => {
     }
 
     const auth = getFirebaseAuth();
-
-    // Generate password reset link
     const link = await auth.generatePasswordResetLink(email);
 
     logger.info('Password reset link generated', {
@@ -534,14 +545,12 @@ export const sendPasswordReset = async (req: Request, res: Response) => {
     res.json({
       success: true,
       message: 'Password reset email sent',
-      // In production, send this via email service instead of returning it
       resetLink: link
     });
   } catch (error: any) {
     logger.error('Error sending password reset', error);
 
     if (error.code === 'auth/user-not-found') {
-      // For security, don't reveal if email exists or not
       return res.json({
         success: true,
         message: 'If an account with this email exists, a password reset link has been sent'

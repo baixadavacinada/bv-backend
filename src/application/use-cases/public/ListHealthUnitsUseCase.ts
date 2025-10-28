@@ -22,10 +22,8 @@ export class ListHealthUnitsUseCase {
   async execute(filters: ListHealthUnitsFilters = {}): Promise<HealthUnit[]> {
     try {
       if (this.healthUnitsRepository) {
-        // Use repository if provided (for admin use)
         return await this.healthUnitsRepository.findAll(filters);
       } else {
-        // Fallback to direct model usage (for existing public use)
         const { HealthUnitModel } = await import('../../../infrastructure/database/models/healthUnitModel');
         const query = this.buildQuery(filters);
         return await HealthUnitModel.find(query);

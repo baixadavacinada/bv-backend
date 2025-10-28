@@ -31,7 +31,6 @@ app.use(sanitizeRequest);
 
 setupApiDocs(app);
 
-// Health check route
 app.get('/', (req, res) => {
   res.json({
     success: true,

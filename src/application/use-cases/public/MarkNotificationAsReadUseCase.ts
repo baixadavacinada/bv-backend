@@ -12,7 +12,6 @@ export class MarkNotificationAsReadUseCase {
       throw new Error('User ID is required');
     }
 
-    // Verificar se a notificação pertence ao usuário
     const notification = await this.notificationRepository.findById(notificationId);
     if (!notification) {
       throw new Error('Notification not found');

@@ -53,7 +53,7 @@ export class CreateHealthUnitUseCase {
       neighborhood: data.neighborhood.trim(),
       city: data.city.trim(),
       state: data.state.trim().toUpperCase(),
-      zipCode: data.zipCode.replace(/\D/g, ''), // Remove non-digits
+      zipCode: data.zipCode.replace(/\D/g, ''),
       phone: data.phone?.trim(),
       operatingHours: data.operatingHours,
       availableVaccines: data.availableVaccines || [],

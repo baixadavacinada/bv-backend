@@ -213,7 +213,6 @@ export const ValidationSchemas = {
     order: { required: false, type: 'string' as const, enum: ['asc', 'desc'] as any[] }
   },
 
-  // Firebase validation schemas
   firebaseUser: {
     email: { required: true, type: 'email' as const },
     password: { required: true, type: 'string' as const, minLength: 6 },

@@ -49,7 +49,6 @@ export const updateUserClaims = async (req: Request, res: Response) => {
       });
     }
 
-    // Monta objeto de claims para atualização
     const claimsUpdate: any = {};
     
     if (role !== undefined) claimsUpdate.role = role;

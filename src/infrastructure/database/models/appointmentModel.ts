@@ -104,7 +104,6 @@ const appointmentSchema = new Schema<AppointmentDocument>(
   }
 );
 
-// Indexes for performance
 appointmentSchema.index({ residentId: 1, scheduledDate: -1 });
 appointmentSchema.index({ healthUnitId: 1, scheduledDate: 1 });
 appointmentSchema.index({ status: 1 });

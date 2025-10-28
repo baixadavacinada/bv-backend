@@ -89,7 +89,6 @@ export class MongoAppointmentRepository implements AppointmentRepository {
       workingHours.push(`${hour.toString().padStart(2, '0')}:30`);
     }
 
-    // Get booked slots for the date
     const bookedAppointments = await AppointmentModel.find({
       healthUnitId,
       scheduledDate: date,
@@ -99,7 +98,6 @@ export class MongoAppointmentRepository implements AppointmentRepository {
 
     const bookedSlots = bookedAppointments.map(apt => apt.scheduledTime);
     
-    // Return available slots
     return workingHours.filter(slot => !bookedSlots.includes(slot));
   }
 }

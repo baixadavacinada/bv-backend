@@ -28,13 +28,11 @@ export class GetAppointmentStatsUseCase {
   constructor(private appointmentRepository: AppointmentRepository) {}
 
   async execute(startDate?: Date, endDate?: Date): Promise<AppointmentStats> {
-    // Get all appointments in date range
     const appointments = await this.appointmentRepository.findByDateRange(
-      startDate || new Date(Date.now() - 365 * 24 * 60 * 60 * 1000), // Default: last year
+      startDate || new Date(Date.now() - 365 * 24 * 60 * 60 * 1000),
       endDate || new Date()
     );
 
-    // Calculate basic stats
     const totalAppointments = appointments.length;
     const scheduledAppointments = appointments.filter(a => a.status === 'scheduled').length;
     const confirmedAppointments = appointments.filter(a => a.status === 'confirmed').length;
@@ -46,7 +44,6 @@ export class GetAppointmentStatsUseCase {
       ? Math.round((completedAppointments / totalAppointments) * 100) 
       : 0;
 
-    // Group by health unit
     const healthUnitMap = new Map<string, number>();
     appointments.forEach(appointment => {
       const count = healthUnitMap.get(appointment.healthUnitId) || 0;
@@ -58,7 +55,6 @@ export class GetAppointmentStatsUseCase {
       count
     }));
 
-    // Group by vaccine
     const vaccineMap = new Map<string, number>();
     appointments.forEach(appointment => {
       const count = vaccineMap.get(appointment.vaccineId) || 0;
@@ -70,10 +66,9 @@ export class GetAppointmentStatsUseCase {
       count
     }));
 
-    // Group by month
     const monthMap = new Map<string, number>();
     appointments.forEach(appointment => {
-      const month = appointment.scheduledDate.toISOString().slice(0, 7); // YYYY-MM
+      const month = appointment.scheduledDate.toISOString().slice(0, 7);
       const count = monthMap.get(month) || 0;
       monthMap.set(month, count + 1);
     });

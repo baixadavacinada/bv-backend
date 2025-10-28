@@ -23,7 +23,6 @@ export class ModerateFeedbackUseCase {
       throw new Error('Feedback not found');
     }
 
-    // Update feedback with moderation info
     const updateData = {
       isActive: data.isActive,
       moderatedBy: data.moderatedBy,

@@ -1,16 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import * as crypto from 'crypto';
 
-/**
- * Generate a simple UUID v4
- */
 const generateUUID = (): string => {
   return crypto.randomUUID();
 };
 
-/**
- * Estrutura padronizada de logs seguindo padrões de observabilidade e RFC 5424
- */
 export interface LogEntry {
   timestamp: string;
   level: 'INFO' | 'WARN' | 'ERROR' | 'DEBUG' | 'TRACE';
@@ -30,11 +24,6 @@ export interface LogEntry {
   metadata?: Record<string, any>;
   tags?: string[];
 }
-
-/**
- * Logger com padrões estruturados seguindo observabilidade moderna
- * Implementa structured logging com contexto rico para debugging e monitoramento
- */
 class Logger {
   private static instance: Logger;
   private readonly serviceName = 'baixada-vacinada-api';
@@ -62,7 +51,6 @@ class Logger {
   }
 
   private log(entry: LogEntry): void {
-    // Em produção, aqui seria integrado com sistemas como ELK, Datadog, CloudWatch, etc.
     console.log(JSON.stringify(entry));
   }
 
@@ -105,7 +93,6 @@ class Logger {
   }
 
   public debug(message: string, metadata?: Record<string, any>, correlationId?: string, tags?: string[]): void {
-    // Debug logs apenas em desenvolvimento
     if (this.environment === 'development') {
       this.log({
         ...this.createBaseLogEntry(correlationId),
@@ -118,7 +105,6 @@ class Logger {
   }
 
   public trace(message: string, metadata?: Record<string, any>, correlationId?: string, tags?: string[]): void {
-    // Trace logs apenas em desenvolvimento com flag específica
     if (this.environment === 'development' && process.env.LOG_LEVEL === 'trace') {
       this.log({
         ...this.createBaseLogEntry(correlationId),
@@ -131,9 +117,6 @@ class Logger {
   }
 }
 
-/**
- * Middleware para correlation ID (rastreamento de requests)
- */
 export const correlationIdMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const correlationId = req.headers['x-correlation-id'] as string || generateUUID();
 
@@ -143,16 +126,11 @@ export const correlationIdMiddleware = (req: Request, res: Response, next: NextF
   next();
 };
 
-/**
- * Middleware de logging de requests
- * Captura métricas importantes para observabilidade com contexto rico
- */
 export const requestLoggingMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const startTime = Date.now();
   const correlationId = req.correlationId || generateUUID();
   const logger = Logger.getInstance();
 
-  // Log detalhado do início da requisição
   const requestStartContext = {
     method: req.method,
     url: req.originalUrl || req.url,
@@ -178,28 +156,24 @@ export const requestLoggingMiddleware = (req: Request, res: Response, next: Next
 
   logger.info(`Request Started`, requestStartContext, correlationId, ['request', 'start']);
 
-  // Interceptar response para log de completion
   const originalSend = res.send;
   const originalJson = res.json;
   
   let responseBody: any;
   let responseSize = 0;
 
-  // Override send method
   res.send = function(data) {
     responseBody = data;
     responseSize = typeof data === 'string' ? data.length : JSON.stringify(data).length;
     return originalSend.call(this, data);
   };
 
-  // Override json method  
   res.json = function(data) {
     responseBody = data;
     responseSize = JSON.stringify(data).length;
     return originalJson.call(this, data);
   };
 
-  // Log completion quando response finaliza
   res.on('finish', () => {
     const duration = Date.now() - startTime;
     const isError = res.statusCode >= 400;
@@ -249,9 +223,6 @@ export const requestLoggingMiddleware = (req: Request, res: Response, next: Next
   next();
 };
 
-/**
- * Middleware de health check com logs estruturados
- */
 export const healthCheckMiddleware = (req: Request, res: Response, next: NextFunction) => {
   if (req.path === '/api/health') {
     const logger = Logger.getInstance();
@@ -269,7 +240,6 @@ export const healthCheckMiddleware = (req: Request, res: Response, next: NextFun
       nodeVersion: process.version
     };
 
-    // Log health check access para monitoramento
     logger.info(`Health Check Accessed`, {
       ip: req.ip || req.connection.remoteAddress,
       userAgent: req.headers['user-agent'],
@@ -292,9 +262,6 @@ declare global {
   }
 }
 
-/**
- * Middleware especializado para log de eventos de autenticação
- */
 export const authLoggingMiddleware = (event: string, success: boolean, userId?: string, details?: Record<string, any>) => {
   return (req: Request, res: Response, next: NextFunction) => {
     const logger = Logger.getInstance();
@@ -322,9 +289,6 @@ export const authLoggingMiddleware = (event: string, success: boolean, userId?: 
   };
 };
 
-/**
- * Log de eventos de segurança críticos
- */
 export const securityEventLogger = {
   logSuspiciousActivity: (req: Request, reason: string, details?: Record<string, any>) => {
     const logger = Logger.getInstance();

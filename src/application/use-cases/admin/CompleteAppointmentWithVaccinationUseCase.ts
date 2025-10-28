@@ -32,7 +32,6 @@ export class CompleteAppointmentWithVaccinationUseCase {
       throw new Error('Only confirmed or scheduled appointments can be completed');
     }
 
-    // Update appointment status to completed
     const updatedAppointment = await this.appointmentRepository.update(data.appointmentId, {
       status: 'completed',
       completedBy: data.completedBy,
@@ -40,7 +39,6 @@ export class CompleteAppointmentWithVaccinationUseCase {
       updatedBy: data.completedBy
     });
 
-    // Create vaccination record
     const vaccinationRecord: VaccinationRecord = {
       residentId: appointment.residentId,
       vaccineId: appointment.vaccineId,

@@ -9,6 +9,6 @@ export async function connectDatabase() {
     console.log("MongoDB Atlas connected!");
   } catch (err) {
     console.error("Error connecting to MongoDB:", err);
-    throw err; // Don't use process.exit in serverless
+    throw err; 
   }
 }

@@ -1,7 +1,6 @@
 import { getFirebaseAuth } from '../config/firebase';
 import { Logger } from '../middlewares/logging';
 
-// Tipos unificados para sistema de claims
 export type UserRole = 'admin' | 'agent' | 'public';
 
 export type Permission = 
@@ -61,20 +60,15 @@ const logger = Logger.getInstance();
 export class ClaimsService {
   private auth = getFirebaseAuth();
 
-  /**
-   * Atualiza claims de um usuário com validação completa
-   */
   async updateUserClaims(
     uid: string, 
     claims: Partial<UserClaims>,
     updatedBy: string
   ): Promise<UserClaims> {
     try {
-      // Busca claims atuais
       const userRecord = await this.auth.getUser(uid);
       const currentClaims = (userRecord.customClaims as UserClaims) || this.getDefaultClaims();
 
-      // Merge com novas claims, preservando campos obrigatórios
       const now = new Date().toISOString();
       const newClaims: UserClaims = {
         ...currentClaims,
@@ -87,10 +81,8 @@ export class ClaimsService {
         }
       };
 
-      // Valida e normaliza as claims
       const validatedClaims = this.validateAndNormalizeClaims(newClaims);
 
-      // Atualiza no Firebase
       await this.auth.setCustomUserClaims(uid, validatedClaims);
 
       logger.info('User claims updated successfully', {
@@ -107,9 +99,6 @@ export class ClaimsService {
     }
   }
 
-  /**
-   * Busca claims de um usuário
-   */
   async getUserClaims(uid: string): Promise<UserClaims> {
     try {
       const userRecord = await this.auth.getUser(uid);
@@ -122,9 +111,6 @@ export class ClaimsService {
     }
   }
 
-  /**
-   * Verifica se usuário tem permissão específica
-   */
   async hasPermission(uid: string, permission: Permission): Promise<boolean> {
     try {
       const claims = await this.getUserClaims(uid);
@@ -134,31 +120,22 @@ export class ClaimsService {
     }
   }
 
-  /**
-   * Verifica se usuário tem role específica ou superior
-   */
   async hasRole(uid: string, requiredRole: UserRole): Promise<boolean> {
     try {
       const claims = await this.getUserClaims(uid);
       
-      // Admin pode tudo
       if (claims.role === 'admin') return true;
       
-      // Agent pode acessar recursos de public
       if (requiredRole === 'public' && claims.role === 'agent') {
         return true;
       }
       
-      // Verificação exata
       return claims.role === requiredRole;
     } catch {
       return false;
     }
   }
 
-  /**
-   * Define claims padrão para novos usuários
-   */
   async setDefaultClaimsForNewUser(uid: string): Promise<UserClaims> {
     const defaultClaims = this.getDefaultClaims();
     await this.auth.setCustomUserClaims(uid, defaultClaims);
@@ -167,9 +144,6 @@ export class ClaimsService {
     return defaultClaims;
   }
 
-  /**
-   * Atualiza role e ajusta permissões automaticamente
-   */
   async updateUserRole(uid: string, newRole: UserRole, updatedBy: string): Promise<UserClaims> {
     const defaultPermissions = ROLE_PERMISSIONS[newRole];
     
@@ -180,34 +154,23 @@ export class ClaimsService {
     }, updatedBy);
   }
 
-  /**
-   * Desativa usuário (mantém claims mas marca como inativo)
-   */
   async deactivateUser(uid: string, updatedBy: string): Promise<UserClaims> {
     return this.updateUserClaims(uid, {
       isActive: false
     }, updatedBy);
   }
 
-  /**
-   * Reativa usuário
-   */
   async reactivateUser(uid: string, updatedBy: string): Promise<UserClaims> {
     return this.updateUserClaims(uid, {
       isActive: true
     }, updatedBy);
   }
 
-  /**
-   * Valida e normaliza claims antes de salvar
-   */
   private validateAndNormalizeClaims(claims: UserClaims): UserClaims {
-    // Valida role
     if (!['admin', 'agent', 'public'].includes(claims.role)) {
       throw new Error(`Invalid role: ${claims.role}`);
     }
 
-    // Normaliza permissões - remove duplicatas e valida
     const validPermissions = [
       'manage_users', 'manage_health_units', 'manage_vaccines',
       'view_reports', 'edit_appointments', 'manage_notifications',
@@ -218,27 +181,21 @@ export class ClaimsService {
       (perm): perm is Permission => validPermissions.includes(perm as string)
     );
 
-    // Garante que admin sempre tem todas as permissões
     if (claims.role === 'admin') {
       claims.permissions = ROLE_PERMISSIONS.admin;
     } else {
       claims.permissions = normalizedPermissions;
     }
 
-    // Valida UBS ID se presente
     if (claims.ubsId && typeof claims.ubsId !== 'string') {
       delete claims.ubsId;
     }
 
-    // Garante isActive como boolean
     claims.isActive = Boolean(claims.isActive);
 
     return claims;
   }
 
-  /**
-   * Claims padrão para novos usuários
-   */
   private getDefaultClaims(): UserClaims {
     const now = new Date().toISOString();
     return {

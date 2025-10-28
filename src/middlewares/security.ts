@@ -19,7 +19,6 @@ export const createRateLimiter = (windowMs: number, max: number, message: string
     standardHeaders: true,
     legacyHeaders: false,
     handler: (req: Request, res: Response) => {
-      // Log rate limit exceeded
       securityEventLogger.logRateLimitExceeded(req, max, windowMs);
       
       res.status(429).json({
@@ -38,7 +37,6 @@ export const createRateLimiter = (windowMs: number, max: number, message: string
       });
     },
     skip: (req: Request) => {
-      // Skip rate limiting for health checks
       return req.path === '/api/health';
     }
   });
@@ -62,11 +60,8 @@ export const adminRateLimit = createRateLimiter(
   'Administrative operations limit exceeded.'
 );
 
-/**
- * Helmet configuration seguindo OWASP Security Headers
- */
 export const securityHeaders = helmet({
-  contentSecurityPolicy: false, // Disabled for API documentation
+  contentSecurityPolicy: false, 
   hsts: {
     maxAge: 31536000,
     includeSubDomains: true,
@@ -74,10 +69,6 @@ export const securityHeaders = helmet({
   }
 });
 
-/**
- * Request sanitization middleware
- * Remove potenciais payloads maliciosos
- */
 export const sanitizeRequest = (req: Request, res: Response, next: NextFunction) => {
   const sanitizeObject = (obj: any): any => {
     if (typeof obj !== 'object' || obj === null) return obj;

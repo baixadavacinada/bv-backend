@@ -113,7 +113,6 @@ export async function updateVaccineController(req: Request, res: Response) {
       updatedBy: req.user?.firebaseUid || req.user?.id || req.body.updatedBy
     };
 
-    // Check if vaccine exists
     const existingVaccine = await vaccineRepository.findById(id);
     if (!existingVaccine) {
       return res.status(404).json({
@@ -125,7 +124,6 @@ export async function updateVaccineController(req: Request, res: Response) {
       });
     }
 
-    // Update vaccine
     const updatedVaccine = await vaccineRepository.update(id, updateData);
     
     logger.info('Vaccine updated successfully', { vaccineId: id });
@@ -152,7 +150,6 @@ export async function deleteVaccineController(req: Request, res: Response) {
   try {
     const { id } = req.params;
     
-    // Check if vaccine exists
     const existingVaccine = await vaccineRepository.findById(id);
     if (!existingVaccine) {
       return res.status(404).json({
@@ -164,7 +161,6 @@ export async function deleteVaccineController(req: Request, res: Response) {
       });
     }
 
-    // Soft delete vaccine
     await vaccineRepository.update(id, { 
       isActive: false, 
       updatedBy: req.user?.firebaseUid || req.user?.id 

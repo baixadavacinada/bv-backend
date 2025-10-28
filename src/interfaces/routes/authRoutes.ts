@@ -9,10 +9,8 @@ import { asyncHandler } from '../../middlewares/errorHandling';
 
 const router = Router();
 
-// All routes in this file require authentication
 router.use(firebaseAuthAdvanced());
 
-// User profile management
 router.get('/me', asyncHandler(getProfile));
 router.get('/profile', asyncHandler(getProfile));
 

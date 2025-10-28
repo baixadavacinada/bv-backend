@@ -59,7 +59,6 @@ export class GetVaccinationReportUseCase {
     const { HealthUnitModel } = await import('../../../infrastructure/database/models/healthUnitModel');
     const { VaccineModel } = await import('../../../infrastructure/database/models/vaccineModel');
 
-    // Build query based on filters
     const query: any = {};
     
     if (filters.startDate || filters.endDate) {
@@ -76,7 +75,6 @@ export class GetVaccinationReportUseCase {
       query.vaccineId = filters.vaccineId;
     }
 
-    // Get all vaccination records matching filters
     const vaccinationRecords = await VaccinationRecordModel.find(query);
     const totalVaccinations = vaccinationRecords.length;
 
@@ -84,10 +82,8 @@ export class GetVaccinationReportUseCase {
       return this.getEmptyReport();
     }
 
-    // Calculate summary statistics
     const summary = await this.calculateSummary(vaccinationRecords);
     
-    // Calculate distributions
     const [byHealthUnit, byVaccine, byDate, byAgeGroup] = await Promise.all([
       this.calculateByHealthUnit(vaccinationRecords, totalVaccinations),
       this.calculateByVaccine(vaccinationRecords, totalVaccinations),
@@ -95,11 +91,10 @@ export class GetVaccinationReportUseCase {
       this.calculateByAgeGroup(vaccinationRecords, totalVaccinations)
     ]);
 
-    // Calculate coverage (simplified - would need population data)
     const coverage = {
       targetPopulation: undefined,
       vaccinatedPopulation: summary.uniquePatients,
-      coveragePercentage: 0 // Would need target population data
+      coveragePercentage: 0
     };
 
     return {
@@ -133,23 +128,19 @@ export class GetVaccinationReportUseCase {
   }
 
   private async calculateSummary(records: any[]) {
-    // Calculate unique patients
     const uniquePatients = new Set(records.map(r => r.residentId)).size;
 
-    // Calculate dose distribution
     const doseDistribution: { [key: string]: number } = {};
     records.forEach(record => {
       const dose = record.dose || 'unknown';
       doseDistribution[dose] = (doseDistribution[dose] || 0) + 1;
     });
 
-    // Note: Age and gender would require patient data integration
-    // For now, using placeholder values
     return {
       totalVaccinations: records.length,
       uniquePatients,
-      averageAge: 0, // Would need patient birth dates
-      genderDistribution: { male: 0, female: 0, other: 0 }, // Would need patient gender data
+      averageAge: 0,
+      genderDistribution: { male: 0, female: 0, other: 0 },
       doseDistribution
     };
   }
@@ -157,14 +148,12 @@ export class GetVaccinationReportUseCase {
   private async calculateByHealthUnit(records: any[], total: number) {
     const { HealthUnitModel } = await import('../../../infrastructure/database/models/healthUnitModel');
 
-    // Group by health unit
     const healthUnitCounts = new Map();
     records.forEach(record => {
       const id = record.healthUnitId.toString();
       healthUnitCounts.set(id, (healthUnitCounts.get(id) || 0) + 1);
     });
 
-    // Get health unit names
     const healthUnitIds = Array.from(healthUnitCounts.keys());
     const healthUnits = await HealthUnitModel.find({
       _id: { $in: healthUnitIds }
@@ -175,7 +164,6 @@ export class GetVaccinationReportUseCase {
       healthUnitMap.set((hu._id as any).toString(), hu.name);
     });
 
-    // Build result
     const result = [];
     for (const [healthUnitId, count] of healthUnitCounts) {
       result.push({
@@ -192,14 +180,12 @@ export class GetVaccinationReportUseCase {
   private async calculateByVaccine(records: any[], total: number) {
     const { VaccineModel } = await import('../../../infrastructure/database/models/vaccineModel');
 
-    // Group by vaccine
     const vaccineCounts = new Map();
     records.forEach(record => {
       const id = record.vaccineId.toString();
       vaccineCounts.set(id, (vaccineCounts.get(id) || 0) + 1);
     });
 
-    // Get vaccine names
     const vaccineIds = Array.from(vaccineCounts.keys());
     const vaccines = await VaccineModel.find({
       _id: { $in: vaccineIds }
@@ -210,7 +196,6 @@ export class GetVaccinationReportUseCase {
       vaccineMap.set((v._id as any).toString(), v.name);
     });
 
-    // Build result
     const result = [];
     for (const [vaccineId, count] of vaccineCounts) {
       result.push({
@@ -225,14 +210,12 @@ export class GetVaccinationReportUseCase {
   }
 
   private calculateByDate(records: any[]) {
-    // Group by date
     const dateCounts = new Map();
     records.forEach(record => {
-      const dateStr = record.date.toISOString().split('T')[0]; // YYYY-MM-DD
+      const dateStr = record.date.toISOString().split('T')[0];
       dateCounts.set(dateStr, (dateCounts.get(dateStr) || 0) + 1);
     });
 
-    // Build result
     const result = [];
     for (const [date, count] of dateCounts) {
       result.push({ date, count });
@@ -242,8 +225,6 @@ export class GetVaccinationReportUseCase {
   }
 
   private calculateByAgeGroup(records: any[], total: number) {
-    // Age groups would require patient birth date data
-    // For now, return placeholder data
     const ageGroups = [
       { ageGroup: '0-17 anos', count: 0, percentage: 0 },
       { ageGroup: '18-39 anos', count: 0, percentage: 0 },
@@ -251,8 +232,6 @@ export class GetVaccinationReportUseCase {
       { ageGroup: '60+ anos', count: 0, percentage: 0 }
     ];
 
-    // Would need patient age calculation here
-    // For now, distribute randomly for demo purposes
     if (total > 0) {
       ageGroups[0].count = Math.floor(total * 0.15);
       ageGroups[1].count = Math.floor(total * 0.35);

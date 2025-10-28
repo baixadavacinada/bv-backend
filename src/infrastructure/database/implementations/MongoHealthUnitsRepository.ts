@@ -53,7 +53,6 @@ export class MongoHealthUnitsRepository implements HealthUnitsRepository {
   }
 
   async delete(id: string): Promise<boolean> {
-    // Soft delete - just mark as inactive
     const result = await HealthUnitModel.findByIdAndUpdate(
       id,
       { isActive: false, updatedAt: new Date() },

@@ -8,10 +8,8 @@ import "dotenv/config";
 
 const app = express();
 
-// Configure Express to trust proxy (required for Vercel)
 app.set('trust proxy', 1);
 
-// Custom CORS middleware
 app.use((req, res, next) => {
   const origin = req.headers.origin || '*';
   res.setHeader('Access-Control-Allow-Origin', origin);
@@ -27,25 +25,19 @@ app.use((req, res, next) => {
   next();
 });
 
-// Basic middleware with simple CORS (headers set in handler)
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Setup API Documentation - this will create /api-docs and /api-docs.json routes
 setupApiDocs(app);
 
-// Handle Vercel routing for documentation - map /api/api-docs to /api-docs
 app.get('/api/api-docs', (req, res) => {
-  // Redirect to the correct documentation route
   res.redirect(301, '/api-docs');
 });
 
 app.get('/api/api-docs.json', (req, res) => {
-  // Redirect to the correct JSON spec route  
   res.redirect(301, '/api-docs.json');
 });
 
-// Simple health check route
 app.get('/', (req, res) => {
   res.json({
     success: true,
@@ -66,11 +58,9 @@ app.get('/api', (req, res) => {
   });
 });
 
-// Routes
 app.use('/api/public', publicRoutes);
 app.use('/api/admin', adminRoutes);
 
-// Simple 404 handler
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
@@ -82,7 +72,6 @@ app.use('*', (req, res) => {
   });
 });
 
-// Simple error handler
 app.use((error: any, req: any, res: any, next: any) => {
   console.error('Error:', error.message || error);
   res.status(500).json({
@@ -95,7 +84,6 @@ app.use((error: any, req: any, res: any, next: any) => {
   });
 });
 
-// Database connection state
 let isConnected = false;
 
 async function initializeDatabase() {
@@ -111,28 +99,22 @@ async function initializeDatabase() {
   }
 }
 
-// Vercel serverless function handler
 export default async function handler(req: any, res: any) {
-  // Set CORS headers FIRST for all requests
   const origin = req.headers.origin || '*';
   
-  // Always set these headers first
   res.setHeader('Access-Control-Allow-Origin', origin);
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS,PATCH');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   
-  // Handle preflight requests immediately
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Max-Age', '86400');
     return res.status(200).end();
   }
 
   try {
-    // Initialize database
     await initializeDatabase();
     
-    // Pass request to Express app
     app(req, res);
   } catch (error) {
     console.error('Serverless error:', error);

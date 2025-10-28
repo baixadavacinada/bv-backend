@@ -9,8 +9,6 @@ export class DashboardController {
   private getHealthUnitReportUseCase: GetHealthUnitReportUseCase;
 
   constructor() {
-    // Initialize use cases with null repositories for now
-    // They will use direct model imports internally
     this.getDashboardStatsUseCase = new GetDashboardStatsUseCase(
       null, null, null, null, null, null, null
     );
@@ -156,7 +154,6 @@ export class DashboardController {
 
   async getQuickStats(req: Request, res: Response): Promise<void> {
     try {
-      // Quick stats for mobile/lightweight requests
       const { AppointmentModel } = await import('../../../infrastructure/database/models/appointmentModel');
       const { VaccinationRecordModel } = await import('../../../infrastructure/database/models/vaccinationRecordModel');
       const { HealthUnitModel } = await import('../../../infrastructure/database/models/healthUnitModel');

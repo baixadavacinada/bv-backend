@@ -17,7 +17,7 @@ export class MongoNotificationRepository implements NotificationRepository {
   async findByUserId(userId: string): Promise<Notification[]> {
     const notifications = await NotificationModel.find({ userId })
       .sort({ createdAt: -1 })
-      .limit(50) // Limit to last 50 notifications
+      .limit(50)
       .lean();
     return convertLeanArrayToString<Notification>(notifications);
   }
@@ -59,7 +59,7 @@ export class MongoNotificationRepository implements NotificationRepository {
 
     const notifications = await NotificationModel.find(query)
       .sort({ createdAt: -1 })
-      .limit(100) // Limit for admin view
+      .limit(100)
       .lean();
     return convertLeanArrayToString<Notification>(notifications);
   }

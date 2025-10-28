@@ -5,7 +5,6 @@ export interface UserDocument extends Document {
   uid: string; // Firebase UID (redundant but explicit)
   name: string;
   email: string;
-  // Note: password is handled by Firebase Auth, not stored in MongoDB
   role: "public" | "agent" | "admin";
   profile?: {
     assignedUnitsIds?: Types.ObjectId[];
@@ -45,7 +44,6 @@ const UserSchema = new Schema<UserDocument>({
     trim: true,
     match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Invalid email']
   },
-  // Note: password is managed by Firebase Auth, not stored in MongoDB for security
   role: {
     type: String,
     enum: {

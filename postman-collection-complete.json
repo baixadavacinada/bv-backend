@@ -80,7 +80,7 @@
   "item": [
     {
       "name": "🔥 Authentication Flow (Firebase Simulation)",
-      "description": "Simula exatamente o fluxo de autenticação que o frontend React/Next.js faz",
+      "description": "Simula exatamente o fluxo de autenticação que o frontend React/Next.js faz (3 passos: Register → Login → Firebase signInWithCustomToken)",
       "item": [
         {
           "name": "1. Register New User",
@@ -237,6 +237,8 @@
                   "        ",
                   "        // Also set as admin token if this user has admin role",
                   "        pm.collectionVariables.set('adminToken', firebaseResponse.idToken);",
+                  "        ",
+                  "        console.log('🎉 Authentication flow completed! Ready to make authenticated requests.');",
                   "    }",
                   "    ",
                   "    if (firebaseResponse.localId) {",
@@ -277,97 +279,6 @@
               ]
             },
             "description": "Real Firebase signInWithCustomToken - converts customToken to idToken"
-          }
-        },
-        {
-          "name": "4. Reactivate User (if needed)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('User reactivation request completed', function () {",
-                  "    // Accept both success and not found (user might already be active)",
-                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
-                  "});",
-                  "",
-                  "if (pm.response.code === 200) {",
-                  "    const jsonData = pm.response.json();",
-                  "    if (jsonData.success) {",
-                  "        console.log('✅ User reactivated successfully');",
-                  "    }",
-                  "} else if (pm.response.code === 404) {",
-                  "    console.log('ℹ️ User might already be active or not found');",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "PATCH",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{firebaseToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/admin/users/{{userId}}/reactivate",
-              "host": ["{{baseUrl}}"],
-              "path": ["admin", "users", "{{userId}}", "reactivate"]
-            },
-            "description": "Reativa o usuário caso esteja desativado (requer token admin)"
-          }
-        },
-        {
-          "name": "5. Verify Token & Get User Profile",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "pm.test('Token verification successful', function () {",
-                  "    pm.expect(pm.response.code).to.equal(200);",
-                  "});",
-                  "",
-                  "pm.test('User profile retrieved', function () {",
-                  "    const jsonData = pm.response.json();",
-                  "    pm.expect(jsonData).to.have.property('success', true);",
-                  "    pm.expect(jsonData.data).to.have.property('user');",
-                  "});",
-                  "",
-                  "// Save user info if admin",
-                  "if (pm.response.code === 200) {",
-                  "    const jsonData = pm.response.json();",
-                  "    if (jsonData.success && jsonData.data && jsonData.data.user) {",
-                  "        const user = jsonData.data.user;",
-                  "        if (user.role === 'admin') {",
-                  "            pm.collectionVariables.set('adminToken', pm.collectionVariables.get('firebaseToken'));",
-                  "            console.log('✅ Admin privileges confirmed');",
-                  "        }",
-                  "        console.log('👤 User profile loaded:', user.displayName || user.email);",
-                  "    }",
-                  "}"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "header": [
-              {
-                "key": "Authorization",
-                "value": "Bearer {{firebaseToken}}"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/public/auth/me",
-              "host": ["{{baseUrl}}"],
-              "path": ["public", "auth", "me"]
-            },
-            "description": "Verifica o token e obtém o perfil do usuário autenticado"
           }
         }
       ]

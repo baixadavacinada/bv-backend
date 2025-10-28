@@ -9,13 +9,11 @@ export class UpdateHealthUnitUseCase {
       throw new Error('Health Unit ID is required');
     }
 
-    // Check if health unit exists
     const existingHealthUnit = await this.healthUnitsRepository.findById(id);
     if (!existingHealthUnit) {
       throw new Error('Health Unit not found');
     }
 
-    // Validate data if provided
     if (data.name !== undefined) {
       if (data.name.length < 3 || data.name.length > 200) {
         throw new Error('Name must be between 3 and 200 characters');
