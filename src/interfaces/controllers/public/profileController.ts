@@ -76,14 +76,40 @@ export const getProfile = async (req: Request, res: Response) => {
 
 export const createProfile = async (req: Request, res: Response) => {
   try {
-    const { uid, email, displayName, role = 'public' }: CreateProfileRequest = req.body;
+    // ✅ NOVO: Usar UID do token autenticado, não do body (segurança)
+    const uid = req.user?.id;
 
     if (!uid) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'User not authenticated'
+        }
+      });
+    }
+
+    const { email, displayName }: any = req.body;
+
+    // ✅ NOVO: Validar que email é obrigatório
+    if (!email) {
       return res.status(400).json({
         success: false,
         error: {
           code: 'INVALID_INPUT',
-          message: 'User UID is required'
+          message: 'Email is required'
+        }
+      });
+    }
+
+    // ✅ NOVO: Verificar se usuário já existe em MongoDB
+    const existingUser = await userRepository.findById(uid);
+    if (existingUser) {
+      return res.status(409).json({
+        success: false,
+        error: {
+          code: 'USER_EXISTS',
+          message: 'User profile already exists'
         }
       });
     }
@@ -173,6 +199,18 @@ export const updateUserRole = async (req: Request, res: Response) => {
       });
     }
 
+    // ✅ NOVO: Validar que usuário existe em MongoDB
+    const targetUser = await userRepository.findById(uid);
+    if (!targetUser) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'USER_NOT_FOUND',
+          message: 'Target user not found in database'
+        }
+      });
+    }
+
     const claimsUpdate: any = { role };
     if (ubsId !== undefined) claimsUpdate.ubsId = ubsId;
     if (isActive !== undefined) claimsUpdate.isActive = isActive;
@@ -194,13 +232,13 @@ export const updateUserRole = async (req: Request, res: Response) => {
 
     const profile = {
       uid,
-      email: null,
-      displayName: null,
+      email: targetUser.email,
+      displayName: targetUser.name,
       role: updatedClaims.role,
       permissions: updatedClaims.permissions,
       ubsId: updatedClaims.ubsId,
       isActive: updatedClaims.isActive,
-      createdAt: new Date().toISOString()
+      createdAt: targetUser.createdAt?.toISOString() || new Date().toISOString()
     };
 
     logger.info('User role updated', {

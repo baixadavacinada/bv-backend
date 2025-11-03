@@ -236,6 +236,52 @@ export const loginWithEmail = async (req: Request, res: Response) => {
       userRecord = await auth.getUser(userRecord.uid);
     }
 
+    // 🔥 NOVO: Buscar/criar usuário no MongoDB
+    let mongoUser = await userRepository.findById(userRecord.uid);
+
+    if (!mongoUser) {
+      try {
+        mongoUser = await userRepository.create({
+          _id: userRecord.uid,
+          uid: userRecord.uid,
+          name: userRecord.displayName || userRecord.email?.split('@')[0] || 'User',
+          email: userRecord.email!,
+          role: 'public',
+          isActive: true,
+          createdAt: new Date(),
+          lastLoginAt: new Date()
+        });
+
+        logger.info('User created in MongoDB during email login', {
+          uid: userRecord.uid,
+          email: userRecord.email
+        });
+      } catch (mongoError) {
+        logger.warn('Failed to create user in MongoDB', {
+          uid: userRecord.uid,
+          email: userRecord.email,
+          error: mongoError
+        });
+      }
+    } else {
+      // Atualizar lastLoginAt
+      try {
+        await userRepository.updateProfile(userRecord.uid, {
+          lastLoginAt: new Date()
+        });
+
+        logger.info('User login updated', {
+          uid: userRecord.uid,
+          email: userRecord.email
+        });
+      } catch (updateError) {
+        logger.warn('Failed to update lastLoginAt', {
+          uid: userRecord.uid,
+          error: updateError
+        });
+      }
+    }
+
     logger.info('Custom token generated for email login', {
       uid: userRecord.uid,
       email: userRecord.email,
@@ -289,6 +335,23 @@ export const registerWithEmail = async (req: Request, res: Response) => {
 
     const auth = getFirebaseAuth();
 
+    // ✅ NOVO: Verificar se email já existe no Firebase
+    try {
+      const existingFirebaseUser = await auth.getUserByEmail(email);
+      return res.status(409).json({
+        success: false,
+        error: {
+          code: 'EMAIL_EXISTS',
+          message: 'An account with this email already exists'
+        }
+      });
+    } catch (error: any) {
+      if (error.code !== 'auth/user-not-found') {
+        throw error;
+      }
+      // Email não existe, pode continuar
+    }
+
     const userRecord = await auth.createUser({
       email,
       password,
@@ -305,7 +368,9 @@ export const registerWithEmail = async (req: Request, res: Response) => {
         name: displayName || userRecord.email?.split('@')[0] || 'User',
         email: userRecord.email!,
         role: 'public',
-        isActive: true
+        isActive: true,
+        createdAt: new Date(),
+        lastLoginAt: new Date()
       });
       
       logger.info('User saved to MongoDB', {
@@ -469,10 +534,60 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
       await claimsService.setDefaultClaimsForNewUser(userRecord.uid);
     }
 
+    let mongoUser = await userRepository.findById(userRecord.uid);
+    let isNewUser = false;
+
+    if (!mongoUser) {
+      try {
+        mongoUser = await userRepository.create({
+          _id: userRecord.uid,
+          uid: userRecord.uid,
+          name: userRecord.displayName || userRecord.email?.split('@')[0] || 'User',
+          email: userRecord.email!,
+          role: 'public',
+          isActive: true,
+          createdAt: new Date(),
+          lastLoginAt: new Date()
+        });
+
+        isNewUser = true;
+
+        logger.info('New Google user created in MongoDB', {
+          uid: userRecord.uid,
+          email: userRecord.email,
+          displayName: userRecord.displayName
+        });
+      } catch (mongoError) {
+        logger.warn('Failed to create user in MongoDB', {
+          uid: userRecord.uid,
+          email: userRecord.email,
+          error: mongoError
+        });
+      }
+    } else {
+      try {
+        await userRepository.updateProfile(userRecord.uid, {
+          lastLoginAt: new Date()
+        });
+
+        logger.info('Existing Google user login updated', {
+          uid: userRecord.uid,
+          email: userRecord.email
+        });
+      } catch (updateError) {
+        logger.warn('Failed to update lastLoginAt', {
+          uid: userRecord.uid,
+          error: updateError
+        });
+      }
+    }
+
     logger.info('Google login successful', {
       uid: userRecord.uid,
       email: userRecord.email,
-      method: 'google'
+      method: 'google',
+      isNewUser,
+      mongoUserCreated: !!mongoUser
     });
 
     res.json({
@@ -480,12 +595,23 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
       data: {
         uid: userRecord.uid,
         email: userRecord.email,
-        displayName: userRecord.displayName,
+        displayName: userRecord.displayName || mongoUser?.name,
         photoURL: userRecord.photoURL,
         emailVerified: userRecord.emailVerified,
         role: userRecord.customClaims?.role || 'public',
         provider: 'google',
-        token: idToken
+        token: idToken,
+        isNewUser,
+        user: mongoUser ? {
+          _id: mongoUser._id,
+          uid: mongoUser.uid,
+          name: mongoUser.name,
+          email: mongoUser.email,
+          role: mongoUser.role,
+          isActive: mongoUser.isActive,
+          createdAt: mongoUser.createdAt,
+          lastLoginAt: mongoUser.lastLoginAt
+        } : undefined
       }
     });
   } catch (error: any) {
