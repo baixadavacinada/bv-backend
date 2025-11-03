@@ -28,8 +28,8 @@ const apiSpec = {
   paths: {
     '/api/public/health-units': {
       get: {
-        summary: 'Listar unidades de saúde',
-        tags: ['Público'],
+        summary: 'Listar unidades de saúde (Sem autenticação)',
+        tags: ['Público - Sem Autenticação'],
         parameters: [
           {
             name: 'isActive',
@@ -86,8 +86,8 @@ const apiSpec = {
     },
     '/api/public/vaccines': {
       get: {
-        summary: 'Listar vacinas disponíveis',
-        tags: ['Público'],
+        summary: 'Listar vacinas disponíveis (Sem autenticação)',
+        tags: ['Público - Sem Autenticação'],
         responses: {
           200: {
             description: 'Lista de vacinas disponíveis',
@@ -128,8 +128,8 @@ const apiSpec = {
     },
     '/api/public/auth/login': {
       post: {
-        summary: 'Login com email e senha',
-        tags: ['Autenticação Firebase'],
+        summary: 'Login com email e senha (Sem autenticação)',
+        tags: ['Autenticação Firebase - Sem Autenticação'],
         requestBody: {
           required: true,
           content: {
@@ -154,8 +154,8 @@ const apiSpec = {
     },
     '/api/public/auth/register': {
       post: {
-        summary: 'Registrar com email e senha',
-        tags: ['Autenticação Firebase'],
+        summary: 'Registrar com email e senha (Sem autenticação)',
+        tags: ['Autenticação Firebase - Sem Autenticação'],
         requestBody: {
           required: true,
           content: {
@@ -164,10 +164,9 @@ const apiSpec = {
                 type: 'object',
                 properties: {
                   email: { type: 'string', format: 'email', example: 'usuario@exemplo.com' },
-                  password: { type: 'string', minLength: 6, example: 'senha123' },
                   displayName: { type: 'string', example: 'João Silva' }
                 },
-                required: ['email', 'password']
+                required: ['email', 'displayName']
               }
             }
           }
@@ -181,8 +180,8 @@ const apiSpec = {
     },
     '/api/admin/vaccines': {
       post: {
-        summary: 'Criar vacina (Admin)',
-        tags: ['Gerenciamento Admin - Vacinas'],
+        summary: 'Criar vacina (Admin - Autenticado)',
+        tags: ['Gerenciamento Admin - Vacinas - Autenticado'],
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
@@ -213,8 +212,8 @@ const apiSpec = {
         }
       },
       get: {
-        summary: 'Listar todas as vacinas (Admin)',
-        tags: ['Gerenciamento Admin - Vacinas'],
+        summary: 'Listar todas as vacinas (Admin - Autenticado)',
+        tags: ['Gerenciamento Admin - Vacinas - Autenticado'],
         security: [{ bearerAuth: [] }],
         responses: {
           200: { description: 'Lista de vacinas recuperada com sucesso' },
@@ -224,8 +223,8 @@ const apiSpec = {
     },
     '/api/admin/vaccines/{id}': {
       get: {
-        summary: 'Obter vacina por ID (Admin)',
-        tags: ['Gerenciamento Admin - Vacinas'],
+        summary: 'Obter vacina por ID (Admin - Autenticado)',
+        tags: ['Gerenciamento Admin - Vacinas - Autenticado'],
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -242,8 +241,8 @@ const apiSpec = {
         }
       },
       put: {
-        summary: 'Atualizar vacina (Admin)',
-        tags: ['Gerenciamento Admin - Vacinas'],
+        summary: 'Atualizar vacina (Admin - Autenticado)',
+        tags: ['Gerenciamento Admin - Vacinas - Autenticado'],
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -278,8 +277,8 @@ const apiSpec = {
         }
       },
       delete: {
-        summary: 'Remover vacina (Admin)',
-        tags: ['Gerenciamento Admin - Vacinas'],
+        summary: 'Remover vacina (Admin - Autenticado)',
+        tags: ['Gerenciamento Admin - Vacinas - Autenticado'],
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -301,7 +300,7 @@ const apiSpec = {
     '/api/admin/vaccination-records': {
       post: {
         summary: 'Criar registro de vacinação (Admin)',
-        tags: ['Gerenciamento Admin - Registros de Vacinação'],
+        tags: ['Gerenciamento Admin - Registros de Vacinação - Autenticado'],
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
@@ -335,7 +334,7 @@ const apiSpec = {
       },
       get: {
         summary: 'Listar registros de vacinação (Admin)',
-        tags: ['Gerenciamento Admin - Registros de Vacinação'],
+        tags: ['Gerenciamento Admin - Registros de Vacinação - Autenticado'],
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -378,7 +377,7 @@ const apiSpec = {
     '/api/admin/vaccination-records/{id}': {
       get: {
         summary: 'Obter registro de vacinação por ID (Admin)',
-        tags: ['Gerenciamento Admin - Registros de Vacinação'],
+        tags: ['Gerenciamento Admin - Registros de Vacinação - Autenticado'],
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -396,7 +395,7 @@ const apiSpec = {
       },
       put: {
         summary: 'Atualizar registro de vacinação (Admin)',
-        tags: ['Gerenciamento Admin - Registros de Vacinação'],
+        tags: ['Gerenciamento Admin - Registros de Vacinação - Autenticado'],
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -432,7 +431,7 @@ const apiSpec = {
       },
       delete: {
         summary: 'Remover registro de vacinação (Admin)',
-        tags: ['Gerenciamento Admin - Registros de Vacinação'],
+        tags: ['Gerenciamento Admin - Registros de Vacinação - Autenticado'],
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -454,7 +453,7 @@ const apiSpec = {
     '/api/admin/dashboard/stats': {
       get: {
         summary: 'Obter estatísticas completas do dashboard (Admin)',
-        tags: ['Dashboard e Relatórios'],
+        tags: ['Dashboard e Relatórios - Autenticado'],
         security: [{ bearerAuth: [] }],
         responses: {
           200: {
@@ -539,7 +538,7 @@ const apiSpec = {
     '/api/admin/dashboard/quick-stats': {
       get: {
         summary: 'Obter estatísticas rápidas (Admin)',
-        tags: ['Dashboard e Relatórios'],
+        tags: ['Dashboard e Relatórios - Autenticado'],
         security: [{ bearerAuth: [] }],
         responses: {
           200: {
@@ -573,7 +572,7 @@ const apiSpec = {
     '/api/admin/reports/vaccination': {
       get: {
         summary: 'Relatório de vacinação (Admin)',
-        tags: ['Dashboard e Relatórios'],
+        tags: ['Dashboard e Relatórios - Autenticado'],
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -644,7 +643,7 @@ const apiSpec = {
     '/api/admin/reports/health-units': {
       get: {
         summary: 'Relatório de unidades de saúde (Admin)',
-        tags: ['Dashboard e Relatórios'],
+        tags: ['Dashboard e Relatórios - Autenticado'],
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -708,45 +707,11 @@ const apiSpec = {
       }
     },
     
-    // Public Vaccination Records endpoints
-    '/api/public/vaccination-records/my': {
-      get: {
-        summary: 'Obter meus registros de vacinação',
-        tags: ['Público - Registros de Vacinação'],
-        security: [{ bearerAuth: [] }],
-        responses: {
-          200: { description: 'Registros de vacinação do usuário recuperados com sucesso' },
-          401: { description: 'Não autorizado' }
-        }
-      }
-    },
-    '/api/public/vaccination-records/user/{userId}': {
-      get: {
-        summary: 'Obter registros de vacinação de um usuário específico',
-        tags: ['Público - Registros de Vacinação'],
-        security: [{ bearerAuth: [] }],
-        parameters: [
-          {
-            name: 'userId',
-            in: 'path',
-            required: true,
-            schema: { type: 'string' },
-            description: 'ID do usuário'
-          }
-        ],
-        responses: {
-          200: { description: 'Registros de vacinação do usuário recuperados com sucesso' },
-          401: { description: 'Não autorizado' },
-          400: { description: 'ID de usuário inválido' }
-        }
-      }
-    },
-    
     // Admin Feedback endpoints
     '/api/admin/feedback': {
       get: {
         summary: 'Listar todos os feedbacks (Admin)',
-        tags: ['Gerenciamento Admin - Feedback'],
+        tags: ['Gerenciamento Admin - Feedback - Autenticado'],
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -765,7 +730,7 @@ const apiSpec = {
     '/api/admin/feedback/health-unit': {
       get: {
         summary: 'Listar feedbacks por unidade de saúde (Admin)',
-        tags: ['Gerenciamento Admin - Feedback'],
+        tags: ['Gerenciamento Admin - Feedback - Autenticado'],
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -786,7 +751,7 @@ const apiSpec = {
     '/api/admin/feedback/{id}': {
       get: {
         summary: 'Obter feedback por ID (Admin)',
-        tags: ['Gerenciamento Admin - Feedback'],
+        tags: ['Gerenciamento Admin - Feedback - Autenticado'],
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -806,7 +771,7 @@ const apiSpec = {
     '/api/admin/feedback/{id}/moderate': {
       patch: {
         summary: 'Moderar feedback (Admin)',
-        tags: ['Gerenciamento Admin - Feedback'],
+        tags: ['Gerenciamento Admin - Feedback - Autenticado'],
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -842,7 +807,7 @@ const apiSpec = {
     '/api/public/feedback': {
       post: {
         summary: 'Criar feedback sobre unidade de saúde',
-        tags: ['Público - Feedback'],
+        tags: ['Público - Feedback - Autenticado'],
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
@@ -881,7 +846,7 @@ const apiSpec = {
     '/api/public/feedback/health-unit/{healthUnitId}': {
       get: {
         summary: 'Listar feedbacks de uma unidade de saúde',
-        tags: ['Público - Feedback'],
+        tags: ['Público - Feedback - Autenticado'],
         parameters: [
           {
             name: 'healthUnitId',
@@ -920,7 +885,7 @@ const apiSpec = {
     '/api/admin/appointments/stats': {
       get: {
         summary: 'Obter estatísticas de agendamentos (Admin)',
-        tags: ['Gerenciamento Admin - Agendamentos'],
+        tags: ['Gerenciamento Admin - Agendamentos - Autenticado'],
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -1001,7 +966,7 @@ const apiSpec = {
     '/api/admin/appointments/{id}/complete-vaccination': {
       patch: {
         summary: 'Completar agendamento e criar registro de vacinação (Admin)',
-        tags: ['Gerenciamento Admin - Agendamentos'],
+        tags: ['Gerenciamento Admin - Agendamentos - Autenticado'],
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -1081,7 +1046,7 @@ const apiSpec = {
     '/api/admin/health-units': {
       get: {
         summary: 'Listar unidades de saúde (Admin)',
-        tags: ['Gerenciamento Admin - Unidades de Saúde'],
+        tags: ['Gerenciamento Admin - Unidades de Saúde - Autenticado'],
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -1122,7 +1087,7 @@ const apiSpec = {
       },
       post: {
         summary: 'Criar nova unidade de saúde (Admin)',
-        tags: ['Gerenciamento Admin - Unidades de Saúde'],
+        tags: ['Gerenciamento Admin - Unidades de Saúde - Autenticado'],
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
@@ -1176,7 +1141,7 @@ const apiSpec = {
     '/api/admin/health-units/{id}': {
       get: {
         summary: 'Obter unidade de saúde por ID (Admin)',
-        tags: ['Gerenciamento Admin - Unidades de Saúde'],
+        tags: ['Gerenciamento Admin - Unidades de Saúde - Autenticado'],
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -1194,7 +1159,7 @@ const apiSpec = {
       },
       put: {
         summary: 'Atualizar unidade de saúde (Admin)',
-        tags: ['Gerenciamento Admin - Unidades de Saúde'],
+        tags: ['Gerenciamento Admin - Unidades de Saúde - Autenticado'],
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -1237,7 +1202,7 @@ const apiSpec = {
       },
       delete: {
         summary: 'Remover unidade de saúde (Admin)',
-        tags: ['Gerenciamento Admin - Unidades de Saúde'],
+        tags: ['Gerenciamento Admin - Unidades de Saúde - Autenticado'],
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -1259,7 +1224,7 @@ const apiSpec = {
     '/api/admin/notifications': {
       get: {
         summary: 'Listar todas as notificações (Admin)',
-        tags: ['Gerenciamento Admin - Notificações'],
+        tags: ['Gerenciamento Admin - Notificações - Autenticado'],
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -1300,7 +1265,7 @@ const apiSpec = {
       },
       post: {
         summary: 'Criar nova notificação (Admin)',
-        tags: ['Gerenciamento Admin - Notificações'],
+        tags: ['Gerenciamento Admin - Notificações - Autenticado'],
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
@@ -1348,7 +1313,7 @@ const apiSpec = {
     '/api/admin/notifications/{id}': {
       get: {
         summary: 'Obter notificação por ID (Admin)',
-        tags: ['Gerenciamento Admin - Notificações'],
+        tags: ['Gerenciamento Admin - Notificações - Autenticado'],
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -1366,7 +1331,7 @@ const apiSpec = {
       },
       delete: {
         summary: 'Excluir notificação (Admin)',
-        tags: ['Gerenciamento Admin - Notificações'],
+        tags: ['Gerenciamento Admin - Notificações - Autenticado'],
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -1388,7 +1353,7 @@ const apiSpec = {
     '/api/public/notifications': {
       get: {
         summary: 'Listar minhas notificações',
-        tags: ['Público - Notificações'],
+        tags: ['Público - Notificações - Autenticado'],
         security: [{ bearerAuth: [] }],
         responses: {
           200: { 
@@ -1417,7 +1382,7 @@ const apiSpec = {
     '/api/public/notifications/{id}/read': {
       patch: {
         summary: 'Marcar notificação como lida',
-        tags: ['Público - Notificações'],
+        tags: ['Público - Notificações - Autenticado'],
         security: [{ bearerAuth: [] }],
         parameters: [
           {
@@ -1438,7 +1403,7 @@ const apiSpec = {
     '/api/public/notifications/mark-all-read': {
       patch: {
         summary: 'Marcar todas as notificações como lidas',
-        tags: ['Público - Notificações'],
+        tags: ['Público - Notificações - Autenticado'],
         security: [{ bearerAuth: [] }],
         responses: {
           200: { 
