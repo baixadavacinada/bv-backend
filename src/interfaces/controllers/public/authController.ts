@@ -8,11 +8,6 @@ import { claimsService } from '../../../services/claimsService';
 const logger = Logger.getInstance();
 const userRepository = new MongoUserRepository();
 
-export interface EmailPasswordLogin {
-  email: string;
-  password: string;
-}
-
 export interface UserRegistration {
   email: string;
   password: string;
@@ -189,14 +184,14 @@ export const updateProfile = async (req: Request, res: Response) => {
 
 export const loginWithEmail = async (req: Request, res: Response) => {
   try {
-    const { email, password }: EmailPasswordLogin = req.body;
+    const email = req.body;
 
-    if (!email || !password) {
+    if (!email) {
       return res.status(400).json({
         success: false,
         error: {
           code: 'INVALID_INPUT',
-          message: 'Email and password are required'
+          message: 'Email is required'
         }
       });
     }
@@ -323,19 +318,18 @@ export const registerWithEmail = async (req: Request, res: Response) => {
   try {
     const { email, password, displayName }: UserRegistration = req.body;
 
-    if (!email || !password) {
+    if (!email) {
       return res.status(400).json({
         success: false,
         error: {
           code: 'INVALID_INPUT',
-          message: 'Email and password are required'
+          message: 'Email is required'
         }
       });
     }
 
     const auth = getFirebaseAuth();
 
-    // ✅ NOVO: Verificar se email já existe no Firebase
     try {
       const existingFirebaseUser = await auth.getUserByEmail(email);
       return res.status(409).json({
@@ -649,7 +643,7 @@ export const loginWithGoogle = async (req: Request, res: Response) => {
 
 export const sendPasswordReset = async (req: Request, res: Response) => {
   try {
-    const { email } = req.body;
+    const email = req.body;
 
     if (!email) {
       return res.status(400).json({

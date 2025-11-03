@@ -37,12 +37,12 @@ export const createFirebaseUser = async (req: Request, res: Response) => {
   try {
     const { email, password, displayName, role = 'public' }: FirebaseUserRegistration = req.body;
 
-    if (!email || !password) {
+    if (!email) {
       return res.status(400).json({
         success: false,
         error: {
           code: 'INVALID_INPUT',
-          message: 'Email and password are required'
+          message: 'Email is required'
         }
       });
     }
