@@ -30,7 +30,8 @@
  * @openapi
  * /public/auth/register:
  *   post:
- *     summary: Register new user with email and password
+ *     summary: Registra novo usuário com email e senha
+ *     description: Cria uma nova conta de usuário no Firebase Authentication. O usuário será automaticamente sincronizado com o MongoDB. Esta é a rota legada - recomenda-se usar o fluxo Firebase-first (criar no cliente Firebase, depois sincronizar via /auth/sync).
  *     tags:
  *       - Firebase Authentication
  *     requestBody:
@@ -56,7 +57,7 @@
  *                 example: "John Doe"
  *     responses:
  *       201:
- *         description: Account created successfully
+ *         description: Conta criada com sucesso
  *         content:
  *           application/json:
  *             schema:
@@ -78,9 +79,11 @@
  *                     message:
  *                       type: string
  *       400:
- *         description: Invalid input or weak password
+ *         description: Entrada inválida ou senha fraca
  *       409:
- *         description: Email already exists
+ *         description: Email já existe
+ *       500:
+ *         description: Erro ao criar conta
  */
 
 /**
@@ -430,10 +433,10 @@
  * @openapi
  * /public/auth/sync:
  *   post:
- *     summary: Sincroniza usuário com Firebase
- *     description: Sincroniza dados do usuário com o Firebase
+ *     summary: Sincroniza usuário Firebase com MongoDB
+ *     description: Endpoint para sincronizar dados do usuário criado no Firebase com o banco de dados MongoDB. Deve ser chamado após criação bem-sucedida do usuário no Firebase.
  *     tags:
- *       - Autenticação
+ *       - Firebase Authentication
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -445,13 +448,38 @@
  *             properties:
  *               email:
  *                 type: string
+ *                 format: email
+ *                 example: "user@example.com"
+ *                 description: Email do usuário
  *               displayName:
  *                 type: string
+ *                 example: "John Doe"
+ *                 description: Nome exibição do usuário
  *     responses:
- *       200:
- *         description: Sincronização realizada com sucesso
+ *       201:
+ *         description: Usuário sincronizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     uid:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     displayName:
+ *                       type: string
+ *                     message:
+ *                       type: string
  *       401:
- *         description: Não autorizado
+ *         description: Usuário não autenticado
+ *       500:
+ *         description: Erro ao sincronizar usuário
  */
 
 /**

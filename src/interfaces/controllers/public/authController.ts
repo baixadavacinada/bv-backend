@@ -328,10 +328,20 @@ export const registerWithEmail = async (req: Request, res: Response) => {
       });
     }
 
+    if (!password) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_INPUT',
+          message: 'Password is required'
+        }
+      });
+    }
+
     const auth = getFirebaseAuth();
 
     try {
-      const existingFirebaseUser = await auth.getUserByEmail(email);
+      await auth.getUserByEmail(email);
       return res.status(409).json({
         success: false,
         error: {
@@ -343,7 +353,6 @@ export const registerWithEmail = async (req: Request, res: Response) => {
       if (error.code !== 'auth/user-not-found') {
         throw error;
       }
-      // Email não existe, pode continuar
     }
 
     const userRecord = await auth.createUser({
@@ -367,7 +376,7 @@ export const registerWithEmail = async (req: Request, res: Response) => {
         lastLoginAt: new Date()
       });
       
-      logger.info('User saved to MongoDB', {
+      logger.info('User saved to MongoDB during registration', {
         uid: userRecord.uid,
         email: userRecord.email
       });
