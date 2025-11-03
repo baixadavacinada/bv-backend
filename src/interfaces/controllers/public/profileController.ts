@@ -76,7 +76,6 @@ export const getProfile = async (req: Request, res: Response) => {
 
 export const createProfile = async (req: Request, res: Response) => {
   try {
-    // ✅ NOVO: Usar UID do token autenticado, não do body (segurança)
     const uid = req.user?.id;
 
     if (!uid) {
@@ -91,7 +90,6 @@ export const createProfile = async (req: Request, res: Response) => {
 
     const { email, displayName }: any = req.body;
 
-    // ✅ NOVO: Validar que email é obrigatório
     if (!email) {
       return res.status(400).json({
         success: false,
@@ -102,7 +100,6 @@ export const createProfile = async (req: Request, res: Response) => {
       });
     }
 
-    // ✅ NOVO: Verificar se usuário já existe em MongoDB
     const existingUser = await userRepository.findById(uid);
     if (existingUser) {
       return res.status(409).json({

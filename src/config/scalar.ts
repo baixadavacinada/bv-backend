@@ -23,6 +23,254 @@ const apiSpec = {
         bearerFormat: 'Firebase ID Token',
         description: 'Token de ID do Firebase obtido através do Firebase Auth'
       }
+    },
+    schemas: {
+      ProblemDetails: {
+        type: 'object',
+        description: 'RFC 7807 - Detalhes de Problema HTTP',
+        properties: {
+          type: {
+            type: 'string',
+            example: 'https://api.baixada-vacinada.com/errors/validation',
+            description: 'URI que identifica o tipo de erro'
+          },
+          title: {
+            type: 'string',
+            example: 'Validation Failed',
+            description: 'Resumo legível do tipo de problema'
+          },
+          status: {
+            type: 'integer',
+            example: 400,
+            description: 'Código HTTP do status'
+          },
+          detail: {
+            type: 'string',
+            example: 'The field email is required',
+            description: 'Explicação específica do problema'
+          },
+          instance: {
+            type: 'string',
+            example: '550e8400-e29b-41d4-a716-446655440000',
+            description: 'Correlation ID para rastreamento'
+          },
+          code: {
+            type: 'string',
+            example: 'VALIDATION_ERROR',
+            description: 'Código de erro interno'
+          },
+          timestamp: {
+            type: 'string',
+            format: 'date-time',
+            example: '2024-01-15T10:30:45.123Z',
+            description: 'Timestamp ISO 8601'
+          },
+          path: {
+            type: 'string',
+            example: '/api/auth/profile',
+            description: 'Caminho do endpoint que gerou o erro'
+          }
+        },
+        required: ['type', 'title', 'status', 'instance', 'code', 'timestamp', 'path']
+      },
+      ValidationError: {
+        allOf: [
+          { $ref: '#/components/schemas/ProblemDetails' },
+          {
+            type: 'object',
+            properties: {
+              fields: {
+                type: 'object',
+                description: 'Campos com erro de validação',
+                example: {
+                  email: 'Invalid email format',
+                  password: 'Password must be at least 8 characters'
+                }
+              }
+            }
+          }
+        ]
+      },
+      ConflictError: {
+        allOf: [
+          { $ref: '#/components/schemas/ProblemDetails' },
+          {
+            type: 'object',
+            properties: {
+              conflictField: {
+                type: 'string',
+                description: 'Campo que causou o conflito',
+                example: 'email'
+              }
+            }
+          }
+        ]
+      },
+      AuthenticationError: {
+        allOf: [
+          { $ref: '#/components/schemas/ProblemDetails' },
+          {
+            type: 'object',
+            properties: {
+              code: {
+                type: 'string',
+                enum: ['INVALID_TOKEN', 'TOKEN_EXPIRED', 'UNAUTHORIZED'],
+                description: 'Tipo específico de erro de autenticação'
+              }
+            }
+          }
+        ]
+      },
+      NotFoundError: {
+        allOf: [
+          { $ref: '#/components/schemas/ProblemDetails' },
+          {
+            type: 'object',
+            properties: {
+              resource: {
+                type: 'string',
+                description: 'Tipo de recurso não encontrado',
+                example: 'User'
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  'x-error-responses': {
+    '400-Validation': {
+      description: 'Bad Request - Erro de validação',
+      content: {
+        'application/problem+json': {
+          schema: { $ref: '#/components/schemas/ValidationError' },
+          example: {
+            type: 'https://api.baixada-vacinada.com/errors/validation',
+            title: 'Validation Failed',
+            status: 400,
+            detail: 'The request contains invalid data',
+            instance: '550e8400-e29b-41d4-a716-446655440000',
+            code: 'VALIDATION_ERROR',
+            timestamp: '2024-01-15T10:30:45.123Z',
+            path: '/api/auth/profile',
+            fields: {
+              email: 'Invalid email format',
+              displayName: 'Display name is required'
+            }
+          }
+        }
+      }
+    },
+    '401-Unauthorized': {
+      description: 'Unauthorized - Token ausente ou inválido',
+      content: {
+        'application/problem+json': {
+          schema: { $ref: '#/components/schemas/AuthenticationError' },
+          example: {
+            type: 'https://api.baixada-vacinada.com/errors/unauthorized',
+            title: 'Authentication Required',
+            status: 401,
+            detail: 'The provided authentication token is invalid',
+            instance: '550e8400-e29b-41d4-a716-446655440000',
+            code: 'INVALID_TOKEN',
+            timestamp: '2024-01-15T10:30:45.123Z',
+            path: '/api/auth/profile'
+          }
+        }
+      }
+    },
+    '401-TokenExpired': {
+      description: 'Unauthorized - Token expirado',
+      content: {
+        'application/problem+json': {
+          schema: { $ref: '#/components/schemas/AuthenticationError' },
+          example: {
+            type: 'https://api.baixada-vacinada.com/errors/unauthorized',
+            title: 'Token Expired',
+            status: 401,
+            detail: 'The authentication token has expired',
+            instance: '550e8400-e29b-41d4-a716-446655440000',
+            code: 'TOKEN_EXPIRED',
+            timestamp: '2024-01-15T10:30:45.123Z',
+            path: '/api/auth/profile',
+            expiredAt: '2024-01-15T09:30:45.000Z'
+          }
+        }
+      }
+    },
+    '403-Forbidden': {
+      description: 'Forbidden - Usuário não tem permissão',
+      content: {
+        'application/problem+json': {
+          schema: { $ref: '#/components/schemas/ProblemDetails' },
+          example: {
+            type: 'https://api.baixada-vacinada.com/errors/forbidden',
+            title: 'Access Denied',
+            status: 403,
+            detail: 'You do not have permission to access this resource',
+            instance: '550e8400-e29b-41d4-a716-446655440000',
+            code: 'FORBIDDEN',
+            timestamp: '2024-01-15T10:30:45.123Z',
+            path: '/api/admin/users'
+          }
+        }
+      }
+    },
+    '404-NotFound': {
+      description: 'Not Found - Recurso não existe',
+      content: {
+        'application/problem+json': {
+          schema: { $ref: '#/components/schemas/NotFoundError' },
+          example: {
+            type: 'https://api.baixada-vacinada.com/errors/not-found',
+            title: 'Resource Not Found',
+            status: 404,
+            detail: 'User not found',
+            instance: '550e8400-e29b-41d4-a716-446655440000',
+            code: 'NOT_FOUND',
+            timestamp: '2024-01-15T10:30:45.123Z',
+            path: '/api/admin/users/abc123',
+            resource: 'User'
+          }
+        }
+      }
+    },
+    '409-Conflict': {
+      description: 'Conflict - Recurso já existe',
+      content: {
+        'application/problem+json': {
+          schema: { $ref: '#/components/schemas/ConflictError' },
+          example: {
+            type: 'https://api.baixada-vacinada.com/errors/conflict',
+            title: 'Resource Already Exists',
+            status: 409,
+            detail: 'Resource with email already exists in database',
+            instance: '550e8400-e29b-41d4-a716-446655440000',
+            code: 'DUPLICATE_KEY',
+            timestamp: '2024-01-15T10:30:45.123Z',
+            path: '/api/public/auth/register',
+            conflictField: 'email'
+          }
+        }
+      }
+    },
+    '500-InternalError': {
+      description: 'Internal Server Error - Erro no servidor',
+      content: {
+        'application/problem+json': {
+          schema: { $ref: '#/components/schemas/ProblemDetails' },
+          example: {
+            type: 'https://api.baixada-vacinada.com/errors/internal-server-error',
+            title: 'Internal Server Error',
+            status: 500,
+            detail: 'An unexpected error occurred. Please contact support if the problem persists.',
+            instance: '550e8400-e29b-41d4-a716-446655440000',
+            code: 'INTERNAL_ERROR',
+            timestamp: '2024-01-15T10:30:45.123Z',
+            path: '/api/auth/profile'
+          }
+        }
+      }
     }
   },
   paths: {
