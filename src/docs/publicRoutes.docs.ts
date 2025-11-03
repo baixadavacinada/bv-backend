@@ -268,9 +268,11 @@
  * @openapi
  * /public/profile:
  *   get:
- *     summary: Get user profile with claims
+ *     summary: Get user profile with claims (DEPRECATED - use /auth/profile)
+ *     description: Retorna informações do perfil do usuário autenticado. DEPRECATED - Esta rota foi consolidada em /auth/profile. Use /auth/profile para novas requisições.
  *     tags:
  *       - Profile Management
+ *       - Deprecated
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -302,82 +304,8 @@
  *                           type: array
  *                           items:
  *                             type: string
- *                         profile:
- *                           type: object
- *                           properties:
- *                             hasBasicInfo:
- *                               type: boolean
- *                             hasHealthInfo:
- *                               type: boolean
- *                             profileCompleteness:
- *                               type: number
  *                         isActive:
  *                           type: boolean
- *                         mongoProfile:
- *                           type: object
- *       401:
- *         description: Unauthorized
- *   post:
- *     summary: Create user profile in MongoDB
- *     tags:
- *       - Profile Management
- *     security:
- *       - bearerAuth: []
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - firebaseUid
- *               - email
- *             properties:
- *               firebaseUid:
- *                 type: string
- *               email:
- *                 type: string
- *                 format: email
- *               name:
- *                 type: string
- *               phone:
- *                 type: string
- *               birthDate:
- *                 type: string
- *                 format: date
- *               cpf:
- *                 type: string
- *               address:
- *                 type: object
- *                 properties:
- *                   street:
- *                     type: string
- *                   neighborhood:
- *                     type: string
- *                   city:
- *                     type: string
- *                   state:
- *                     type: string
- *                   zipCode:
- *                     type: string
- *               emergencyContact:
- *                 type: object
- *                 properties:
- *                   name:
- *                     type: string
- *                   phone:
- *                     type: string
- *                   relationship:
- *                     type: string
- *               healthConditions:
- *                 type: array
- *                 items:
- *                   type: string
- *     responses:
- *       201:
- *         description: Profile created successfully
- *       409:
- *         description: User profile already exists
  *       401:
  *         description: Unauthorized
  */
@@ -496,4 +424,307 @@
  *         description: Admin access required
  *       401:
  *         description: Unauthorized
+ */
+
+/**
+ * @openapi
+ * /public/auth/sync:
+ *   post:
+ *     summary: Sincroniza usuário com Firebase
+ *     description: Sincroniza dados do usuário com o Firebase
+ *     tags:
+ *       - Autenticação
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               email:
+ *                 type: string
+ *               displayName:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Sincronização realizada com sucesso
+ *       401:
+ *         description: Não autorizado
+ */
+
+/**
+ * @openapi
+ * /public/vaccines:
+ *   get:
+ *     summary: Lista todas as vacinas disponíveis
+ *     tags:
+ *       - Vacinas
+ *     responses:
+ *       200:
+ *         description: Lista de vacinas recuperada com sucesso
+ */
+
+/**
+ * @openapi
+ * /public/appointments:
+ *   post:
+ *     summary: Agenda uma vacinação
+ *     tags:
+ *       - Agendamentos
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - vaccineId
+ *               - healthUnitId
+ *               - scheduledDate
+ *               - scheduledTime
+ *               - dose
+ *             properties:
+ *               vaccineId:
+ *                 type: string
+ *               healthUnitId:
+ *                 type: string
+ *               scheduledDate:
+ *                 type: string
+ *                 format: date
+ *               scheduledTime:
+ *                 type: string
+ *               dose:
+ *                 type: string
+ *                 enum: [1ª dose, 2ª dose, 3ª dose, dose única, reforço]
+ *               notes:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Agendamento criado com sucesso
+ *       401:
+ *         description: Não autorizado
+ */
+
+/**
+ * @openapi
+ * /public/appointments/my:
+ *   get:
+ *     summary: Lista meus agendamentos
+ *     tags:
+ *       - Agendamentos
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Meus agendamentos
+ *       401:
+ *         description: Não autorizado
+ */
+
+/**
+ * @openapi
+ * /public/appointments/available-slots:
+ *   get:
+ *     summary: Lista horários disponíveis em uma unidade
+ *     tags:
+ *       - Agendamentos
+ *     parameters:
+ *       - in: query
+ *         name: healthUnitId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: date
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *     responses:
+ *       200:
+ *         description: Horários disponíveis
+ */
+
+/**
+ * @openapi
+ * /public/appointments/{id}/cancel:
+ *   patch:
+ *     summary: Cancela um agendamento
+ *     tags:
+ *       - Agendamentos
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               reason:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Agendamento cancelado
+ *       401:
+ *         description: Não autorizado
+ */
+
+/**
+ * @openapi
+ * /public/vaccination-records/my:
+ *   get:
+ *     summary: Lista meus registros de vacinação
+ *     tags:
+ *       - Registros de Vacinação
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Meus registros de vacinação
+ *       401:
+ *         description: Não autorizado
+ */
+
+/**
+ * @openapi
+ * /public/vaccination-records/user/{userId}:
+ *   get:
+ *     summary: Lista registros de vacinação de um usuário
+ *     tags:
+ *       - Registros de Vacinação
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Registros de vacinação
+ *       401:
+ *         description: Não autorizado
+ */
+
+/**
+ * @openapi
+ * /public/feedback:
+ *   post:
+ *     summary: Cria feedback sobre uma unidade de saúde
+ *     tags:
+ *       - Feedback
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - healthUnitId
+ *               - comment
+ *               - rating
+ *             properties:
+ *               healthUnitId:
+ *                 type: string
+ *               comment:
+ *                 type: string
+ *                 minLength: 10
+ *                 maxLength: 1000
+ *               rating:
+ *                 type: number
+ *                 minimum: 1
+ *                 maximum: 5
+ *               isAnonymous:
+ *                 type: boolean
+ *     responses:
+ *       201:
+ *         description: Feedback criado com sucesso
+ *       401:
+ *         description: Não autorizado
+ */
+
+/**
+ * @openapi
+ * /public/feedback/health-unit/{healthUnitId}:
+ *   get:
+ *     summary: Lista feedbacks de uma unidade de saúde
+ *     tags:
+ *       - Feedback
+ *     parameters:
+ *       - in: path
+ *         name: healthUnitId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Feedbacks da unidade
+ */
+
+/**
+ * @openapi
+ * /public/notifications:
+ *   get:
+ *     summary: Lista minhas notificações
+ *     tags:
+ *       - Notificações
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Minhas notificações
+ *       401:
+ *         description: Não autorizado
+ */
+
+/**
+ * @openapi
+ * /public/notifications/{id}/read:
+ *   patch:
+ *     summary: Marca notificação como lida
+ *     tags:
+ *       - Notificações
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Notificação marcada como lida
+ *       401:
+ *         description: Não autorizado
+ */
+
+/**
+ * @openapi
+ * /public/notifications/mark-all-read:
+ *   patch:
+ *     summary: Marca todas as notificações como lidas
+ *     tags:
+ *       - Notificações
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Todas notificações marcadas como lidas
+ *       401:
+ *         description: Não autorizado
  */
