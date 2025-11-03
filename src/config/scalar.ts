@@ -26,6 +26,58 @@ const apiSpec = {
     }
   },
   paths: {
+    '/api/public/auth/login': {
+      post: {
+        summary: 'Login com email e senha (Sem autenticação)',
+        tags: ['Autenticação Firebase - Sem Autenticação'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  email: { type: 'string', format: 'email', example: 'usuario@exemplo.com' },
+                  password: { type: 'string', example: 'senha123' }
+                },
+                required: ['email', 'password']
+              }
+            }
+          }
+        },
+        responses: {
+          200: { description: 'Login realizado com sucesso' },
+          401: { description: 'Credenciais inválidas ou usuário desabilitado' },
+          400: { description: 'Email ou senha ausentes' }
+        }
+      }
+    },
+    '/api/public/auth/register': {
+      post: {
+        summary: 'Registrar com email e senha (Sem autenticação)',
+        tags: ['Autenticação Firebase - Sem Autenticação'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  email: { type: 'string', format: 'email', example: 'usuario@exemplo.com' },
+                  displayName: { type: 'string', example: 'João Silva' }
+                },
+                required: ['email', 'displayName']
+              }
+            }
+          }
+        },
+        responses: {
+          201: { description: 'Usuário registrado com sucesso' },
+          400: { description: 'Entrada inválida ou senha fraca' },
+          409: { description: 'Email já existe' }
+        }
+      }
+    },
     '/api/public/health-units': {
       get: {
         summary: 'Listar unidades de saúde (Sem autenticação)',
@@ -126,10 +178,80 @@ const apiSpec = {
         }
       }
     },
-    '/api/public/auth/login': {
+
+    // Auth Profile endpoints (Authenticated)
+    '/api/auth/profile': {
+      get: {
+        summary: 'Obter meu perfil (Autenticado)',
+        tags: ['Auth - Profile - Autenticado'],
+        security: [{ bearerAuth: [] }],
+        responses: {
+          200: { description: 'Perfil do usuário recuperado com sucesso' },
+          401: { description: 'Não autorizado - token ausente ou inválido' }
+        }
+      },
       post: {
-        summary: 'Login com email e senha (Sem autenticação)',
-        tags: ['Autenticação Firebase - Sem Autenticação'],
+        summary: 'Criar novo perfil - Onboarding (Autenticado)',
+        tags: ['Auth - Profile - Autenticado'],
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['email'],
+                properties: {
+                  email: { type: 'string', format: 'email' },
+                  name: { type: 'string' },
+                  phone: { type: 'string' },
+                  birthDate: { type: 'string', format: 'date' },
+                  address: { type: 'object' },
+                  healthConditions: { type: 'array', items: { type: 'string' } }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          201: { description: 'Perfil criado com sucesso' },
+          409: { description: 'Perfil já existe' },
+          400: { description: 'Dados inválidos' },
+          401: { description: 'Não autorizado' }
+        }
+      },
+      put: {
+        summary: 'Atualizar meu perfil (Autenticado)',
+        tags: ['Auth - Profile - Autenticado'],
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: false,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  displayName: { type: 'string' },
+                  photoURL: { type: 'string', format: 'uri' },
+                  name: { type: 'string' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          200: { description: 'Perfil atualizado com sucesso' },
+          401: { description: 'Não autorizado' }
+        }
+      }
+    },
+
+    // Public Feedback endpoints
+    '/api/public/feedback': {
+      post: {
+        summary: 'Criar feedback sobre unidade de saúde',
+        tags: ['Público - Feedback - Autenticado'],
+        security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -137,47 +259,71 @@ const apiSpec = {
               schema: {
                 type: 'object',
                 properties: {
-                  email: { type: 'string', format: 'email', example: 'usuario@exemplo.com' },
-                  password: { type: 'string', example: 'senha123' }
+                  healthUnitId: { type: 'string', example: '60a1b2c3d4e5f6789012347' },
+                  comment: { 
+                    type: 'string', 
+                    minLength: 10,
+                    maxLength: 1000,
+                    example: 'Excelente atendimento, equipe muito atenciosa e rápida'
+                  },
+                  rating: { 
+                    type: 'number', 
+                    minimum: 1, 
+                    maximum: 5,
+                    example: 5
+                  },
+                  isAnonymous: { type: 'boolean', example: false }
                 },
-                required: ['email', 'password']
+                required: ['healthUnitId', 'comment', 'rating']
               }
             }
           }
         },
         responses: {
-          200: { description: 'Login realizado com sucesso' },
-          401: { description: 'Credenciais inválidas ou usuário desabilitado' },
-          400: { description: 'Email ou senha ausentes' }
+          201: { description: 'Feedback criado com sucesso' },
+          401: { description: 'Não autorizado' },
+          400: { description: 'Dados de entrada inválidos' }
         }
       }
     },
-    '/api/public/auth/register': {
-      post: {
-        summary: 'Registrar com email e senha (Sem autenticação)',
-        tags: ['Autenticação Firebase - Sem Autenticação'],
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  email: { type: 'string', format: 'email', example: 'usuario@exemplo.com' },
-                  displayName: { type: 'string', example: 'João Silva' }
-                },
-                required: ['email', 'displayName']
+    '/api/public/feedback/health-unit/{healthUnitId}': {
+      get: {
+        summary: 'Listar feedbacks de uma unidade de saúde',
+        tags: ['Público - Feedback - Autenticado'],
+        parameters: [
+          {
+            name: 'healthUnitId',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'ID da unidade de saúde'
+          }
+        ],
+        responses: {
+          200: { 
+            description: 'Feedbacks da unidade recuperados com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    message: { type: 'string' },
+                    data: {
+                      type: 'array',
+                      items: { type: 'object' }
+                    },
+                    total: { type: 'number' },
+                    averageRating: { type: 'number', example: 4.2 }
+                  }
+                }
               }
             }
-          }
-        },
-        responses: {
-          201: { description: 'Usuário registrado com sucesso' },
-          400: { description: 'Entrada inválida ou senha fraca' },
-          409: { description: 'Email já existe' }
+          },
+          400: { description: 'ID da unidade de saúde inválido' }
         }
       }
     },
+    
     '/api/admin/vaccines': {
       post: {
         summary: 'Criar vacina (Admin - Autenticado)',
@@ -803,84 +949,6 @@ const apiSpec = {
       }
     },
     
-    // Public Feedback endpoints
-    '/api/public/feedback': {
-      post: {
-        summary: 'Criar feedback sobre unidade de saúde',
-        tags: ['Público - Feedback - Autenticado'],
-        security: [{ bearerAuth: [] }],
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                properties: {
-                  healthUnitId: { type: 'string', example: '60a1b2c3d4e5f6789012347' },
-                  comment: { 
-                    type: 'string', 
-                    minLength: 10,
-                    maxLength: 1000,
-                    example: 'Excelente atendimento, equipe muito atenciosa e rápida'
-                  },
-                  rating: { 
-                    type: 'number', 
-                    minimum: 1, 
-                    maximum: 5,
-                    example: 5
-                  },
-                  isAnonymous: { type: 'boolean', example: false }
-                },
-                required: ['healthUnitId', 'comment', 'rating']
-              }
-            }
-          }
-        },
-        responses: {
-          201: { description: 'Feedback criado com sucesso' },
-          401: { description: 'Não autorizado' },
-          400: { description: 'Dados de entrada inválidos' }
-        }
-      }
-    },
-    '/api/public/feedback/health-unit/{healthUnitId}': {
-      get: {
-        summary: 'Listar feedbacks de uma unidade de saúde',
-        tags: ['Público - Feedback - Autenticado'],
-        parameters: [
-          {
-            name: 'healthUnitId',
-            in: 'path',
-            required: true,
-            schema: { type: 'string' },
-            description: 'ID da unidade de saúde'
-          }
-        ],
-        responses: {
-          200: { 
-            description: 'Feedbacks da unidade recuperados com sucesso',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    message: { type: 'string' },
-                    data: {
-                      type: 'array',
-                      items: { type: 'object' }
-                    },
-                    total: { type: 'number' },
-                    averageRating: { type: 'number', example: 4.2 }
-                  }
-                }
-              }
-            }
-          },
-          400: { description: 'ID da unidade de saúde inválido' }
-        }
-      }
-    },
-    
     // Enhanced Appointment Admin endpoints
     '/api/admin/appointments/stats': {
       get: {
@@ -1344,82 +1412,6 @@ const apiSpec = {
         responses: {
           200: { description: 'Notificação excluída com sucesso' },
           404: { description: 'Notificação não encontrada' },
-          401: { description: 'Não autorizado' }
-        }
-      }
-    },
-    
-    // Public Notifications endpoints  
-    '/api/public/notifications': {
-      get: {
-        summary: 'Listar minhas notificações',
-        tags: ['Público - Notificações - Autenticado'],
-        security: [{ bearerAuth: [] }],
-        responses: {
-          200: { 
-            description: 'Notificações listadas com sucesso',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    message: { type: 'string' },
-                    data: {
-                      type: 'array',
-                      items: { type: 'object' }
-                    },
-                    total: { type: 'number' },
-                    unread: { type: 'number' }
-                  }
-                }
-              }
-            }
-          },
-          401: { description: 'Não autorizado' }
-        }
-      }
-    },
-    '/api/public/notifications/{id}/read': {
-      patch: {
-        summary: 'Marcar notificação como lida',
-        tags: ['Público - Notificações - Autenticado'],
-        security: [{ bearerAuth: [] }],
-        parameters: [
-          {
-            name: 'id',
-            in: 'path',
-            required: true,
-            schema: { type: 'string' }
-          }
-        ],
-        responses: {
-          200: { description: 'Notificação marcada como lida' },
-          404: { description: 'Notificação não encontrada' },
-          403: { description: 'Não autorizado a modificar esta notificação' },
-          401: { description: 'Não autorizado' }
-        }
-      }
-    },
-    '/api/public/notifications/mark-all-read': {
-      patch: {
-        summary: 'Marcar todas as notificações como lidas',
-        tags: ['Público - Notificações - Autenticado'],
-        security: [{ bearerAuth: [] }],
-        responses: {
-          200: { 
-            description: 'Todas as notificações marcadas como lidas',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    message: { type: 'string' },
-                    count: { type: 'number' }
-                  }
-                }
-              }
-            }
-          },
           401: { description: 'Não autorizado' }
         }
       }
