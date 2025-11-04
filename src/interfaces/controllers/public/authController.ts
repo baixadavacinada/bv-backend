@@ -192,16 +192,6 @@ export const registerWithEmail = async (req: Request, res: Response) => {
       });
     }
 
-    if (!password) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: 'INVALID_INPUT',
-          message: 'Password is required'
-        }
-      });
-    }
-
     const auth = getFirebaseAuth();
 
     try {
