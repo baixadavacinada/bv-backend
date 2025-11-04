@@ -62,7 +62,31 @@ export function firebaseAuthAdvanced(options: AuthOptions = { required: true }) 
       const auth = getFirebaseAuth();
       const decodedToken = await auth.verifyIdToken(idToken);
       
-      const userClaims = await claimsService.getUserClaims(decodedToken.uid);
+      let userClaims: UserClaims;
+      try {
+        userClaims = await claimsService.getUserClaims(decodedToken.uid);
+      } catch (claimsError) {
+        logger.warn('Could not retrieve user claims, using defaults', {
+          uid: decodedToken.uid,
+          email: decodedToken.email,
+          error: claimsError
+        });
+        userClaims = {
+          role: 'public',
+          permissions: [],
+          profile: {
+            hasBasicInfo: false,
+            hasHealthInfo: false,
+            profileCompleteness: 0
+          },
+          metadata: {
+            lastLogin: new Date().toISOString(),
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          isActive: true
+        };
+      }
       
       if (!userClaims.isActive && !options.allowInactive) {
         logger.warn('Inactive user attempted access', {
