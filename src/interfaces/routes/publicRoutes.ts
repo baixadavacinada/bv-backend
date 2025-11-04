@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import { loginController } from '../controllers/public/loginController';
 import { listHealthUnitsController } from '../controllers/healthUnitsController';
 import { listVaccinesController } from '../controllers/admin/vaccineController';
 import { PublicVaccinationRecordController } from '../controllers/public/vaccinationRecordController';
@@ -16,8 +15,6 @@ import {
   getProfile, 
   updateProfile, 
   registerWithEmail,
-  loginWithEmail, 
-  loginWithGoogle, 
   sendPasswordReset,
   syncFirebaseUser
 } from '../controllers/public/authController';
@@ -48,16 +45,6 @@ router.post('/auth/sync',
     displayName: { required: false, type: 'string' as const }
   }),
   asyncHandler(syncFirebaseUser)
-);
-
-router.post('/auth/login', 
-  validateBody(ValidationSchemas.firebaseEmailLogin), 
-  asyncHandler(loginWithEmail)
-);
-
-router.post('/auth/login/google', 
-  validateBody(ValidationSchemas.firebaseTokenVerify), 
-  asyncHandler(loginWithGoogle)
 );
 
 router.post('/auth/verify-token', 

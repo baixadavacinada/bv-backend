@@ -12,7 +12,6 @@ const router = Router();
 
 router.use(firebaseAuthAdvanced({ required: true }));
 
-router.get('/me', asyncHandler(getProfile));
 router.get('/profile', asyncHandler(getProfile));
 
 router.post('/profile',
