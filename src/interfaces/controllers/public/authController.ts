@@ -2,7 +2,15 @@ import { Request, Response } from 'express';
 import { getFirebaseAuth } from '../../../config/firebase';
 import { Logger } from '../../../middlewares/logging';
 import { User, UserRole } from '../../../domain/entities/User';
-import { MongoUserRepository } from '../../../infrastructure/database/implementations/MongoUserRepository';
+import { Mongo        await userRepository.create({
+          _id: userRecord.uid,
+          uid: userRecord.uid,
+          name: userRecord.displayName || userRecord.email?.split('@')[0] || 'User',
+          email: userRecord.email!,
+          role: 'public',
+          isActive: true,
+          lastLoginAt: new Date()
+        });tory } from '../../../infrastructure/database/implementations/MongoUserRepository';
 import { claimsService } from '../../../services/claimsService';
 
 const logger = Logger.getInstance();
@@ -372,7 +380,6 @@ export const registerWithEmail = async (req: Request, res: Response) => {
         email: userRecord.email!,
         role: 'public',
         isActive: true,
-        createdAt: new Date(),
         lastLoginAt: new Date()
       });
       
@@ -471,6 +478,7 @@ export const syncFirebaseUser = async (req: Request, res: Response) => {
       });
     }
 
+    let userCreated = false;
     try {
       await userRepository.create({
         _id: firebaseUid,
@@ -478,19 +486,18 @@ export const syncFirebaseUser = async (req: Request, res: Response) => {
         name: displayName || email?.split('@')[0] || 'User',
         email: email || req.user.email,
         role: 'public',
-        isActive: true
+        isActive: true,
+        lastLoginAt: new Date()
       });
       
+      userCreated = true;
       logger.info('Firebase user synced to MongoDB', {
         uid: firebaseUid,
         email: email || req.user.email
       });
     } catch (mongoError) {
-      logger.warn('User might already exist in MongoDB', {
-        uid: firebaseUid,
-        email: email || req.user.email,
-        error: mongoError
-      });
+      const errorMessage = mongoError instanceof Error ? mongoError.message : String(mongoError);
+      logger.error('Failed to create user in MongoDB', new Error(errorMessage));
     }
 
     res.status(201).json({
@@ -499,7 +506,8 @@ export const syncFirebaseUser = async (req: Request, res: Response) => {
         uid: firebaseUid,
         email: email || req.user.email,
         displayName: displayName,
-        message: 'User synced to backend successfully'
+        userCreatedInMongoDB: userCreated,
+        message: userCreated ? 'User synced to backend successfully' : 'User synced to Firebase but MongoDB creation failed'
       }
     });
   } catch (error: any) {
