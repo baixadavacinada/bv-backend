@@ -30,8 +30,8 @@
  * @openapi
  * /public/auth/register:
  *   post:
- *     summary: Registra novo usuário com email e senha
- *     description: Cria uma nova conta de usuário no Firebase Authentication. O usuário será automaticamente sincronizado com o MongoDB. Esta é a rota legada - recomenda-se usar o fluxo Firebase-first (criar no cliente Firebase, depois sincronizar via /auth/sync).
+ *     summary: Registra novo usuário com email e senha (LEGADO)
+ *     description: Cria uma nova conta de usuário no Firebase Authentication e sincroniza com MongoDB em uma única chamada. NOTA - Uso LEGADO. Recomenda-se usar o fluxo Firebase-first em 4 passos - (1) Criar no Firebase, (2) Chamar /auth/sync, (3) Fazer logout, (4) Login novamente.
  *     tags:
  *       - Firebase Authentication
  *     requestBody:
@@ -84,6 +84,8 @@
  *         description: Email já existe
  *       500:
  *         description: Erro ao criar conta
+ * 
+ * **DEPRECATED** - Use o novo fluxo em 4 passos via `/auth/sync`
  */
 
 /**
@@ -434,7 +436,7 @@
  * /public/auth/sync:
  *   post:
  *     summary: Sincroniza usuário Firebase com MongoDB
- *     description: Endpoint para sincronizar dados do usuário criado no Firebase com o banco de dados MongoDB. Deve ser chamado após criação bem-sucedida do usuário no Firebase.
+ *     description: Endpoint para sincronizar dados do usuário criado no Firebase com o banco de dados MongoDB. Deve ser chamado após criação bem-sucedida do usuário no Firebase. Fluxo completo de registro - PASSO 2 DE 4
  *     tags:
  *       - Firebase Authentication
  *     security:
@@ -474,12 +476,20 @@
  *                       type: string
  *                     displayName:
  *                       type: string
+ *                     userCreatedInMongoDB:
+ *                       type: boolean
  *                     message:
  *                       type: string
  *       401:
  *         description: Usuário não autenticado
  *       500:
  *         description: Erro ao sincronizar usuário
+ * 
+ * **Fluxo Completo de Registro (4 passos)**:
+ * 1. Frontend cria usuário no Firebase: `createUserWithEmailAndPassword(email, password)`
+ * 2. Frontend chama `/api/public/auth/sync` com token de autenticação
+ * 3. Frontend faz logout: `signOut(auth)` e limpa token
+ * 4. Usuário faz login novamente: `signInWithEmailAndPassword(email, password)` - obtém token COM CLAIMS
  */
 
 /**
