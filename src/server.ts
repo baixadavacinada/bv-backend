@@ -1,6 +1,7 @@
 import express from 'express';
 import { corsConfig } from './config/cors';
 import publicRoutes from './interfaces/routes/publicRoutes';
+import publicAuthRoutes from './interfaces/routes/publicAuthRoutes';
 import authRoutes from './interfaces/routes/authRoutes';
 import adminRoutes from './interfaces/routes/adminRoutes';
 import { setupApiDocs } from './config/scalar';
@@ -42,6 +43,7 @@ app.get('/', (req, res) => {
 });
 
 app.use('/api/public', publicRoutes);
+app.use('/api/public/auth', publicAuthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 

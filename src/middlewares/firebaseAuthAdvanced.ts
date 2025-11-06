@@ -59,6 +59,26 @@ export function firebaseAuthAdvanced(options: AuthOptions = { required: true }) 
         return next();
       }
 
+      // Validate token format (JWT has 3 parts separated by dots)
+      if (typeof idToken !== 'string' || idToken.split('.').length !== 3) {
+        logger.warn('Invalid token format', {
+          path: req.path,
+          method: req.method,
+          tokenLength: idToken?.length || 0
+        });
+
+        if (options.required) {
+          return res.status(401).json({
+            success: false,
+            error: {
+              code: 'INVALID_TOKEN_FORMAT',
+              message: 'Token must be a valid JWT'
+            }
+          });
+        }
+        return next();
+      }
+
       const auth = getFirebaseAuth();
       const decodedToken = await auth.verifyIdToken(idToken);
       

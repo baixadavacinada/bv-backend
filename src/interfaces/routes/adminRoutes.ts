@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { createUserController } from "../controllers/admin/userController";
-import { createAdminUser } from "../controllers/admin/adminAuthController";
 import { 
   createVaccineController, 
   listVaccinesController, 
@@ -56,16 +55,6 @@ const dashboardController = new DashboardController();
 router.post("/users",
   validateBody(ValidationSchemas.user),
   asyncHandler(createUserController)
-);
-
-router.post("/users/create",
-  validateBody({
-    email: { required: true, type: 'string' as const },
-    password: { required: true, type: 'string' as const, minLength: 6 },
-    displayName: { required: false, type: 'string' as const },
-    role: { required: true, type: 'string' as const, enum: ['admin', 'agent'] as any[] }
-  }),
-  asyncHandler(createAdminUser)
 );
 
 router.post("/vaccines",
