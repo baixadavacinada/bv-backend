@@ -1,0 +1,1654 @@
+{
+  "info": {
+    "name": "Baixada Vacinada API",
+    "description": "Complete API collection for Baixada Vacinada backend",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login with Firebase (Get Token)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseData = pm.response.json();",
+                  "    if (responseData.idToken) {",
+                  "        pm.environment.set('firebase_token', responseData.idToken);",
+                  "        pm.environment.set('user_id', responseData.localId);",
+                  "        console.log('Firebase token set to environment');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePassword123!\",\n  \"returnSecureToken\": true\n}"
+            },
+            "url": {
+              "raw": "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=YOUR_FIREBASE_WEB_API_KEY",
+              "protocol": "https",
+              "host": ["identitytoolkit.googleapis.com"],
+              "path": ["v1", "accounts:signInWithPassword"],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "YOUR_FIREBASE_WEB_API_KEY"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Register User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"SecurePassword123!\",\n  \"displayName\": \"John Doe\"\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/public/auth/register",
+              "protocol": "https",
+              "host": ["bv-backend-ruby.vercel.app"],
+              "path": ["api", "public", "auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Sync Firebase User (After Login in Frontend)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const responseData = pm.response.json();",
+                  "    if (responseData.data.uid) {",
+                  "        pm.environment.set('user_id', responseData.data.uid);",
+                  "        console.log('User ID synced to environment');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{firebase_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"displayName\": \"John Doe\"\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/public/auth/sync",
+              "protocol": "https",
+              "host": ["bv-backend-ruby.vercel.app"],
+              "path": ["api", "public", "auth", "sync"]
+            }
+          }
+        },
+        {
+          "name": "Verify Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idToken\": \"{{firebase_token}}\"\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/public/auth/verify-token",
+              "protocol": "https",
+              "host": ["bv-backend-ruby.vercel.app"],
+              "path": ["api", "public", "auth", "verify-token"]
+            }
+          }
+        },
+        {
+          "name": "Password Reset",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/public/auth/password-reset",
+              "protocol": "https",
+              "host": ["bv-backend-ruby.vercel.app"],
+              "path": ["api", "public", "auth", "password-reset"]
+            }
+          }
+        },
+        {
+          "name": "Create Admin User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const responseData = pm.response.json();",
+                  "    if (responseData.data.uid) {",
+                  "        pm.environment.set('admin_user_id', responseData.data.uid);",
+                  "        console.log('Admin user created with UID: ' + responseData.data.uid);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"AdminSecurePassword123!\",\n  \"displayName\": \"Admin User\",\n  \"role\": \"admin\"\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/public/auth/admin/create",
+              "protocol": "https",
+              "host": ["bv-backend-ruby.vercel.app"],
+              "path": ["api", "public", "auth", "admin", "create"]
+            }
+          }
+        },
+        {
+          "name": "Create Agent User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"agent@example.com\",\n  \"password\": \"AgentSecurePassword123!\",\n  \"displayName\": \"Agent User\",\n  \"role\": \"agent\"\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/public/auth/admin/create",
+              "protocol": "https",
+              "host": ["bv-backend-ruby.vercel.app"],
+              "path": ["api", "public", "auth", "admin", "create"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Profile",
+      "item": [
+        {
+          "name": "Get My Profile (Protected)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{firebase_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/auth/profile",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "auth", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Create Profile",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{firebase_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"name\": \"John Doe\",\n  \"phone\": \"11987654321\",\n  \"birthDate\": \"1990-01-15\",\n  \"cpf\": \"12345678901\",\n  \"address\": {\n    \"street\": \"Rua das Flores\",\n    \"number\": \"123\",\n    \"complement\": \"Apt 45\",\n    \"neighborhood\": \"Centro\",\n    \"city\": \"Duque de Caxias\",\n    \"state\": \"RJ\",\n    \"zipCode\": \"25000-000\"\n  },\n  \"emergencyContact\": {\n    \"name\": \"Jane Doe\",\n    \"phone\": \"11987654322\",\n    \"relationship\": \"Spouse\"\n  },\n  \"healthConditions\": [\"diabetes\", \"hypertension\"]\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/auth/profile",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "auth", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{firebase_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"11987654323\",\n  \"birthDate\": \"1990-01-15\",\n  \"healthConditions\": [\"diabetes\"]\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/auth/profile",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "auth", "profile"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health Units",
+      "item": [
+        {
+          "name": "List Health Units",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseData = pm.response.json();",
+                  "    if (responseData.data && responseData.data.length > 0) {",
+                  "        const firstHealthUnit = responseData.data[0];",
+                  "        pm.environment.set('health_unit_id', firstHealthUnit._id);",
+                  "        console.log('Health unit ID set to: ' + firstHealthUnit._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/public/health-units",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "public", "health-units"]
+            }
+          }
+        },
+        {
+          "name": "List Health Units (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/health-units?isActive=true&city=Duque%20de%20Caxias",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "health-units"],
+              "query": [
+                {
+                  "key": "isActive",
+                  "value": "true"
+                },
+                {
+                  "key": "city",
+                  "value": "Duque de Caxias"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Health Unit (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"UBS Centro\",\n  \"address\": \"Avenida Presidente Vargas, 1000\",\n  \"neighborhood\": \"Centro\",\n  \"city\": \"Duque de Caxias\",\n  \"state\": \"RJ\",\n  \"zipCode\": \"25025-050\",\n  \"phone\": \"2133334444\",\n  \"operatingHours\": {\n    \"monday\": \"08:00-17:00\",\n    \"tuesday\": \"08:00-17:00\",\n    \"wednesday\": \"08:00-17:00\",\n    \"thursday\": \"08:00-17:00\",\n    \"friday\": \"08:00-17:00\",\n    \"saturday\": \"09:00-13:00\",\n    \"sunday\": \"closed\"\n  },\n  \"availableVaccines\": [\"covid\", \"flu\", \"measles\"],\n  \"geolocation\": {\n    \"latitude\": -22.7897,\n    \"longitude\": -43.3129\n  },\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/health-units",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "health-units"]
+            }
+          }
+        },
+        {
+          "name": "Get Health Unit by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/health-units/{{health_unit_id}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "health-units", "{{health_unit_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Health Unit",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"2133334445\",\n  \"availableVaccines\": [\"covid\", \"flu\", \"measles\", \"yellow_fever\"],\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/health-units/{{health_unit_id}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "health-units", "{{health_unit_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Health Unit",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/health-units/{{health_unit_id}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "health-units", "{{health_unit_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Vaccines",
+      "item": [
+        {
+          "name": "List Vaccines",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const responseData = pm.response.json();",
+                  "    if (responseData.data && responseData.data.length > 0) {",
+                  "        const firstVaccine = responseData.data[0];",
+                  "        pm.environment.set('vaccine_id', firstVaccine._id);",
+                  "        console.log('Vaccine ID set to: ' + firstVaccine._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/public/vaccines",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "public", "vaccines"]
+            }
+          }
+        },
+        {
+          "name": "Create Vaccine (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"COVID-19 Pfizer\",\n  \"description\": \"COVID-19 vaccine by Pfizer-BioNTech\",\n  \"manufacturer\": \"Pfizer\",\n  \"recommendedAge\": \"18+\",\n  \"doses\": 2,\n  \"intervalBetweenDoses\": 21,\n  \"contraindications\": [\"pregnancy\"],\n  \"sideEffects\": [\"arm pain\", \"fever\"],\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/vaccines",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "vaccines"]
+            }
+          }
+        },
+        {
+          "name": "Get Vaccine by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/vaccines/{{vaccine_id}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "vaccines", "{{vaccine_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Vaccine",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isActive\": true,\n  \"sideEffects\": [\"arm pain\", \"fever\", \"headache\"]\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/vaccines/{{vaccine_id}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "vaccines", "{{vaccine_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Vaccine",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/vaccines/{{vaccine_id}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "vaccines", "{{vaccine_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Appointments",
+      "item": [
+        {
+          "name": "Schedule Appointment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const responseData = pm.response.json();",
+                  "    if (responseData.data._id) {",
+                  "        pm.environment.set('appointment_id', responseData.data._id);",
+                  "        console.log('Appointment ID set to: ' + responseData.data._id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{firebase_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"vaccineId\": \"{{vaccine_id}}\",\n  \"healthUnitId\": \"{{health_unit_id}}\",\n  \"scheduledDate\": \"2025-11-15\",\n  \"scheduledTime\": \"10:00\",\n  \"dose\": \"1ª dose\",\n  \"notes\": \"First appointment\"\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/public/appointments",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "public", "appointments"]
+            }
+          }
+        },
+        {
+          "name": "List My Appointments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{firebase_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/public/appointments/my",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "public", "appointments", "my"]
+            }
+          }
+        },
+        {
+          "name": "Get Available Slots",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/public/appointments/available-slots?healthUnitId={{health_unit_id}}&date=2025-11-15",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "public", "appointments", "available-slots"],
+              "query": [
+                {
+                  "key": "healthUnitId",
+                  "value": "{{health_unit_id}}"
+                },
+                {
+                  "key": "date",
+                  "value": "2025-11-15"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Cancel Appointment",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{firebase_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Schedule conflict\"\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/public/appointments/{{appointment_id}}/cancel",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": [
+                "api",
+                "public",
+                "appointments",
+                "{{appointment_id}}",
+                "cancel"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List All Appointments (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/appointments?healthUnitId={{health_unit_id}}&startDate=2025-11-01&endDate=2025-11-30",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "appointments"],
+              "query": [
+                {
+                  "key": "healthUnitId",
+                  "value": "{{health_unit_id}}"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2025-11-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-11-30"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Appointment Status (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"confirmed\",\n  \"notes\": \"Confirmed by admin\"\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/appointments/{{appointment_id}}/status",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": [
+                "api",
+                "admin",
+                "appointments",
+                "{{appointment_id}}",
+                "status"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Appointment Stats (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/appointments/stats?startDate=2025-11-01&endDate=2025-11-30",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "appointments", "stats"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2025-11-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-11-30"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Complete Appointment with Vaccination (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appliedBy\": \"Dr. Silva\",\n  \"vaccinationNotes\": \"Vaccine applied successfully\",\n  \"reactions\": \"No adverse reactions\",\n  \"nextDoseDate\": \"2025-12-15\"\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/appointments/{{appointment_id}}/complete-vaccination",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": [
+                "api",
+                "admin",
+                "appointments",
+                "{{appointment_id}}",
+                "complete-vaccination"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Vaccination Records",
+      "item": [
+        {
+          "name": "Get My Vaccination Records",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{firebase_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/public/vaccination-records/my",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "public", "vaccination-records", "my"]
+            }
+          }
+        },
+        {
+          "name": "Get User Vaccination Records",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{firebase_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/public/vaccination-records/user/{{user_id}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": [
+                "api",
+                "public",
+                "vaccination-records",
+                "user",
+                "{{user_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Vaccination Record (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"residentId\": \"{{user_id}}\",\n  \"vaccineId\": \"{{vaccine_id}}\",\n  \"healthUnitId\": \"{{health_unit_id}}\",\n  \"appliedBy\": \"Dr. Silva\",\n  \"dose\": \"1ª dose\",\n  \"date\": \"2025-11-10\",\n  \"notes\": \"Vaccination completed successfully\"\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/vaccination-records",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "vaccination-records"]
+            }
+          }
+        },
+        {
+          "name": "List Vaccination Records (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/vaccination-records?healthUnitId={{health_unit_id}}&startDate=2025-11-01&endDate=2025-11-30",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "vaccination-records"],
+              "query": [
+                {
+                  "key": "healthUnitId",
+                  "value": "{{health_unit_id}}"
+                },
+                {
+                  "key": "startDate",
+                  "value": "2025-11-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-11-30"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Vaccination Record by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/vaccination-records/{{record_id}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "vaccination-records", "{{record_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Vaccination Record",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notes\": \"Updated notes\",\n  \"date\": \"2025-11-10\"\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/vaccination-records/{{record_id}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "vaccination-records", "{{record_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Vaccination Record",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/vaccination-records/{{record_id}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "vaccination-records", "{{record_id}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Feedback",
+      "item": [
+        {
+          "name": "Submit Feedback",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{firebase_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"healthUnitId\": \"{{health_unit_id}}\",\n  \"comment\": \"Great service and very organized staff\",\n  \"rating\": 5,\n  \"isAnonymous\": false\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/public/feedback",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "public", "feedback"]
+            }
+          }
+        },
+        {
+          "name": "Get Feedback by Health Unit",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/public/feedback/health-unit/{{health_unit_id}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": [
+                "api",
+                "public",
+                "feedback",
+                "health-unit",
+                "{{health_unit_id}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "List All Feedback (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/feedback?healthUnitId={{health_unit_id}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "feedback"],
+              "query": [
+                {
+                  "key": "healthUnitId",
+                  "value": "{{health_unit_id}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Feedback by ID (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/feedback/{{feedback_id}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "feedback", "{{feedback_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Moderate Feedback (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/feedback/{{feedback_id}}/moderate",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": [
+                "api",
+                "admin",
+                "feedback",
+                "{{feedback_id}}",
+                "moderate"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Get My Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{firebase_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/public/notifications",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "public", "notifications"]
+            }
+          }
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{firebase_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/public/notifications/{{notification_id}}/read",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": [
+                "api",
+                "public",
+                "notifications",
+                "{{notification_id}}",
+                "read"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mark All Notifications as Read",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{firebase_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/public/notifications/mark-all-read",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "public", "notifications", "mark-all-read"]
+            }
+          }
+        },
+        {
+          "name": "Create Notification (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"title\": \"Appointment Reminder\",\n  \"message\": \"Your vaccination appointment is scheduled for tomorrow at 10:00 AM\",\n  \"type\": \"appointment_reminder\",\n  \"data\": {\n    \"appointmentId\": \"{{appointment_id}}\"\n  },\n  \"scheduledFor\": \"2025-11-14T10:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/notifications",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "notifications"]
+            }
+          }
+        },
+        {
+          "name": "List All Notifications (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/notifications?userId={{user_id}}&isRead=false",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "notifications"],
+              "query": [
+                {
+                  "key": "userId",
+                  "value": "{{user_id}}"
+                },
+                {
+                  "key": "isRead",
+                  "value": "false"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Notification by ID (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/notifications/{{notification_id}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "notifications", "{{notification_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Notification (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/notifications/{{notification_id}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "notifications"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Management (Admin)",
+      "item": [
+        {
+          "name": "List All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/public/users?page=1&limit=20&role=public",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "public", "users"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                },
+                {
+                  "key": "role",
+                  "value": "public"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update User Role",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"agent\",\n  \"permissions\": [\"read_users\", \"manage_appointments\"],\n  \"reason\": \"Promoted to health unit agent\"\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/public/users/{{user_id}}/role",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "public", "users", "{{user_id}}", "role"]
+            }
+          }
+        },
+        {
+          "name": "Get User Claims (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/claims/{{user_id}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "claims", "{{user_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Update User Claims (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"uid\": \"{{user_id}}\",\n  \"role\": \"agent\",\n  \"permissions\": [\"read_users\", \"manage_appointments\"],\n  \"ubsId\": \"{{health_unit_id}}\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/claims",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "claims"]
+            }
+          }
+        },
+        {
+          "name": "Update User Role (Admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"admin\"\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/users/{{user_id}}/role",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "users", "{{user_id}}", "role"]
+            }
+          }
+        },
+        {
+          "name": "Deactivate User",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/users/{{user_id}}/deactivate",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "users", "{{user_id}}", "deactivate"]
+            }
+          }
+        },
+        {
+          "name": "Reactivate User",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/users/{{user_id}}/reactivate",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "users", "{{user_id}}", "reactivate"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard & Reports (Admin)",
+      "item": [
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/dashboard/stats",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "dashboard", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Get Quick Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/dashboard/quick-stats",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "dashboard", "quick-stats"]
+            }
+          }
+        },
+        {
+          "name": "Get Vaccination Report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/reports/vaccination?startDate=2025-11-01&endDate=2025-11-30&healthUnitId={{health_unit_id}}",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "reports", "vaccination"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2025-11-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-11-30"
+                },
+                {
+                  "key": "healthUnitId",
+                  "value": "{{health_unit_id}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Health Units Report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/reports/health-units?startDate=2025-11-01&endDate=2025-11-30&isActive=true&city=Duque%20de%20Caxias",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "reports", "health-units"],
+              "query": [
+                {
+                  "key": "startDate",
+                  "value": "2025-11-01"
+                },
+                {
+                  "key": "endDate",
+                  "value": "2025-11-30"
+                },
+                {
+                  "key": "isActive",
+                  "value": "true"
+                },
+                {
+                  "key": "city",
+                  "value": "Duque de Caxias"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "API Health",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": [""]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "firebase_token",
+      "value": "your_firebase_token_here"
+    },
+    {
+      "key": "admin_token",
+      "value": "your_admin_firebase_token_here"
+    },
+    {
+      "key": "user_id",
+      "value": "user_uid_from_firebase"
+    },
+    {
+      "key": "health_unit_id",
+      "value": "health_unit_mongo_id"
+    },
+    {
+      "key": "vaccine_id",
+      "value": "vaccine_mongo_id"
+    },
+    {
+      "key": "appointment_id",
+      "value": "appointment_mongo_id"
+    },
+    {
+      "key": "record_id",
+      "value": "vaccination_record_mongo_id"
+    },
+    {
+      "key": "feedback_id",
+      "value": "feedback_mongo_id"
+    },
+    {
+      "key": "notification_id",
+      "value": "notification_mongo_id"
+    }
+  ]
+}
