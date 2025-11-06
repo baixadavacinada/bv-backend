@@ -325,7 +325,6 @@ export const syncFirebaseUser = async (req: Request, res: Response) => {
       });
     }
 
-    // Get the actual role from Firebase custom claims (set by admin creation or default claims service)
     let userRole = 'public';
     try {
       const claims = await claimsService.getUserClaims(firebaseUid);
