@@ -18,6 +18,7 @@ import {
   sendPasswordReset,
   syncFirebaseUser
 } from '../controllers/public/authController';
+import { createAdminUser } from '../controllers/admin/adminAuthController';
 import { 
   getProfile as getProfileFromController,
   updateUserRole,
@@ -55,6 +56,16 @@ router.post('/auth/verify-token',
 router.post('/auth/password-reset', 
   validateBody({ email: { required: true, type: 'email' as const } }), 
   asyncHandler(sendPasswordReset)
+);
+
+router.post('/auth/admin/create',
+  validateBody({
+    email: { required: true, type: 'string' as const },
+    password: { required: true, type: 'string' as const, minLength: 6 },
+    displayName: { required: false, type: 'string' as const },
+    role: { required: true, type: 'string' as const, enum: ['admin', 'agent'] as any[] }
+  }),
+  asyncHandler(createAdminUser)
 );
 
 router.get('/health-units', asyncHandler(listHealthUnitsController));
