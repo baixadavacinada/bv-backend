@@ -325,19 +325,32 @@ export const syncFirebaseUser = async (req: Request, res: Response) => {
       });
     }
 
+    // Get the actual role from Firebase custom claims (set by admin creation or default claims service)
+    let userRole = 'public';
+    try {
+      const claims = await claimsService.getUserClaims(firebaseUid);
+      userRole = claims?.role || 'public';
+    } catch (error) {
+      logger.warn('Could not retrieve claims, using default role', {
+        uid: firebaseUid,
+        error
+      });
+    }
+
     try {
       await userRepository.create({
         _id: firebaseUid,
         uid: firebaseUid,
         name: displayName || email?.split('@')[0] || 'User',
         email: email || req.user.email,
-        role: 'public',
+        role: userRole as any,
         isActive: true
       });
       
       logger.info('Firebase user synced to MongoDB', {
         uid: firebaseUid,
-        email: email || req.user.email
+        email: email || req.user.email,
+        role: userRole
       });
     } catch (mongoError) {
       logger.warn('User might already exist in MongoDB', {
@@ -353,6 +366,7 @@ export const syncFirebaseUser = async (req: Request, res: Response) => {
         uid: firebaseUid,
         email: email || req.user.email,
         displayName: displayName,
+        role: userRole,
         message: 'User synced to backend successfully'
       }
     });
