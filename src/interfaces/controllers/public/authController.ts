@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { getFirebaseAuth } from '../../../config/firebase';
 import { Logger } from '../../../middlewares/logging';
-import { User, UserRole } from '../../../domain/entities/User';
 import { MongoUserRepository } from '../../../infrastructure/database/implementations/MongoUserRepository';
 import { claimsService } from '../../../services/claimsService';
 
@@ -316,21 +315,32 @@ export const syncFirebaseUser = async (req: Request, res: Response) => {
     const { email, displayName } = req.body;
     const firebaseUid = req.user.id;
 
-    try {
-      await claimsService.setDefaultClaimsForNewUser(firebaseUid);
-    } catch (claimsError) {
-      logger.warn('Claims already exist for user', {
-        uid: firebaseUid,
-        error: claimsError
-      });
-    }
-
     let userRole = 'public';
+
     try {
-      const claims = await claimsService.getUserClaims(firebaseUid);
-      userRole = claims?.role || 'public';
+      const auth = getFirebaseAuth();
+      const userRecord = await auth.getUser(firebaseUid);
+      const firebaseCustomClaims = userRecord.customClaims as any;
+
+      if (firebaseCustomClaims && firebaseCustomClaims.role && firebaseCustomClaims.role !== 'public') {
+        userRole = firebaseCustomClaims.role;
+        logger.info('Admin/agent user synced with custom role', {
+          uid: firebaseUid,
+          role: userRole
+        });
+      } else {
+        try {
+          await claimsService.setDefaultClaimsForNewUser(firebaseUid);
+          logger.info('Default claims set for public user', { uid: firebaseUid });
+        } catch (claimsError) {
+          logger.warn('Could not set default claims', {
+            uid: firebaseUid,
+            error: claimsError
+          });
+        }
+      }
     } catch (error) {
-      logger.warn('Could not retrieve claims, using default role', {
+      logger.warn('Error checking Firebase claims', {
         uid: firebaseUid,
         error
       });
