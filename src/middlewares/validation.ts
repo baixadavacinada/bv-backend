@@ -254,6 +254,9 @@ export const ValidationSchemas = {
 
   profileUpdate: {
     displayName: { required: false, type: 'string' as const, minLength: 2, maxLength: 100 },
+    name: { required: false, type: 'string' as const, minLength: 2, maxLength: 100 },
+    phone: { required: false, type: 'string' as const, minLength: 10, maxLength: 20 },
+    cpf: { required: false, type: 'string' as const, minLength: 11, maxLength: 14 },
     photoURL: { 
       required: false, 
       type: 'string' as const,
@@ -267,6 +270,7 @@ export const ValidationSchemas = {
           return 'photoURL must be a valid URL';
         }
       }
-    }
+    },
+    notifications: { required: false, type: 'object' as const }
   }
 };

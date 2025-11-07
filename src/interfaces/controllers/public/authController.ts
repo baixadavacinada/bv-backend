@@ -130,38 +130,60 @@ export const updateProfile = async (req: Request, res: Response) => {
       });
     }
 
-    const { displayName, photoURL } = req.body;
+    const { displayName, photoURL, name, phone, cpf, notifications } = req.body;
 
-    if (!displayName && !photoURL) {
+    if (!displayName && !photoURL && !name && !phone && !cpf && !notifications) {
       return res.status(400).json({
         success: false,
         error: {
           code: 'INVALID_INPUT',
-          message: 'At least one field (displayName or photoURL) is required'
+          message: 'At least one field is required for update'
         }
       });
     }
 
     const auth = getFirebaseAuth();
-    const updateData: any = {};
+    const firebaseUpdateData: any = {};
+    const mongoUpdateData: any = {};
 
-    if (displayName) updateData.displayName = displayName;
-    if (photoURL) updateData.photoURL = photoURL;
+    // Preparar dados para Firebase
+    if (displayName) firebaseUpdateData.displayName = displayName;
+    if (photoURL) firebaseUpdateData.photoURL = photoURL;
 
-    const userRecord = await auth.updateUser(req.user.id, updateData);
+    // Preparar dados para MongoDB
+    if (name) mongoUpdateData.name = name;
+    if (phone) mongoUpdateData.phone = phone;
+    if (cpf) mongoUpdateData.cpf = cpf;
+    if (notifications) mongoUpdateData.notifications = notifications;
+    mongoUpdateData.updatedAt = new Date();
+
+    // Atualizar Firebase se houver dados
+    let userRecord;
+    if (Object.keys(firebaseUpdateData).length > 0) {
+      userRecord = await auth.updateUser(req.user.id, firebaseUpdateData);
+    }
+
+    // Atualizar MongoDB se houver dados
+    if (Object.keys(mongoUpdateData).length > 0) {
+      await userRepository.updateProfile(req.user.id, mongoUpdateData);
+    }
 
     logger.info('User profile updated', {
       uid: req.user.id,
-      updatedFields: Object.keys(updateData)
+      updatedFields: Object.keys({ ...firebaseUpdateData, ...mongoUpdateData })
     });
 
     res.json({
       success: true,
       data: {
-        uid: userRecord.uid,
-        email: userRecord.email,
-        displayName: userRecord.displayName,
-        photoURL: userRecord.photoURL
+        uid: req.user.id,
+        email: req.user.email,
+        displayName: displayName || (userRecord?.displayName),
+        photoURL: photoURL || (userRecord?.photoURL),
+        name,
+        phone,
+        cpf,
+        notifications
       }
     });
   } catch (error) {
