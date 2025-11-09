@@ -141,7 +141,7 @@
  *         description: Email obrigatório ou dados inválidos
  *   put:
  *     summary: Atualiza meu perfil
- *     description: Atualiza informações do perfil do usuário autenticado
+ *     description: Atualiza informações do perfil do usuário autenticado (Firebase e MongoDB)
  *     tags:
  *       - User Profile (Auth Required)
  *     security:
@@ -155,11 +155,38 @@
  *             properties:
  *               displayName:
  *                 type: string
+ *                 description: Nome de exibição no Firebase
  *                 example: "John Doe"
  *               photoURL:
  *                 type: string
  *                 format: uri
+ *                 description: URL da foto de perfil no Firebase
  *                 example: "https://example.com/photo.jpg"
+ *               name:
+ *                 type: string
+ *                 description: Nome completo no MongoDB
+ *                 example: "João da Silva"
+ *               phone:
+ *                 type: string
+ *                 description: Número de telefone (opcional, formato livre)
+ *                 example: "(11) 99999-9999"
+ *               cpf:
+ *                 type: string
+ *                 description: CPF (opcional, formato XXX.XXX.XXX-XX)
+ *                 example: "123.456.789-00"
+ *               notifications:
+ *                 type: object
+ *                 description: Preferências de notificações
+ *                 properties:
+ *                   secondDose:
+ *                     type: boolean
+ *                     description: Notificações de segunda dose
+ *                   appointment:
+ *                     type: boolean
+ *                     description: Notificações de agendamentos
+ *                   newVaccines:
+ *                     type: boolean
+ *                     description: Notificações de novas vacinas
  *     responses:
  *       200:
  *         description: Perfil atualizado com sucesso
@@ -182,6 +209,14 @@
  *                       type: string
  *                     photoURL:
  *                       type: string
+ *                     name:
+ *                       type: string
+ *                     phone:
+ *                       type: string
+ *                     cpf:
+ *                       type: string
+ *                     notifications:
+ *                       type: object
  *       401:
  *         description: Não autorizado
  *       400:
