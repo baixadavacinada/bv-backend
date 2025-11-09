@@ -917,6 +917,111 @@
 
 /**
  * @openapi
+ * /admin/users/{uid}/profile:
+ *   patch:
+ *     summary: Atualiza o perfil de um usuário
+ *     description: |
+ *       Permite que um administrador atualize os dados de perfil de um usuário,
+ *       incluindo nome, telefone, CPF, email e endereço. Esta operação atualiza
+ *       tanto o displayName no Firebase quanto os dados pessoais no MongoDB.
+ *     tags:
+ *       - Usuários
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do usuário Firebase
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               displayName:
+ *                 type: string
+ *                 description: Nome de exibição do usuário (atualiza Firebase)
+ *                 example: "João Silva"
+ *               personalData:
+ *                 type: object
+ *                 description: Dados pessoais do usuário (atualiza MongoDB)
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                     example: "João Silva"
+ *                   phone:
+ *                     type: string
+ *                     example: "11999999999"
+ *                   cpf:
+ *                     type: string
+ *                     example: "12345678901"
+ *                   email:
+ *                     type: string
+ *                     format: email
+ *                   address:
+ *                     type: object
+ *                     properties:
+ *                       street:
+ *                         type: string
+ *                       number:
+ *                         type: string
+ *                       complement:
+ *                         type: string
+ *                       neighborhood:
+ *                         type: string
+ *                       city:
+ *                         type: string
+ *                       state:
+ *                         type: string
+ *                       zipCode:
+ *                         type: string
+ *     responses:
+ *       200:
+ *         description: Perfil atualizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     uid:
+ *                       type: string
+ *                     displayName:
+ *                       type: string
+ *                     personalData:
+ *                       type: object
+ *                       properties:
+ *                         name:
+ *                           type: string
+ *                         phone:
+ *                           type: string
+ *                         cpf:
+ *                           type: string
+ *                         email:
+ *                           type: string
+ *                         address:
+ *                           type: object
+ *       400:
+ *         description: Dados inválidos
+ *       404:
+ *         description: Usuário não encontrado
+ *       401:
+ *         description: Token ausente ou inválido
+ *       403:
+ *         description: Sem permissão (apenas admin)
+ */
+
+/**
+ * @openapi
  * /admin/users/{uid}/deactivate:
  *   patch:
  *     summary: Desativa uma conta de usuário

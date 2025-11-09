@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { createUserController } from "../controllers/admin/userController";
+import { updateUserProfileController } from "../controllers/admin/profileController";
 import { 
   createVaccineController, 
   listVaccinesController, 
@@ -350,6 +351,14 @@ router.patch("/users/:uid/role",
     role: { required: true, type: 'string' as const, enum: ['admin', 'agent', 'public'] as any[] }
   }),
   asyncHandler(updateRoleAdvanced)
+);
+
+router.patch("/users/:uid/profile",
+  validateBody({
+    displayName: { required: false, type: 'string' as const, minLength: 1, maxLength: 200 },
+    personalData: { required: false, type: 'object' as const }
+  }),
+  asyncHandler(updateUserProfileController)
 );
 
 router.patch("/users/:uid/deactivate",
