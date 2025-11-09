@@ -353,6 +353,27 @@
  *         description: Unidade não encontrada
  *       401:
  *         description: Token ausente ou inválido
+ *
+ * /admin/health-units/{id}:
+ *   delete:
+ *     summary: Deleta uma unidade de saúde
+ *     tags:
+ *       - Unidades de Saúde
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Unidade de saúde deletada com sucesso
+ *       404:
+ *         description: Unidade não encontrada
+ *       401:
+ *         description: Token ausente ou inválido
  */
 
 /**
