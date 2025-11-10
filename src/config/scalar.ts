@@ -592,7 +592,8 @@ const apiSpec = {
                     items: { type: 'string' },
                     example: ['1ª dose', '2ª dose', 'reforço']
                   },
-                  description: { type: 'string', example: 'Vacina contra COVID-19 baseada em mRNA' }
+                  description: { type: 'string', example: 'Vacina contra COVID-19 baseada em mRNA' },
+                  batchNumber: { type: 'string', example: 'LOT123456', description: 'Número do lote da vacina' }
                 },
                 required: ['name', 'manufacturer', 'ageGroup', 'doses']
               }
@@ -658,6 +659,7 @@ const apiSpec = {
                   ageGroup: { type: 'string' },
                   doses: { type: 'array', items: { type: 'string' } },
                   description: { type: 'string' },
+                  batchNumber: { type: 'string', description: 'Número do lote da vacina' },
                   isActive: { type: 'boolean' }
                 }
               }

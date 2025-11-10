@@ -5,6 +5,7 @@ export interface Vaccine {
   doses: string[];
   ageGroup: string;
   description?: string;
+  batchNumber?: string;
   isActive: boolean;
   createdBy: string;
   updatedBy?: string;

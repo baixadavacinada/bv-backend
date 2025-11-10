@@ -6,6 +6,7 @@ export interface VaccineDocument extends Document {
   doses: string[];
   ageGroup: string;
   description?: string;
+  batchNumber?: string;
   isActive: boolean;
   createdBy: Types.ObjectId;
   updatedBy?: Types.ObjectId;
@@ -46,6 +47,11 @@ const VaccineSchema = new Schema<VaccineDocument>({
     trim: true,
     maxLength: [500, 'Description must have at most 500 characters']
   },
+  batchNumber: {
+    type: String,
+    trim: true,
+    maxLength: [50, 'Batch number must have at most 50 characters']
+  },
   isActive: {
     type: Boolean,
     default: true
@@ -68,5 +74,6 @@ VaccineSchema.index({ name: 1 });
 VaccineSchema.index({ manufacturer: 1 });
 VaccineSchema.index({ ageGroup: 1 });
 VaccineSchema.index({ isActive: 1 });
+VaccineSchema.index({ batchNumber: 1 });
 
 export const VaccineModel = mongoose.model<VaccineDocument>("Vaccine", VaccineSchema);
