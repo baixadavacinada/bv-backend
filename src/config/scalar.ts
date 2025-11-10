@@ -411,6 +411,7 @@ const apiSpec = {
                             items: { type: 'string' },
                             example: ['1ª dose', '2ª dose', 'reforço']
                           },
+                          batchNumber: { type: 'string', example: 'LOT123456', description: 'Número do lote da vacina' },
                           isActive: { type: 'boolean' }
                         }
                       }
@@ -611,7 +612,38 @@ const apiSpec = {
         tags: ['Gerenciamento Admin - Vacinas - Autenticado'],
         security: [{ bearerAuth: [] }],
         responses: {
-          200: { description: 'Lista de vacinas recuperada com sucesso' },
+          200: { 
+            description: 'Lista de vacinas recuperada com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    message: { type: 'string' },
+                    data: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        properties: {
+                          _id: { type: 'string' },
+                          name: { type: 'string' },
+                          manufacturer: { type: 'string' },
+                          ageGroup: { type: 'string' },
+                          doses: { type: 'array', items: { type: 'string' } },
+                          description: { type: 'string' },
+                          batchNumber: { type: 'string', description: 'Número do lote da vacina' },
+                          isActive: { type: 'boolean' },
+                          createdAt: { type: 'string', format: 'date-time' },
+                          updatedAt: { type: 'string', format: 'date-time' }
+                        }
+                      }
+                    },
+                    total: { type: 'number' }
+                  }
+                }
+              }
+            }
+          },
           401: { description: 'Não autorizado' }
         }
       }
@@ -630,7 +662,34 @@ const apiSpec = {
           }
         ],
         responses: {
-          200: { description: 'Vacina recuperada com sucesso' },
+          200: { 
+            description: 'Vacina recuperada com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    message: { type: 'string' },
+                    data: {
+                      type: 'object',
+                      properties: {
+                        _id: { type: 'string' },
+                        name: { type: 'string' },
+                        manufacturer: { type: 'string' },
+                        ageGroup: { type: 'string' },
+                        doses: { type: 'array', items: { type: 'string' } },
+                        description: { type: 'string' },
+                        batchNumber: { type: 'string', description: 'Número do lote da vacina' },
+                        isActive: { type: 'boolean' },
+                        createdAt: { type: 'string', format: 'date-time' },
+                        updatedAt: { type: 'string', format: 'date-time' }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
           404: { description: 'Vacina não encontrada' },
           401: { description: 'Não autorizado' }
         }
