@@ -12,7 +12,6 @@ export class PublicFeedbackController {
     try {
       const { 
         healthUnitId, 
-        comment, 
         rating, 
         vaccineSuccess,
         waitTime,
@@ -23,9 +22,9 @@ export class PublicFeedbackController {
       } = req.body;
       const userId = req.user?.id;
 
-      if (!healthUnitId || !comment || rating === undefined) {
+      if (!healthUnitId || rating === undefined) {
         res.status(400).json({ 
-          message: 'Campos obrigatórios: healthUnitId, comment, rating' 
+          message: 'Campos obrigatórios: healthUnitId, rating' 
         });
         return;
       }
@@ -38,7 +37,6 @@ export class PublicFeedbackController {
       const feedback = await this.createFeedbackUseCase.execute({
         healthUnitId,
         userId: isAnonymous ? undefined : userId,
-        comment,
         rating: Number(rating),
         vaccineSuccess,
         waitTime,
@@ -58,16 +56,6 @@ export class PublicFeedbackController {
       if (error instanceof Error) {
         if (error.message.includes('Rating must be between')) {
           res.status(400).json({ message: 'Avaliação deve ser entre 1 e 5' });
-          return;
-        }
-        
-        if (error.message.includes('Comment must have at least')) {
-          res.status(400).json({ message: 'Comentário deve ter pelo menos 10 caracteres' });
-          return;
-        }
-
-        if (error.message.includes('Comment must have at most')) {
-          res.status(400).json({ message: 'Comentário deve ter no máximo 1000 caracteres' });
           return;
         }
       }

@@ -509,12 +509,6 @@ const apiSpec = {
                 type: 'object',
                 properties: {
                   healthUnitId: { type: 'string', example: '60a1b2c3d4e5f6789012347' },
-                  comment: { 
-                    type: 'string', 
-                    minLength: 10,
-                    maxLength: 1000,
-                    example: 'Excelente atendimento, equipe muito atenciosa e rápida'
-                  },
                   rating: { 
                     type: 'number', 
                     minimum: 1, 
@@ -553,7 +547,7 @@ const apiSpec = {
                   },
                   isAnonymous: { type: 'boolean', example: false }
                 },
-                required: ['healthUnitId', 'comment', 'rating']
+                required: ['healthUnitId', 'rating']
               }
             }
           }

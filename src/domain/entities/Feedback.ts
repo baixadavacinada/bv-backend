@@ -2,7 +2,6 @@ export interface Feedback {
   _id?: string;
   healthUnitId: string;
   userId?: string;
-  comment: string;
   rating: number;
   vaccineSuccess?: string;
   waitTime?: string;

@@ -3,7 +3,6 @@ import { Schema, model, Document, Types } from "mongoose";
 export interface FeedbackDocument extends Document {
   healthUnitId: Types.ObjectId;
   userId?: Types.ObjectId;
-  comment: string;
   rating: number;
   vaccineSuccess?: string;
   waitTime?: string;
@@ -29,13 +28,6 @@ const feedbackSchema = new Schema<FeedbackDocument>(
       type: Schema.Types.ObjectId,
       ref: "User"
 
-    },
-    comment: {
-      type: String,
-      required: [true, 'Comentário é obrigatório'],
-      trim: true,
-      minLength: [10, 'Comentário deve ter no mínimo 10 caracteres'],
-      maxLength: [1000, 'Comentário deve ter no máximo 1000 caracteres']
     },
     rating: {
       type: Number,
