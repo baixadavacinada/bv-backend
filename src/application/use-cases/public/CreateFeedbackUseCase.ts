@@ -6,6 +6,11 @@ export interface CreateFeedbackRequest {
   userId?: string;
   comment: string;
   rating: number;
+  vaccineSuccess?: string;
+  waitTime?: string;
+  respectfulService?: string;
+  cleanLocation?: string;
+  recommendation?: string;
   isAnonymous: boolean;
 }
 
@@ -30,6 +35,11 @@ export class CreateFeedbackUseCase {
       userId: data.isAnonymous ? undefined : data.userId,
       comment: data.comment.trim(),
       rating: data.rating,
+      vaccineSuccess: data.vaccineSuccess?.trim(),
+      waitTime: data.waitTime?.trim(),
+      respectfulService: data.respectfulService?.trim(),
+      cleanLocation: data.cleanLocation?.trim(),
+      recommendation: data.recommendation?.trim(),
       isAnonymous: data.isAnonymous,
       isActive: true,
       createdAt: new Date()

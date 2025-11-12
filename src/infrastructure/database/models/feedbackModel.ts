@@ -5,6 +5,11 @@ export interface FeedbackDocument extends Document {
   userId?: Types.ObjectId;
   comment: string;
   rating: number;
+  vaccineSuccess?: string;
+  waitTime?: string;
+  respectfulService?: string;
+  cleanLocation?: string;
+  recommendation?: string;
   isAnonymous: boolean;
   isActive: boolean;
   moderatedBy?: Types.ObjectId;
@@ -37,6 +42,31 @@ const feedbackSchema = new Schema<FeedbackDocument>(
       min: [1, 'Avaliação mínima é 1'],
       max: [5, 'Avaliação máxima é 5'],
       required: [true, 'Avaliação é obrigatória']
+    },
+    vaccineSuccess: {
+      type: String,
+      trim: true,
+      maxLength: [500, 'Campo de sucesso da vacina deve ter no máximo 500 caracteres']
+    },
+    waitTime: {
+      type: String,
+      trim: true,
+      maxLength: [500, 'Campo de tempo de espera deve ter no máximo 500 caracteres']
+    },
+    respectfulService: {
+      type: String,
+      trim: true,
+      maxLength: [500, 'Campo de atendimento respeitoso deve ter no máximo 500 caracteres']
+    },
+    cleanLocation: {
+      type: String,
+      trim: true,
+      maxLength: [500, 'Campo de local limpo deve ter no máximo 500 caracteres']
+    },
+    recommendation: {
+      type: String,
+      trim: true,
+      maxLength: [500, 'Campo de recomendação deve ter no máximo 500 caracteres']
     },
     isAnonymous: {
       type: Boolean,

@@ -521,6 +521,36 @@ const apiSpec = {
                     maximum: 5,
                     example: 5
                   },
+                  vaccineSuccess: {
+                    type: 'string',
+                    maxLength: 500,
+                    example: 'Vacina disponível e aplicada com sucesso',
+                    description: 'Avaliação sobre disponibilidade e sucesso da vacinação'
+                  },
+                  waitTime: {
+                    type: 'string',
+                    maxLength: 500,
+                    example: 'Tempo de espera foi curto, aproximadamente 15 minutos',
+                    description: 'Avaliação sobre tempo de espera'
+                  },
+                  respectfulService: {
+                    type: 'string',
+                    maxLength: 500,
+                    example: 'Profissionais foram educados e respeitosos',
+                    description: 'Avaliação sobre respeito e educação no atendimento'
+                  },
+                  cleanLocation: {
+                    type: 'string',
+                    maxLength: 500,
+                    example: 'Local muito limpo e bem organizado',
+                    description: 'Avaliação sobre limpeza e organização do local'
+                  },
+                  recommendation: {
+                    type: 'string',
+                    maxLength: 500,
+                    example: 'Recomendo esta unidade para todos da comunidade',
+                    description: 'Recomendação geral ou comentários adicionais'
+                  },
                   isAnonymous: { type: 'boolean', example: false }
                 },
                 required: ['healthUnitId', 'comment', 'rating']

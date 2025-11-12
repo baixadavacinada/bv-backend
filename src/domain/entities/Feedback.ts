@@ -4,6 +4,11 @@ export interface Feedback {
   userId?: string;
   comment: string;
   rating: number;
+  vaccineSuccess?: string;
+  waitTime?: string;
+  respectfulService?: string;
+  cleanLocation?: string;
+  recommendation?: string;
   isAnonymous: boolean;
   isActive: boolean;
   moderatedBy?: string;

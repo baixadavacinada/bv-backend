@@ -10,7 +10,17 @@ export class PublicFeedbackController {
 
   async create(req: Request, res: Response): Promise<void> {
     try {
-      const { healthUnitId, comment, rating, isAnonymous } = req.body;
+      const { 
+        healthUnitId, 
+        comment, 
+        rating, 
+        vaccineSuccess,
+        waitTime,
+        respectfulService,
+        cleanLocation,
+        recommendation,
+        isAnonymous 
+      } = req.body;
       const userId = req.user?.id;
 
       if (!healthUnitId || !comment || rating === undefined) {
@@ -30,6 +40,11 @@ export class PublicFeedbackController {
         userId: isAnonymous ? undefined : userId,
         comment,
         rating: Number(rating),
+        vaccineSuccess,
+        waitTime,
+        respectfulService,
+        cleanLocation,
+        recommendation,
         isAnonymous: Boolean(isAnonymous)
       });
 
