@@ -20,6 +20,19 @@ export interface UpdateRoleRequest {
   isActive?: boolean;
 }
 
+export interface UserVaccine {
+  vaccineId: string;
+  vaccineName: string;
+  manufacturer?: string;
+  dose?: string;
+  batchNumber?: string;
+  applicationDate?: Date;
+  healthUnitName?: string;
+  city?: string;
+  state?: string;
+  addedAt: Date;
+}
+
 export const getProfile = async (req: Request, res: Response) => {
   try {
     if (!req.user) {
@@ -341,6 +354,213 @@ export const listUsers = async (req: Request, res: Response) => {
       error: {
         code: 'SERVER_ERROR',
         message: 'Failed to list users'
+      }
+    });
+  }
+};
+
+export const addUserVaccine = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'User not authenticated'
+        }
+      });
+    }
+
+    const vaccine: UserVaccine = req.body;
+
+    if (!vaccine.vaccineName || !vaccine.dose) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_INPUT',
+          message: 'Vaccine name and dose are required'
+        }
+      });
+    }
+
+    let user = await userRepository.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'USER_NOT_FOUND',
+          message: 'User not found'
+        }
+      });
+    }
+
+    if (!user.profile) {
+      user.profile = {};
+    }
+
+    if (!user.profile.vaccines) {
+      user.profile.vaccines = [];
+    }
+
+    const newVaccine: UserVaccine = {
+      ...vaccine,
+      addedAt: new Date()
+    };
+
+    user.profile.vaccines.push(newVaccine);
+    user.updatedAt = new Date();
+
+    await userRepository.update(req.user.id, user);
+
+    logger.info('Vaccine added to user', {
+      uid: req.user.id,
+      vaccineName: vaccine.vaccineName
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Vaccine added successfully',
+      data: newVaccine
+    });
+  } catch (error) {
+    logger.error('Error adding vaccine to user', error instanceof Error ? error : new Error(String(error)));
+
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'SERVER_ERROR',
+        message: 'Failed to add vaccine'
+      }
+    });
+  }
+};
+
+export const getUserVaccines = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'User not authenticated'
+        }
+      });
+    }
+
+    const user = await userRepository.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'USER_NOT_FOUND',
+          message: 'User not found'
+        }
+      });
+    }
+
+    const vaccines = user.profile?.vaccines || [];
+
+    logger.info('User vaccines retrieved', {
+      uid: req.user.id,
+      count: vaccines.length
+    });
+
+    res.json({
+      success: true,
+      data: vaccines,
+      total: vaccines.length
+    });
+  } catch (error) {
+    logger.error('Error retrieving user vaccines', error instanceof Error ? error : new Error(String(error)));
+
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'SERVER_ERROR',
+        message: 'Failed to retrieve vaccines'
+      }
+    });
+  }
+};
+
+export const removeUserVaccine = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'User not authenticated'
+        }
+      });
+    }
+
+    const { vaccineId } = req.params;
+
+    if (!vaccineId) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_INPUT',
+          message: 'Vaccine ID is required'
+        }
+      });
+    }
+
+    let user = await userRepository.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'USER_NOT_FOUND',
+          message: 'User not found'
+        }
+      });
+    }
+
+    if (!user.profile?.vaccines) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'VACCINE_NOT_FOUND',
+          message: 'Vaccine not found'
+        }
+      });
+    }
+
+    const vaccineIndex = user.profile.vaccines.findIndex(v => v.vaccineId === vaccineId);
+    if (vaccineIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'VACCINE_NOT_FOUND',
+          message: 'Vaccine not found'
+        }
+      });
+    }
+
+    user.profile.vaccines.splice(vaccineIndex, 1);
+    user.updatedAt = new Date();
+
+    await userRepository.update(req.user.id, user);
+
+    logger.info('Vaccine removed from user', {
+      uid: req.user.id,
+      vaccineId: vaccineId
+    });
+
+    res.json({
+      success: true,
+      message: 'Vaccine removed successfully'
+    });
+  } catch (error) {
+    logger.error('Error removing vaccine from user', error instanceof Error ? error : new Error(String(error)));
+
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'SERVER_ERROR',
+        message: 'Failed to remove vaccine'
       }
     });
   }
