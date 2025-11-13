@@ -130,9 +130,9 @@ export const updateProfile = async (req: Request, res: Response) => {
       });
     }
 
-    const { displayName, photoURL, name, phone, cpf, notifications } = req.body;
+    const { displayName, photoURL, name, phone, cpf, notifications, favoritesHealthUnit } = req.body;
 
-    if (!displayName && !photoURL && !name && !phone && !cpf && !notifications) {
+    if (!displayName && !photoURL && !name && !phone && !cpf && !notifications && !favoritesHealthUnit) {
       return res.status(400).json({
         success: false,
         error: {
@@ -155,6 +155,12 @@ export const updateProfile = async (req: Request, res: Response) => {
     if (phone) mongoUpdateData.phone = phone;
     if (cpf) mongoUpdateData.cpf = cpf;
     if (notifications) mongoUpdateData.notifications = notifications;
+    
+    // Adicionar favoritos se fornecidos
+    if (favoritesHealthUnit) {
+      mongoUpdateData['profile.favoritesHealthUnit'] = favoritesHealthUnit;
+    }
+    
     mongoUpdateData.updatedAt = new Date();
 
     // Atualizar Firebase se houver dados
@@ -183,7 +189,8 @@ export const updateProfile = async (req: Request, res: Response) => {
         name,
         phone,
         cpf,
-        notifications
+        notifications,
+        favoritesHealthUnit
       }
     });
   } catch (error) {

@@ -272,6 +272,7 @@ export const ValidationSchemas = {
         }
       }
     },
-    notifications: { required: false, type: 'object' as const }
+    notifications: { required: false, type: 'object' as const },
+    favoritesHealthUnit: { required: false, type: 'array' as const }
   }
 };
