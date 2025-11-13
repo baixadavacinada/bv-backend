@@ -13,6 +13,10 @@ export interface UserDocument extends Document {
       isFavorite: boolean;
       addedAt: Date;
     }>;
+    favoriteEducationalMaterials?: Array<{
+      materialId: string;
+      addedAt: Date;
+    }>;
   };
   isActive: boolean;
   lastLoginAt?: Date;
@@ -67,6 +71,16 @@ const UserSchema = new Schema<UserDocument>({
       isFavorite: {
         type: Boolean,
         default: true
+      },
+      addedAt: {
+        type: Date,
+        default: Date.now
+      }
+    }],
+    favoriteEducationalMaterials: [{
+      materialId: {
+        type: String,
+        required: true
       },
       addedAt: {
         type: Date,

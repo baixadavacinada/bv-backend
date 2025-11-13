@@ -5,6 +5,7 @@ export interface VaccinationRecord {
   healthUnitId: string;
   dose: '1ª dose' | '2ª dose' | '3ª dose' | 'dose única' | 'reforço';
   date: Date;
+  batchNumber?: string;
   appliedBy: string;
   createdBy: string;
   updatedBy?: string;

@@ -6,6 +6,7 @@ export interface VaccinationRecordDocument extends Document {
   healthUnitId: Types.ObjectId;
   dose: string;
   date: Date;
+  batchNumber?: string;
   appliedBy: Types.ObjectId;
   createdBy: Types.ObjectId;
   updatedBy?: Types.ObjectId;
@@ -49,6 +50,11 @@ const vaccinationRecordSchema = new Schema<VaccinationRecordDocument>(
         },
         message: 'Application date cannot be in the future'
       }
+    },
+    batchNumber: {
+      type: String,
+      trim: true,
+      maxLength: [50, 'Batch number must have at most 50 characters']
     },
     appliedBy: {
       type: Schema.Types.ObjectId,

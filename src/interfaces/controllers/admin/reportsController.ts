@@ -22,12 +22,23 @@ export class ReportsController {
         .lean();
 
       const headers = ['Data', 'UBS', 'Avaliação', 'Rating'];
-      const rows = feedbacks.map(feedback => [
-        new Date(feedback.createdAt).toLocaleDateString('pt-BR'),
-        (feedback.healthUnitId as any)?.name || 'N/A',
-        feedback.vaccineSuccess?.substring(0, 100) || '',
-        feedback.rating?.toString() || ''
-      ]);
+      const rows = feedbacks.map(feedback => {
+        // Concatenar todos os campos de avaliação textual
+        const avaliacaoCompleta = [
+          feedback.vaccineSuccess,
+          feedback.waitTime,
+          feedback.respectfulService,
+          feedback.cleanLocation,
+          feedback.recommendation
+        ].filter(Boolean).join(' | ');
+
+        return [
+          new Date(feedback.createdAt).toLocaleDateString('pt-BR'),
+          (feedback.healthUnitId as any)?.name || 'N/A',
+          avaliacaoCompleta || 'Sem comentários',
+          feedback.rating?.toString() || ''
+        ];
+      });
 
       const csvRows = [
         headers.join(','),

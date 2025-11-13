@@ -173,4 +173,69 @@ router.get('/users',
   asyncHandler(listUsers)
 );
 
+// Educational Materials Favorites Routes (for authenticated users)
+router.patch('/users/favorites/educational-materials',
+  firebaseAuthAdvanced({ required: true }),
+  validateBody({
+    materialId: { required: true, type: 'string' as const }
+  }),
+  asyncHandler(async (req: Request, res: Response) => {
+    try {
+      const userId = req.user?.uid
+      const { materialId } = req.body
+
+      if (!userId || !materialId) {
+        return res.status(400).json({
+          error: "userId and materialId are required",
+        });
+      }
+
+      // Import the controller function
+      const { toggleFavoriteEducationalMaterialController } = await import('../controllers/admin/userController');
+      
+      // Create a modified request object with userId in params
+      const modifiedReq = {
+        ...req,
+        params: { ...req.params, userId }
+      }
+
+      return await toggleFavoriteEducationalMaterialController(modifiedReq as any, res);
+    } catch (error) {
+      console.error("Erro ao atualizar material favorito:", error);
+      return res.status(500).json({
+        error: "Erro ao atualizar material educativo favorito",
+      });
+    }
+  })
+);
+
+router.get('/users/favorites/educational-materials',
+  firebaseAuthAdvanced({ required: true }),
+  asyncHandler(async (req: Request, res: Response) => {
+    try {
+      const userId = req.user?.uid
+
+      if (!userId) {
+        return res.status(400).json({ error: "userId is required" });
+      }
+
+      // Import the controller function
+      const { getUserFavoriteEducationalMaterialsController } = await import('../controllers/admin/userController');
+      
+      // Create a modified request object with userId in params
+      const modifiedReq = {
+        ...req,
+        params: { ...req.params, userId }
+      }
+
+      return await getUserFavoriteEducationalMaterialsController(modifiedReq as any, res);
+    } catch (error) {
+      console.error("Erro ao obter materiais favoritos:", error);
+      return res.status(500).json({
+        error: "Erro ao obter materiais educativos favoritos",
+      });
+    }
+  })
+);
+
 export default router;

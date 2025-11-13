@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { createUserController } from "../controllers/admin/userController";
+import { 
+  createUserController, 
+  toggleFavoriteEducationalMaterialController,
+  getUserFavoriteEducationalMaterialsController 
+} from "../controllers/admin/userController";
 import { updateUserProfileController } from "../controllers/admin/profileController";
 import { 
   createVaccineController, 
@@ -393,6 +397,18 @@ router.post("/reports/users",
     statusFilter: { required: false, type: 'string' as const, enum: ['active', 'inactive', 'all'] as any[] }
   }),
   asyncHandler(reportsController.generateUserReport.bind(reportsController))
+);
+
+// Educational Materials Favorites Routes
+router.patch("/users/:userId/educational-materials/favorite",
+  validateBody({
+    materialId: { required: true, type: 'string' as const }
+  }),
+  asyncHandler(toggleFavoriteEducationalMaterialController)
+);
+
+router.get("/users/:userId/educational-materials/favorites",
+  asyncHandler(getUserFavoriteEducationalMaterialsController)
 );
 
 export default router;

@@ -93,7 +93,6 @@ afterEach(async () => {
   }
 });
 
-// Suppress console logs during tests for cleaner output
 const originalConsole = console;
 beforeAll(() => {
   if (process.env.VERBOSE_TESTS !== 'true') {
