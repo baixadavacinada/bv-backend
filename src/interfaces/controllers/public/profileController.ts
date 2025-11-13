@@ -408,9 +408,12 @@ export const addUserVaccine = async (req: Request, res: Response) => {
     };
 
     user.profile.vaccines.push(newVaccine);
-    user.updatedAt = new Date();
 
-    await userRepository.update(req.user.id, user);
+    // Usar updateProfile com operador $ do MongoDB para atualizar apenas o array de vacinas
+    await userRepository.updateProfile(req.user.id, {
+      'profile.vaccines': user.profile.vaccines,
+      updatedAt: new Date()
+    });
 
     logger.info('Vaccine added to user', {
       uid: req.user.id,
@@ -540,9 +543,12 @@ export const removeUserVaccine = async (req: Request, res: Response) => {
     }
 
     user.profile.vaccines.splice(vaccineIndex, 1);
-    user.updatedAt = new Date();
 
-    await userRepository.update(req.user.id, user);
+    // Usar updateProfile com operador $ do MongoDB para atualizar apenas o array de vacinas
+    await userRepository.updateProfile(req.user.id, {
+      'profile.vaccines': user.profile.vaccines,
+      updatedAt: new Date()
+    });
 
     logger.info('Vaccine removed from user', {
       uid: req.user.id,
