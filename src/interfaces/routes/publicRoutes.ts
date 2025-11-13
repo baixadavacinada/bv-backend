@@ -22,7 +22,10 @@ import { createAdminUser } from '../controllers/admin/adminAuthController';
 import { 
   getProfile as getProfileFromController,
   updateUserRole,
-  listUsers
+  listUsers,
+  addUserVaccine,
+  getUserVaccines,
+  removeUserVaccine
 } from '../controllers/public/profileController';
 import { firebaseAuthAdvanced } from '../../middlewares/firebaseAuthAdvanced';
 import { validateBody, validateQuery, ValidationSchemas } from '../../middlewares/validation';
@@ -156,6 +159,32 @@ router.patch('/notifications/mark-all-read',
 router.get('/profile',
   firebaseAuthAdvanced(),
   asyncHandler(getProfileFromController)
+);
+
+router.post('/user/vaccines',
+  firebaseAuthAdvanced({ required: true }),
+  validateBody({
+    vaccineId: { required: true, type: 'string' as const },
+    vaccineName: { required: true, type: 'string' as const },
+    manufacturer: { required: false, type: 'string' as const },
+    dose: { required: true, type: 'string' as const },
+    batchNumber: { required: false, type: 'string' as const },
+    applicationDate: { required: false, type: 'string' as const },
+    healthUnitName: { required: false, type: 'string' as const },
+    city: { required: false, type: 'string' as const },
+    state: { required: false, type: 'string' as const }
+  }),
+  asyncHandler(addUserVaccine)
+);
+
+router.get('/user/vaccines',
+  firebaseAuthAdvanced({ required: true }),
+  asyncHandler(getUserVaccines)
+);
+
+router.delete('/user/vaccines/:vaccineId',
+  firebaseAuthAdvanced({ required: true }),
+  asyncHandler(removeUserVaccine)
 );
 
 router.put('/users/:uid/role',
