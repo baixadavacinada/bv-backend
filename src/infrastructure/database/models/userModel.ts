@@ -17,6 +17,18 @@ export interface UserDocument extends Document {
       materialId: string;
       addedAt: Date;
     }>;
+    vaccines?: Array<{
+      vaccineId: string;
+      vaccineName: string;
+      manufacturer?: string;
+      dose?: string;
+      batchNumber?: string;
+      applicationDate?: string;
+      healthUnitName?: string;
+      city?: string;
+      state?: string;
+      addedAt: Date;
+    }>;
   };
   isActive: boolean;
   lastLoginAt?: Date;
@@ -81,6 +93,57 @@ const UserSchema = new Schema<UserDocument>({
       materialId: {
         type: String,
         required: true
+      },
+      addedAt: {
+        type: Date,
+        default: Date.now
+      }
+    }],
+    vaccines: [{
+      vaccineId: {
+        type: String,
+        required: true
+      },
+      vaccineName: {
+        type: String,
+        required: true,
+        trim: true,
+        maxLength: [100, 'Vaccine name must have at most 100 characters']
+      },
+      manufacturer: {
+        type: String,
+        trim: true,
+        maxLength: [100, 'Manufacturer must have at most 100 characters']
+      },
+      dose: {
+        type: String,
+        trim: true,
+        enum: {
+          values: ['1ª dose', '2ª dose', '3ª dose', 'dose única', 'reforço'],
+          message: 'Invalid dose type'
+        }
+      },
+      batchNumber: {
+        type: String,
+        trim: true,
+        maxLength: [50, 'Batch number must have at most 50 characters']
+      },
+      applicationDate: {
+        type: String,
+        trim: true
+      },
+      healthUnitName: {
+        type: String,
+        trim: true
+      },
+      city: {
+        type: String,
+        trim: true
+      },
+      state: {
+        type: String,
+        trim: true,
+        maxLength: [2, 'State code must have at most 2 characters']
       },
       addedAt: {
         type: Date,
