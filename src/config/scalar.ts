@@ -1185,6 +1185,100 @@ const apiSpec = {
         }
       }
     },
+    '/api/admin/reports/feedbacks': {
+      post: {
+        summary: 'Gerar relatório de feedbacks em Excel (Admin)',
+        tags: ['Dashboard e Relatórios - Autenticado'],
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: false,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  ubsId: { 
+                    type: 'string', 
+                    description: 'ID da unidade de saúde (opcional para filtrar por UBS específica)'
+                  },
+                  startDate: { 
+                    type: 'string', 
+                    format: 'date-time',
+                    description: 'Data inicial para o relatório (opcional)'
+                  },
+                  endDate: { 
+                    type: 'string', 
+                    format: 'date-time',
+                    description: 'Data final para o relatório (opcional)'
+                  }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: 'Arquivo Excel com relatório de feedbacks gerado com sucesso',
+            content: {
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {
+                schema: {
+                  type: 'string',
+                  format: 'binary'
+                }
+              }
+            }
+          },
+          400: { description: 'Parâmetros inválidos' },
+          401: { description: 'Não autorizado' },
+          500: { description: 'Erro ao gerar relatório' }
+        }
+      }
+    },
+    '/api/admin/reports/users': {
+      post: {
+        summary: 'Gerar relatório de usuários em Excel (Admin)',
+        tags: ['Dashboard e Relatórios - Autenticado'],
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: false,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  roleFilter: { 
+                    type: 'string',
+                    enum: ['admin', 'agent', 'public'],
+                    description: 'Filtrar por perfil de usuário (opcional)'
+                  },
+                  statusFilter: { 
+                    type: 'string',
+                    enum: ['active', 'inactive', 'all'],
+                    description: 'Filtrar por status do usuário (opcional, padrão: all)'
+                  }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: 'Arquivo Excel com relatório de usuários gerado com sucesso',
+            content: {
+              'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': {
+                schema: {
+                  type: 'string',
+                  format: 'binary'
+                }
+              }
+            }
+          },
+          400: { description: 'Parâmetros inválidos' },
+          401: { description: 'Não autorizado' },
+          500: { description: 'Erro ao gerar relatório' }
+        }
+      }
+    },
     
     // Admin Feedback endpoints
     '/api/admin/feedback': {

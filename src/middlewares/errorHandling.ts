@@ -1,31 +1,23 @@
 import { Request, Response, NextFunction } from 'express';
 import { Logger } from './logging';
 
-/**
- * RFC 7807 - Problem Details for HTTP APIs
- * Interface padrão para respostas de erro seguindo especificação REST
- */
 export interface ProblemDetails {
-  type: string; // URI que identifica o tipo de problema
-  title: string; // Resumo legível do tipo de problema
-  status: number; // Código HTTP
-  detail?: string; // Explicação específica do problema
-  instance?: string; // URI que identifica a instância (correlationId)
-  code?: string; // Código de erro interno para tracking
-  timestamp?: string; // ISO timestamp
-  path?: string; // Caminho da requisição
-  [key: string]: any; // Propriedades customizadas específicas do erro
+  type: string; 
+  title: string;
+  status: number; 
+  detail?: string; 
+  instance?: string;
+  timestamp?: string; 
+  path?: string; 
+  [key: string]: any; 
 }
 
-/**
- * Classe de erro customizada seguindo padrões REST e RFC 7807
- */
 export class AppError extends Error {
   public readonly statusCode: number;
   public readonly code: string;
   public readonly isOperational: boolean;
   public readonly details?: Record<string, any>;
-  public readonly errorType: string; // RFC 7807 type
+  public readonly errorType: string; 
 
   constructor(
     message: string,
@@ -46,9 +38,6 @@ export class AppError extends Error {
     Error.captureStackTrace(this, this.constructor);
   }
 
-  /**
-   * Converte o erro para formato RFC 7807
-   */
   public toProblemDetails(correlationId: string, path: string): ProblemDetails {
     return {
       type: this.errorType,
@@ -78,11 +67,6 @@ export class AppError extends Error {
     return titles[this.code] || 'Error';
   }
 }
-
-
-/**
- * Erros específicos para diferentes cenários com mapeamento RFC 7807
- */
 export class ValidationError extends AppError {
   constructor(message: string, details?: Record<string, any>) {
     super(
@@ -149,9 +133,6 @@ export class ConflictError extends AppError {
 }
 
 
-/**
- * Coleta contexto estruturado de requisição para logging
- */
 const getRequestContext = (req: Request) => ({
   method: req.method,
   url: req.originalUrl || req.url,
@@ -170,9 +151,7 @@ const getRequestContext = (req: Request) => ({
   timestamp: new Date().toISOString()
 });
 
-/**
- * Enriquece contexto com detalhes do erro para logging estruturado
- */
+
 const enrichErrorContext = (
   baseContext: any,
   error: Error | AppError,
@@ -192,10 +171,7 @@ const enrichErrorContext = (
   }
 });
 
-/**
- * Middleware global de tratamento de erros seguindo RFC 7807
- * Centraliza todo o handling com logs estruturados e respostas padronizadas
- */
+
 export const errorHandlingMiddleware = (
   error: Error | AppError,
   req: Request,
@@ -218,7 +194,6 @@ export const errorHandlingMiddleware = (
       }
     );
 
-    // Log apropriado baseado no status code
     if (error.statusCode >= 500) {
       logger.error(`[${error.code}] Server Error: ${error.message}`, error, enrichedContext);
     } else if (error.statusCode >= 400) {
@@ -230,7 +205,6 @@ export const errorHandlingMiddleware = (
     return;
   }
 
-  // Erro de validação MongoDB
   if (error.name === 'ValidationError') {
     const mongoError = error as any;
     const validationErrors: Record<string, string> = {};
@@ -267,7 +241,6 @@ export const errorHandlingMiddleware = (
     return;
   }
 
-  // Erro de chave duplicada MongoDB
   if (error.name === 'MongoServerError' && (error as any).code === 11000) {
     const duplicateError = error as any;
     const field = Object.keys(duplicateError.keyPattern)[0];
@@ -302,7 +275,6 @@ export const errorHandlingMiddleware = (
     return;
   }
 
-  // Erro de token JWT inválido
   if (error.name === 'JsonWebTokenError') {
     const enrichedContext = enrichErrorContext(
       { ...requestContext, correlationId },
@@ -330,7 +302,6 @@ export const errorHandlingMiddleware = (
     return;
   }
 
-  // Erro de token expirado
   if (error.name === 'TokenExpiredError') {
     const expiredAt = (error as any).expiredAt;
     const enrichedContext = enrichErrorContext(
@@ -361,7 +332,6 @@ export const errorHandlingMiddleware = (
     return;
   }
 
-  // Erro crítico não tratado
   const enrichedContext = enrichErrorContext(
     { ...requestContext, correlationId },
     error,

@@ -91,7 +91,6 @@ async function initializeDatabase() {
     try {
       await connectDatabase();
       isConnected = true;
-      console.log('Database connected');
     } catch (error) {
       console.error('Database connection failed:', error);
       throw error;

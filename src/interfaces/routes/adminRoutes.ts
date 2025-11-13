@@ -13,6 +13,7 @@ import { FeedbackController } from "../controllers/admin/feedbackController";
 import { AdminNotificationController } from "../controllers/admin/notificationController";
 import { AdminHealthUnitsController } from "../controllers/admin/healthUnitsController";
 import { DashboardController } from "../controllers/admin/dashboardController";
+import { ReportsController } from "../controllers/admin/reportsController";
 import { listHealthUnitsController } from "../controllers/healthUnitsController";
 import { 
   createFirebaseUser, 
@@ -52,6 +53,7 @@ const feedbackController = new FeedbackController();
 const adminNotificationController = new AdminNotificationController();
 const adminHealthUnitsController = new AdminHealthUnitsController();
 const dashboardController = new DashboardController();
+const reportsController = new ReportsController();
 
 router.post("/users",
   validateBody(ValidationSchemas.user),
@@ -374,6 +376,23 @@ router.post("/claims/bulk-update",
     updates: { required: true, type: 'array' as const }
   }),
   asyncHandler(bulkUpdateClaims)
+);
+
+router.post("/reports/feedbacks",
+  validateBody({
+    ubsId: { required: false, type: 'string' as const },
+    startDate: { required: false, type: 'string' as const },
+    endDate: { required: false, type: 'string' as const }
+  }),
+  asyncHandler(reportsController.generateFeedbackReport.bind(reportsController))
+);
+
+router.post("/reports/users",
+  validateBody({
+    roleFilter: { required: false, type: 'string' as const },
+    statusFilter: { required: false, type: 'string' as const, enum: ['active', 'inactive', 'all'] as any[] }
+  }),
+  asyncHandler(reportsController.generateUserReport.bind(reportsController))
 );
 
 export default router;

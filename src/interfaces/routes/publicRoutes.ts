@@ -120,7 +120,6 @@ router.get('/vaccination-records/user/:userId',
 );
 
 router.post('/feedback',
-  firebaseAuthAdvanced(),
   validateBody({
     healthUnitId: { required: true, type: 'string' as const },
     comment: { required: true, type: 'string' as const, minLength: 10, maxLength: 1000 },
