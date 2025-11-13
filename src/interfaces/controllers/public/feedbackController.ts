@@ -13,14 +13,10 @@ export class PublicFeedbackController {
       const { 
         healthUnitId, 
         rating, 
-        vaccineSuccess,
-        waitTime,
-        respectfulService,
-        cleanLocation,
-        recommendation,
+        comment,
         isAnonymous 
       } = req.body;
-      const userId = req.user?.id;
+      const userId = (req.user as any)?.uid || (req.user as any)?.id;
 
       if (!healthUnitId || rating === undefined) {
         res.status(400).json({ 
@@ -38,13 +34,8 @@ export class PublicFeedbackController {
         healthUnitId,
         userId: isAnonymous ? undefined : userId,
         rating: Number(rating),
-        vaccineSuccess,
-        waitTime,
-        respectfulService,
-        cleanLocation,
-        recommendation,
-        isAnonymous: Boolean(isAnonymous)
-      });
+        comment: comment || ''
+      } as any);
 
       res.status(201).json({
         message: 'Feedback criado com sucesso',

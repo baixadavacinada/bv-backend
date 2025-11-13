@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { listHealthUnitsController } from '../controllers/healthUnitsController';
 import { listVaccinesController } from '../controllers/admin/vaccineController';
 import { PublicVaccinationRecordController } from '../controllers/public/vaccinationRecordController';
@@ -122,8 +122,13 @@ router.get('/vaccination-records/user/:userId',
 router.post('/feedback',
   validateBody({
     healthUnitId: { required: true, type: 'string' as const },
-    comment: { required: true, type: 'string' as const, minLength: 10, maxLength: 1000 },
+    comment: { required: false, type: 'string' as const, minLength: 10, maxLength: 1000 },
     rating: { required: true, type: 'number' as const, min: 1, max: 5 },
+    vaccineSuccess: { required: false, type: 'string' as const },
+    waitTime: { required: false, type: 'string' as const },
+    respectfulService: { required: false, type: 'string' as const },
+    cleanLocation: { required: false, type: 'string' as const },
+    recommendation: { required: false, type: 'string' as const },
     isAnonymous: { required: false, type: 'boolean' as const }
   }),
   asyncHandler(publicFeedbackController.create.bind(publicFeedbackController))
@@ -179,10 +184,10 @@ router.patch('/users/favorites/educational-materials',
   validateBody({
     materialId: { required: true, type: 'string' as const }
   }),
-  asyncHandler(async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response): Promise<any> => {
     try {
-      const userId = req.user?.uid
-      const { materialId } = req.body
+      const userId = (req as any).user?.uid || (req as any).user?.id
+      const { materialId } = (req as any).body
 
       if (!userId || !materialId) {
         return res.status(400).json({
@@ -190,16 +195,14 @@ router.patch('/users/favorites/educational-materials',
         });
       }
 
-      // Import the controller function
       const { toggleFavoriteEducationalMaterialController } = await import('../controllers/admin/userController');
       
-      // Create a modified request object with userId in params
       const modifiedReq = {
         ...req,
         params: { ...req.params, userId }
       }
 
-      return await toggleFavoriteEducationalMaterialController(modifiedReq as any, res);
+      return await toggleFavoriteEducationalMaterialController(modifiedReq as any, res as any);
     } catch (error) {
       console.error("Erro ao atualizar material favorito:", error);
       return res.status(500).json({
@@ -211,24 +214,22 @@ router.patch('/users/favorites/educational-materials',
 
 router.get('/users/favorites/educational-materials',
   firebaseAuthAdvanced({ required: true }),
-  asyncHandler(async (req: Request, res: Response) => {
+  asyncHandler(async (req: Request, res: Response): Promise<any> => {
     try {
-      const userId = req.user?.uid
+      const userId = (req as any).user?.uid || (req as any).user?.id
 
       if (!userId) {
         return res.status(400).json({ error: "userId is required" });
       }
 
-      // Import the controller function
       const { getUserFavoriteEducationalMaterialsController } = await import('../controllers/admin/userController');
       
-      // Create a modified request object with userId in params
       const modifiedReq = {
         ...req,
         params: { ...req.params, userId }
       }
 
-      return await getUserFavoriteEducationalMaterialsController(modifiedReq as any, res);
+      return await getUserFavoriteEducationalMaterialsController(modifiedReq as any, res as any);
     } catch (error) {
       console.error("Erro ao obter materiais favoritos:", error);
       return res.status(500).json({
