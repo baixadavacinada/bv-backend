@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import { claimsService } from '../../../services/claimsService';
 import { Logger } from '../../../middlewares/logging';
 import { MongoUserRepository } from '../../../infrastructure/database/implementations/MongoUserRepository';
@@ -413,7 +414,7 @@ export const addUserVaccine = async (req: Request, res: Response) => {
     await userRepository.updateProfile(req.user.id, {
       'profile.vaccines': user.profile.vaccines,
       updatedAt: new Date()
-    });
+    } as any);
 
     logger.info('Vaccine added to user', {
       uid: req.user.id,
@@ -548,7 +549,7 @@ export const removeUserVaccine = async (req: Request, res: Response) => {
     await userRepository.updateProfile(req.user.id, {
       'profile.vaccines': user.profile.vaccines,
       updatedAt: new Date()
-    });
+    } as any);
 
     logger.info('Vaccine removed from user', {
       uid: req.user.id,
@@ -596,6 +597,20 @@ export const toggleFavoriteHealthUnit = async (req: Request, res: Response) => {
       });
     }
 
+    // Converter string para ObjectId
+    let healthUnitObjectId;
+    try {
+      healthUnitObjectId = new mongoose.Types.ObjectId(healthUnitId);
+    } catch (err) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_ID',
+          message: 'Invalid healthUnitId format'
+        }
+      });
+    }
+
     const user = await userRepository.findById(req.user.id);
 
     if (!user) {
@@ -612,22 +627,22 @@ export const toggleFavoriteHealthUnit = async (req: Request, res: Response) => {
       user.profile = {} as any;
     }
 
-    if (!user.profile.favoritesHealthUnit) {
-      user.profile.favoritesHealthUnit = [];
+    if (!user.profile!.favoritesHealthUnit) {
+      user.profile!.favoritesHealthUnit = [];
     }
 
-    // Verificar se já é favorito
-    const favoriteIndex = user.profile.favoritesHealthUnit.findIndex(
-      (fav) => fav.healthUnitId === healthUnitId
+    // Verificar se já é favorito (comparar como strings para evitar problemas de ObjectId)
+    const favoriteIndex = user.profile!.favoritesHealthUnit!.findIndex(
+      (fav) => fav.healthUnitId === healthUnitObjectId.toString()
     );
 
     if (favoriteIndex > -1) {
       // Remover do array de favoritos
-      user.profile.favoritesHealthUnit.splice(favoriteIndex, 1);
+      user.profile!.favoritesHealthUnit!.splice(favoriteIndex, 1);
     } else {
       // Adicionar ao array de favoritos
-      user.profile.favoritesHealthUnit.push({
-        healthUnitId,
+      user.profile!.favoritesHealthUnit!.push({
+        healthUnitId: healthUnitObjectId.toString(),
         isFavorite: true,
         addedAt: new Date()
       });
@@ -635,9 +650,9 @@ export const toggleFavoriteHealthUnit = async (req: Request, res: Response) => {
 
     // Atualizar no banco de dados
     await userRepository.updateProfile(req.user.id, {
-      'profile.favoritesHealthUnit': user.profile.favoritesHealthUnit,
+      'profile.favoritesHealthUnit': user.profile!.favoritesHealthUnit,
       updatedAt: new Date()
-    });
+    } as any);
 
     logger.info('Health unit favorite toggled', {
       uid: req.user.id,
@@ -647,7 +662,7 @@ export const toggleFavoriteHealthUnit = async (req: Request, res: Response) => {
 
     res.json({
       success: true,
-      data: user.profile.favoritesHealthUnit,
+      data: user.profile!.favoritesHealthUnit,
       message: 'Health unit favorite toggled successfully'
     });
   } catch (error) {
@@ -747,21 +762,21 @@ export const toggleFavoriteMaterial = async (req: Request, res: Response) => {
       user.profile = {} as any;
     }
 
-    if (!user.profile.favoriteEducationalMaterials) {
-      user.profile.favoriteEducationalMaterials = [];
+    if (!user.profile!.favoriteEducationalMaterials) {
+      user.profile!.favoriteEducationalMaterials = [];
     }
 
     // Verificar se já é favorito
-    const favoriteIndex = user.profile.favoriteEducationalMaterials.findIndex(
+    const favoriteIndex = user.profile!.favoriteEducationalMaterials!.findIndex(
       (fav) => fav.materialId === materialId
     );
 
     if (favoriteIndex > -1) {
       // Remover do array de favoritos
-      user.profile.favoriteEducationalMaterials.splice(favoriteIndex, 1);
+      user.profile!.favoriteEducationalMaterials!.splice(favoriteIndex, 1);
     } else {
       // Adicionar ao array de favoritos
-      user.profile.favoriteEducationalMaterials.push({
+      user.profile!.favoriteEducationalMaterials!.push({
         materialId,
         addedAt: new Date()
       });
@@ -769,9 +784,9 @@ export const toggleFavoriteMaterial = async (req: Request, res: Response) => {
 
     // Atualizar no banco de dados
     await userRepository.updateProfile(req.user.id, {
-      'profile.favoriteEducationalMaterials': user.profile.favoriteEducationalMaterials,
+      'profile.favoriteEducationalMaterials': user.profile!.favoriteEducationalMaterials,
       updatedAt: new Date()
-    });
+    } as any);
 
     logger.info('Educational material favorite toggled', {
       uid: req.user.id,
@@ -781,7 +796,7 @@ export const toggleFavoriteMaterial = async (req: Request, res: Response) => {
 
     res.json({
       success: true,
-      data: user.profile.favoriteEducationalMaterials,
+      data: user.profile!.favoriteEducationalMaterials,
       message: 'Educational material favorite toggled successfully'
     });
   } catch (error) {
