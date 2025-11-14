@@ -8,8 +8,8 @@ export interface VaccineDocument extends Document {
   description?: string;
   batchNumber?: string;
   isActive: boolean;
-  createdBy: Types.ObjectId;
-  updatedBy?: Types.ObjectId;
+  createdBy: string;
+  updatedBy?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -57,13 +57,11 @@ const VaccineSchema = new Schema<VaccineDocument>({
     default: true
   },
   createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    type: String,
     required: [true, 'Creator user is required']
   },
   updatedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User"
+    type: String
   }
 }, {
   timestamps: true,

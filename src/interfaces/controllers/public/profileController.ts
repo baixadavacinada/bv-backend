@@ -856,3 +856,183 @@ export const getFavoriteEducationalMaterials = async (req: Request, res: Respons
     });
   }
 };
+
+export const saveSecondDoseConfiguration = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'User not authenticated'
+        }
+      });
+    }
+
+    const { selectedVaccines, createdBy } = req.body;
+
+    if (!selectedVaccines || !Array.isArray(selectedVaccines)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_INPUT',
+          message: 'selectedVaccines array is required'
+        }
+      });
+    }
+
+    if (!createdBy) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_INPUT',
+          message: 'createdBy is required'
+        }
+      });
+    }
+
+    let user = await userRepository.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'USER_NOT_FOUND',
+          message: 'User not found'
+        }
+      });
+    }
+
+    if (!user.profile) {
+      user.profile = {};
+    }
+
+    const secondDoseConfig = {
+      selectedVaccines,
+      createdBy,
+      createdAt: new Date()
+    };
+
+    await userRepository.updateProfile(req.user.id, {
+      'profile.secondDoseConfig': secondDoseConfig,
+      updatedAt: new Date()
+    } as any);
+
+    logger.info('Second dose configuration saved', {
+      uid: req.user.id,
+      vaccinesCount: selectedVaccines.length,
+      createdBy
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Second dose configuration saved successfully',
+      data: secondDoseConfig
+    });
+  } catch (error) {
+    logger.error('Error saving second dose configuration', error instanceof Error ? error : new Error(String(error)));
+
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'SERVER_ERROR',
+        message: 'Failed to save second dose configuration'
+      }
+    });
+  }
+};
+
+export const getSecondDoseConfiguration = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'User not authenticated'
+        }
+      });
+    }
+
+    const user = await userRepository.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'USER_NOT_FOUND',
+          message: 'User not found'
+        }
+      });
+    }
+
+    const secondDoseConfig = user.profile?.secondDoseConfig || null;
+
+    logger.info('Second dose configuration retrieved', {
+      uid: req.user.id
+    });
+
+    res.json({
+      success: true,
+      data: secondDoseConfig,
+      message: 'Second dose configuration retrieved successfully'
+    });
+  } catch (error) {
+    logger.error('Error retrieving second dose configuration', error instanceof Error ? error : new Error(String(error)));
+
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'SERVER_ERROR',
+        message: 'Failed to retrieve second dose configuration'
+      }
+    });
+  }
+};
+
+export const removeSecondDoseConfiguration = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'User not authenticated'
+        }
+      });
+    }
+
+    let user = await userRepository.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'USER_NOT_FOUND',
+          message: 'User not found'
+        }
+      });
+    }
+
+    await userRepository.updateProfile(req.user.id, {
+      'profile.secondDoseConfig': null,
+      updatedAt: new Date()
+    } as any);
+
+    logger.info('Second dose configuration removed', {
+      uid: req.user.id
+    });
+
+    res.json({
+      success: true,
+      message: 'Second dose configuration removed successfully'
+    });
+  } catch (error) {
+    logger.error('Error removing second dose configuration', error instanceof Error ? error : new Error(String(error)));
+
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'SERVER_ERROR',
+        message: 'Failed to remove second dose configuration'
+      }
+    });
+  }
+};

@@ -11,8 +11,8 @@ export interface AppointmentDocument extends Document {
   notes?: string;
   confirmedBy?: Types.ObjectId;
   completedBy?: Types.ObjectId;
-  createdBy: Types.ObjectId;
-  updatedBy?: Types.ObjectId;
+  createdBy: string;
+  updatedBy?: string;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -85,13 +85,11 @@ const appointmentSchema = new Schema<AppointmentDocument>(
       ref: "User"
     },
     createdBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
+      type: String,
       required: [true, 'Creator user is required']
     },
     updatedBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User"
+      type: String
     },
     isActive: {
       type: Boolean,

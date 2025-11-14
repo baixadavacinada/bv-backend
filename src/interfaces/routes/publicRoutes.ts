@@ -29,7 +29,10 @@ import {
   toggleFavoriteHealthUnit,
   getFavoriteHealthUnits,
   toggleFavoriteMaterial,
-  getFavoriteEducationalMaterials
+  getFavoriteEducationalMaterials,
+  saveSecondDoseConfiguration,
+  getSecondDoseConfiguration,
+  removeSecondDoseConfiguration
 } from '../controllers/public/profileController';
 import { firebaseAuthAdvanced } from '../../middlewares/firebaseAuthAdvanced';
 import { validateBody, validateQuery, ValidationSchemas } from '../../middlewares/validation';
@@ -215,6 +218,25 @@ router.post('/user/favorite-materials/toggle',
 router.get('/user/favorite-materials',
   firebaseAuthAdvanced({ required: true }),
   asyncHandler(getFavoriteEducationalMaterials)
+);
+
+router.post('/user/second-dose-config',
+  firebaseAuthAdvanced({ required: true }),
+  validateBody({
+    selectedVaccines: { required: true, type: 'array' as const },
+    createdBy: { required: true, type: 'string' as const }
+  }),
+  asyncHandler(saveSecondDoseConfiguration)
+);
+
+router.get('/user/second-dose-config',
+  firebaseAuthAdvanced({ required: true }),
+  asyncHandler(getSecondDoseConfiguration)
+);
+
+router.delete('/user/second-dose-config',
+  firebaseAuthAdvanced({ required: true }),
+  asyncHandler(removeSecondDoseConfiguration)
 );
 
 router.put('/users/:uid/role',

@@ -199,7 +199,8 @@ export const ValidationSchemas = {
     manufacturer: { required: true, type: 'string' as const, minLength: 2, maxLength: 100 },
     ageGroup: { required: true, type: 'string' as const, minLength: 1, maxLength: 50 },
     doses: { required: true, type: 'array' as const },
-    batchNumber: { required: false, type: 'string' as const, minLength: 1, maxLength: 50 }
+    batchNumber: { required: false, type: 'string' as const, minLength: 1, maxLength: 50 },
+    description: { required: false, type: 'string' as const, minLength: 1, maxLength: 500 }
   },
 
   login: {

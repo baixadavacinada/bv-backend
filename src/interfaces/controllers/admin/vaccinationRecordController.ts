@@ -17,7 +17,7 @@ export class VaccinationRecordController {
   async create(req: Request, res: Response): Promise<void> {
     try {
       const { residentId, vaccineId, healthUnitId, appliedBy, dose, date, notes } = req.body;
-      const createdBy = req.user?.id;
+      const createdBy = req.user?.email || req.user?.id;
 
       if (!createdBy) {
         res.status(401).json({ message: 'Usuário não autenticado' });

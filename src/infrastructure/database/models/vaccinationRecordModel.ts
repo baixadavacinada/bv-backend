@@ -8,8 +8,8 @@ export interface VaccinationRecordDocument extends Document {
   date: Date;
   batchNumber?: string;
   appliedBy: Types.ObjectId;
-  createdBy: Types.ObjectId;
-  updatedBy?: Types.ObjectId;
+  createdBy: string;
+  updatedBy?: string;
   isActive: boolean;
   notes?: string;
   createdAt: Date;
@@ -62,13 +62,11 @@ const vaccinationRecordSchema = new Schema<VaccinationRecordDocument>(
       required: [true, 'Applicator agent is required']
     },
     createdBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
+      type: String,
       required: [true, 'Creator user is required']
     },
     updatedBy: {
-      type: Schema.Types.ObjectId,
-      ref: "User"
+      type: String
     },
     isActive: {
       type: Boolean,

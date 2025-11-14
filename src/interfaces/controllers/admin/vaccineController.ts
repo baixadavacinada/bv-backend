@@ -11,7 +11,7 @@ export async function createVaccineController(req: Request, res: Response) {
   try {
     const vaccineData = {
       ...req.body,
-      createdBy: req.user?.firebaseUid || req.user?.id || req.body.createdBy
+      createdBy: req.user?.email || req.user?.firebaseUid || req.user?.id || req.body.createdBy
     };
 
     const vaccine = await vaccineRepository.create(vaccineData);

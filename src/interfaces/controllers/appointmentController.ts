@@ -23,7 +23,7 @@ export async function scheduleAppointmentController(req: Request, res: Response)
     const appointmentData = {
       ...req.body,
       residentId: req.user?.firebaseUid || req.user?.id || req.body.residentId,
-      createdBy: req.user?.firebaseUid || req.user?.id || req.body.createdBy
+      createdBy: req.user?.email || req.user?.firebaseUid || req.user?.id || req.body.createdBy
     };
 
     const appointment = await scheduleAppointmentUseCase.execute(appointmentData);
