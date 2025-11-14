@@ -26,6 +26,10 @@ export interface User {
       isFavorite: boolean;
       addedAt: Date;
     }>;
+    favoriteEducationalMaterials?: Array<{
+      materialId: string;
+      addedAt: Date;
+    }>;
     vaccines?: UserVaccine[];
   };
   isActive: boolean;

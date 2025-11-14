@@ -25,7 +25,11 @@ import {
   listUsers,
   addUserVaccine,
   getUserVaccines,
-  removeUserVaccine
+  removeUserVaccine,
+  toggleFavoriteHealthUnit,
+  getFavoriteHealthUnits,
+  toggleFavoriteMaterial,
+  getFavoriteEducationalMaterials
 } from '../controllers/public/profileController';
 import { firebaseAuthAdvanced } from '../../middlewares/firebaseAuthAdvanced';
 import { validateBody, validateQuery, ValidationSchemas } from '../../middlewares/validation';
@@ -185,6 +189,32 @@ router.get('/user/vaccines',
 router.delete('/user/vaccines/:vaccineId',
   firebaseAuthAdvanced({ required: true }),
   asyncHandler(removeUserVaccine)
+);
+
+router.post('/user/favorite-health-units/toggle',
+  firebaseAuthAdvanced({ required: true }),
+  validateBody({
+    healthUnitId: { required: true, type: 'string' as const }
+  }),
+  asyncHandler(toggleFavoriteHealthUnit)
+);
+
+router.get('/user/favorite-health-units',
+  firebaseAuthAdvanced({ required: true }),
+  asyncHandler(getFavoriteHealthUnits)
+);
+
+router.post('/user/favorite-materials/toggle',
+  firebaseAuthAdvanced({ required: true }),
+  validateBody({
+    materialId: { required: true, type: 'string' as const }
+  }),
+  asyncHandler(toggleFavoriteMaterial)
+);
+
+router.get('/user/favorite-materials',
+  firebaseAuthAdvanced({ required: true }),
+  asyncHandler(getFavoriteEducationalMaterials)
 );
 
 router.put('/users/:uid/role',

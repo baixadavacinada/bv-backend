@@ -571,3 +571,272 @@ export const removeUserVaccine = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const toggleFavoriteHealthUnit = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'User not authenticated'
+        }
+      });
+    }
+
+    const { healthUnitId } = req.body;
+
+    if (!healthUnitId) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'healthUnitId is required'
+        }
+      });
+    }
+
+    const user = await userRepository.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'USER_NOT_FOUND',
+          message: 'User not found'
+        }
+      });
+    }
+
+    if (!user.profile) {
+      user.profile = {} as any;
+    }
+
+    if (!user.profile.favoritesHealthUnit) {
+      user.profile.favoritesHealthUnit = [];
+    }
+
+    // Verificar se já é favorito
+    const favoriteIndex = user.profile.favoritesHealthUnit.findIndex(
+      (fav) => fav.healthUnitId === healthUnitId
+    );
+
+    if (favoriteIndex > -1) {
+      // Remover do array de favoritos
+      user.profile.favoritesHealthUnit.splice(favoriteIndex, 1);
+    } else {
+      // Adicionar ao array de favoritos
+      user.profile.favoritesHealthUnit.push({
+        healthUnitId,
+        isFavorite: true,
+        addedAt: new Date()
+      });
+    }
+
+    // Atualizar no banco de dados
+    await userRepository.updateProfile(req.user.id, {
+      'profile.favoritesHealthUnit': user.profile.favoritesHealthUnit,
+      updatedAt: new Date()
+    });
+
+    logger.info('Health unit favorite toggled', {
+      uid: req.user.id,
+      healthUnitId: healthUnitId,
+      isFavorite: favoriteIndex === -1
+    });
+
+    res.json({
+      success: true,
+      data: user.profile.favoritesHealthUnit,
+      message: 'Health unit favorite toggled successfully'
+    });
+  } catch (error) {
+    logger.error('Error toggling health unit favorite', error instanceof Error ? error : new Error(String(error)));
+
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'SERVER_ERROR',
+        message: 'Failed to toggle health unit favorite'
+      }
+    });
+  }
+};
+
+export const getFavoriteHealthUnits = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'User not authenticated'
+        }
+      });
+    }
+
+    const user = await userRepository.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'USER_NOT_FOUND',
+          message: 'User not found'
+        }
+      });
+    }
+
+    const favoritesHealthUnit = user.profile?.favoritesHealthUnit || [];
+
+    res.json({
+      success: true,
+      data: favoritesHealthUnit,
+      message: 'Favorite health units retrieved successfully'
+    });
+  } catch (error) {
+    logger.error('Error getting favorite health units', error instanceof Error ? error : new Error(String(error)));
+
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'SERVER_ERROR',
+        message: 'Failed to get favorite health units'
+      }
+    });
+  }
+};
+
+export const toggleFavoriteMaterial = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'User not authenticated'
+        }
+      });
+    }
+
+    const { materialId } = req.body;
+
+    if (!materialId) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_REQUEST',
+          message: 'materialId is required'
+        }
+      });
+    }
+
+    const user = await userRepository.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'USER_NOT_FOUND',
+          message: 'User not found'
+        }
+      });
+    }
+
+    if (!user.profile) {
+      user.profile = {} as any;
+    }
+
+    if (!user.profile.favoriteEducationalMaterials) {
+      user.profile.favoriteEducationalMaterials = [];
+    }
+
+    // Verificar se já é favorito
+    const favoriteIndex = user.profile.favoriteEducationalMaterials.findIndex(
+      (fav) => fav.materialId === materialId
+    );
+
+    if (favoriteIndex > -1) {
+      // Remover do array de favoritos
+      user.profile.favoriteEducationalMaterials.splice(favoriteIndex, 1);
+    } else {
+      // Adicionar ao array de favoritos
+      user.profile.favoriteEducationalMaterials.push({
+        materialId,
+        addedAt: new Date()
+      });
+    }
+
+    // Atualizar no banco de dados
+    await userRepository.updateProfile(req.user.id, {
+      'profile.favoriteEducationalMaterials': user.profile.favoriteEducationalMaterials,
+      updatedAt: new Date()
+    });
+
+    logger.info('Educational material favorite toggled', {
+      uid: req.user.id,
+      materialId: materialId,
+      isFavorite: favoriteIndex === -1
+    });
+
+    res.json({
+      success: true,
+      data: user.profile.favoriteEducationalMaterials,
+      message: 'Educational material favorite toggled successfully'
+    });
+  } catch (error) {
+    logger.error('Error toggling educational material favorite', error instanceof Error ? error : new Error(String(error)));
+
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'SERVER_ERROR',
+        message: 'Failed to toggle educational material favorite'
+      }
+    });
+  }
+};
+
+export const getFavoriteEducationalMaterials = async (req: Request, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'User not authenticated'
+        }
+      });
+    }
+
+    const user = await userRepository.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: {
+          code: 'USER_NOT_FOUND',
+          message: 'User not found'
+        }
+      });
+    }
+
+    const favoriteEducationalMaterials = user.profile?.favoriteEducationalMaterials || [];
+
+    res.json({
+      success: true,
+      data: favoriteEducationalMaterials,
+      message: 'Favorite educational materials retrieved successfully'
+    });
+  } catch (error) {
+    logger.error('Error getting favorite educational materials', error instanceof Error ? error : new Error(String(error)));
+
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'SERVER_ERROR',
+        message: 'Failed to get favorite educational materials'
+      }
+    });
+  }
+};
