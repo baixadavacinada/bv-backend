@@ -15,6 +15,7 @@ export interface UserDocument extends Document {
     }>;
     favoriteEducationalMaterials?: Array<{
       materialId: string;
+      link?: string;
       addedAt: Date;
     }>;
     vaccines?: Array<{
@@ -93,6 +94,10 @@ const UserSchema = new Schema<UserDocument>({
       materialId: {
         type: String,
         required: true
+      },
+      link: {
+        type: String,
+        trim: true
       },
       addedAt: {
         type: Date,

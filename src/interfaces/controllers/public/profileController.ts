@@ -734,7 +734,7 @@ export const toggleFavoriteMaterial = async (req: Request, res: Response) => {
       });
     }
 
-    const { materialId } = req.body;
+    const { materialId, link } = req.body;
 
     if (!materialId) {
       return res.status(400).json({
@@ -778,6 +778,7 @@ export const toggleFavoriteMaterial = async (req: Request, res: Response) => {
       // Adicionar ao array de favoritos
       user.profile!.favoriteEducationalMaterials!.push({
         materialId,
+        link,
         addedAt: new Date()
       });
     }

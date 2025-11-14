@@ -28,6 +28,7 @@ export interface User {
     }>;
     favoriteEducationalMaterials?: Array<{
       materialId: string;
+      link?: string;
       addedAt: Date;
     }>;
     vaccines?: UserVaccine[];
