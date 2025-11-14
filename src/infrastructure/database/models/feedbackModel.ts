@@ -3,20 +3,12 @@ import { Schema, model, Document, Types } from "mongoose";
 export interface FeedbackDocument extends Document {
   healthUnitId: Types.ObjectId;
   userId?: Types.ObjectId;
-  rating?: number;
-  // New numeric ratings
-  vaccineSuccessRating?: number;
-  waitTimeRating?: number;
-  respectfulServiceRating?: number;
-  cleanLocationRating?: number;
-  // NPS score (0-10)
-  npsScore?: number;
-  // Legacy string fields
-  vaccineSuccess?: string;
-  waitTime?: string;
-  respectfulService?: string;
-  cleanLocation?: string;
-  recommendation?: string;
+  rating: number;
+  vaccineSuccessRating: number;
+  waitTimeRating: number;
+  respectfulServiceRating: number;
+  cleanLocationRating: number;
+  npsScore: number;
   isAnonymous: boolean;
   isActive: boolean;
   moderatedBy?: Types.ObjectId;
@@ -38,61 +30,39 @@ const feedbackSchema = new Schema<FeedbackDocument>(
     },
     rating: {
       type: Number,
+      required: [true, 'Avaliação com estrelas é obrigatória'],
       min: [1, 'Avaliação mínima é 1'],
       max: [5, 'Avaliação máxima é 5']
     },
-    // New numeric ratings (1-5 scale)
     vaccineSuccessRating: {
       type: Number,
+      required: [true, 'Avaliação de vacina é obrigatória'],
       min: [1, 'Mínimo 1'],
       max: [5, 'Máximo 5']
     },
     waitTimeRating: {
       type: Number,
+      required: [true, 'Avaliação de tempo de espera é obrigatória'],
       min: [1, 'Mínimo 1'],
       max: [5, 'Máximo 5']
     },
     respectfulServiceRating: {
       type: Number,
+      required: [true, 'Avaliação de atendimento é obrigatória'],
       min: [1, 'Mínimo 1'],
       max: [5, 'Máximo 5']
     },
     cleanLocationRating: {
       type: Number,
+      required: [true, 'Avaliação de limpeza é obrigatória'],
       min: [1, 'Mínimo 1'],
       max: [5, 'Máximo 5']
     },
-    // NPS score (0-10)
     npsScore: {
       type: Number,
+      required: [true, 'Score NPS é obrigatório'],
       min: [0, 'NPS mínimo é 0'],
       max: [10, 'NPS máximo é 10']
-    },
-    // Legacy string fields for backward compatibility
-    vaccineSuccess: {
-      type: String,
-      trim: true,
-      maxLength: [500, 'Campo de sucesso da vacina deve ter no máximo 500 caracteres']
-    },
-    waitTime: {
-      type: String,
-      trim: true,
-      maxLength: [500, 'Campo de tempo de espera deve ter no máximo 500 caracteres']
-    },
-    respectfulService: {
-      type: String,
-      trim: true,
-      maxLength: [500, 'Campo de atendimento respeitoso deve ter no máximo 500 caracteres']
-    },
-    cleanLocation: {
-      type: String,
-      trim: true,
-      maxLength: [500, 'Campo de local limpo deve ter no máximo 500 caracteres']
-    },
-    recommendation: {
-      type: String,
-      trim: true,
-      maxLength: [500, 'Campo de recomendação deve ter no máximo 500 caracteres']
     },
     isAnonymous: {
       type: Boolean,

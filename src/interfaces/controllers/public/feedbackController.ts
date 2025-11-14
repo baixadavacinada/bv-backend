@@ -18,12 +18,6 @@ export class PublicFeedbackController {
         respectfulServiceRating,
         cleanLocationRating,
         npsScore,
-        comment,
-        vaccineSuccess,
-        waitTime,
-        respectfulService,
-        cleanLocation,
-        recommendation,
         isAnonymous
       } = req.body;
       const userId = (req.user as any)?.uid || (req.user as any)?.id;
@@ -43,20 +37,14 @@ export class PublicFeedbackController {
       const feedback = await this.createFeedbackUseCase.execute({
         healthUnitId,
         userId: isAnonymous ? undefined : userId,
-        rating: rating !== undefined ? Number(rating) : undefined,
-        vaccineSuccessRating: vaccineSuccessRating !== undefined ? Number(vaccineSuccessRating) : undefined,
-        waitTimeRating: waitTimeRating !== undefined ? Number(waitTimeRating) : undefined,
-        respectfulServiceRating: respectfulServiceRating !== undefined ? Number(respectfulServiceRating) : undefined,
-        cleanLocationRating: cleanLocationRating !== undefined ? Number(cleanLocationRating) : undefined,
-        npsScore: npsScore !== undefined ? Number(npsScore) : undefined,
-        vaccineSuccess: vaccineSuccess || undefined,
-        waitTime: waitTime || undefined,
-        respectfulService: respectfulService || undefined,
-        cleanLocation: cleanLocation || undefined,
-        recommendation: recommendation || undefined,
-        comment: comment || undefined,
+        rating: Number(rating),
+        vaccineSuccessRating: Number(vaccineSuccessRating),
+        waitTimeRating: Number(waitTimeRating),
+        respectfulServiceRating: Number(respectfulServiceRating),
+        cleanLocationRating: Number(cleanLocationRating),
+        npsScore: Number(npsScore),
         isAnonymous: isAnonymous || true
-      } as any);
+      });
 
       res.status(201).json({
         message: 'Feedback criado com sucesso',

@@ -428,6 +428,34 @@ Recupera materiais favoritos do usuário.
 
 **Autenticado:** Sim
 
+#### POST /api/public/feedback
+Submete avaliação de UBS.
+
+**Payload:**
+```json
+{
+  "healthUnitId": "507f1f77bcf86cd799439011",
+  "vaccineSuccessRating": 4,
+  "waitTimeRating": 3,
+  "respectfulServiceRating": 5,
+  "cleanLocationRating": 4,
+  "rating": 4,
+  "npsScore": 8,
+  "isAnonymous": true
+}
+```
+
+**Response (201):** Feedback criado com métricas de NPS incluídas.
+
+#### GET /api/public/feedback/:healthUnitId
+Lista avaliações de uma UBS com métricas de NPS.
+
+**Query Parameters:**
+- `page`: number (default: 1)
+- `limit`: number (default: 20)
+
+Para mais detalhes, veja `docs-dev/FEEDBACK_SYSTEM.md`.
+
 ### Admin (/api/admin)
 
 #### GET /api/admin/health-units
@@ -473,6 +501,20 @@ Cria nova campanha de vacinação.
   "vaccines": ["vaccine_id_1", "vaccine_id_2"]
 }
 ```
+
+#### GET /api/admin/reports/feedback
+Gera relatório CSV de avaliações com NPS.
+
+**Autenticado:** admin
+
+**Query Parameters:**
+- `ubsId`: ID da UBS (opcional)
+- `startDate`: ISO date (opcional)
+- `endDate`: ISO date (opcional)
+
+**Response:** Arquivo CSV com colunas: Data, UBS, Vacina Obtida, Tempo de Espera, Atendimento Respeitoso, Local Limpo, Recomendação (NPS), Rating Geral
+
+Para mais detalhes, veja `docs-dev/FEEDBACK_SYSTEM.md`.
 
 ### Agente de Saúde (/api/agent)
 
@@ -761,6 +803,18 @@ Certifique-se de:
 ## Documentação API
 
 Swagger/OpenAPI em `/api/docs` (desenvolvimento) ou `/api/v1/docs` (produção).
+
+### Documentação de Recursos
+
+Veja os arquivos em `docs-dev/`:
+
+- **AUTHENTICATION_FLOW.md** - Fluxo de autenticação e autorização
+- **FEEDBACK_SYSTEM.md** - Sistema de avaliações (feedback) de UBS com NPS
+- **CLAIMS_SYSTEM_API.md** - Gerenciamento de custom claims Firebase
+- **MIDDLEWARE_MIGRATION_GUIDE.md** - Guia de migração de middlewares
+- **CONTRIBUTORS.md** - Informações de contribuidores
+
+### Swagger/OpenAPI
 
 Documentação gerada automaticamente a partir de comentários JSDoc:
 

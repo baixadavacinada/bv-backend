@@ -37,11 +37,11 @@ export class ReportsController {
         return [
           new Date(feedback.createdAt).toLocaleDateString('pt-BR'),
           (feedback.healthUnitId as any)?.name || 'N/A',
-          feedback.vaccineSuccessRating?.toString() || feedback.vaccineSuccess || '',
-          feedback.waitTimeRating?.toString() || feedback.waitTime || '',
-          feedback.respectfulServiceRating?.toString() || feedback.respectfulService || '',
-          feedback.cleanLocationRating?.toString() || feedback.cleanLocation || '',
-          feedback.npsScore?.toString() || feedback.recommendation || '',
+          feedback.vaccineSuccessRating?.toString() || '',
+          feedback.waitTimeRating?.toString() || '',
+          feedback.respectfulServiceRating?.toString() || '',
+          feedback.cleanLocationRating?.toString() || '',
+          feedback.npsScore?.toString() || '',
           feedback.rating?.toString() || ''
         ];
       });
