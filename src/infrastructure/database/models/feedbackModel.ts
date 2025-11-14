@@ -3,7 +3,15 @@ import { Schema, model, Document, Types } from "mongoose";
 export interface FeedbackDocument extends Document {
   healthUnitId: Types.ObjectId;
   userId?: Types.ObjectId;
-  rating: number;
+  rating?: number;
+  // New numeric ratings
+  vaccineSuccessRating?: number;
+  waitTimeRating?: number;
+  respectfulServiceRating?: number;
+  cleanLocationRating?: number;
+  // NPS score (0-10)
+  npsScore?: number;
+  // Legacy string fields
   vaccineSuccess?: string;
   waitTime?: string;
   respectfulService?: string;
@@ -27,14 +35,40 @@ const feedbackSchema = new Schema<FeedbackDocument>(
     userId: {
       type: Schema.Types.ObjectId,
       ref: "User"
-
     },
     rating: {
       type: Number,
       min: [1, 'Avaliação mínima é 1'],
-      max: [5, 'Avaliação máxima é 5'],
-      required: [true, 'Avaliação é obrigatória']
+      max: [5, 'Avaliação máxima é 5']
     },
+    // New numeric ratings (1-5 scale)
+    vaccineSuccessRating: {
+      type: Number,
+      min: [1, 'Mínimo 1'],
+      max: [5, 'Máximo 5']
+    },
+    waitTimeRating: {
+      type: Number,
+      min: [1, 'Mínimo 1'],
+      max: [5, 'Máximo 5']
+    },
+    respectfulServiceRating: {
+      type: Number,
+      min: [1, 'Mínimo 1'],
+      max: [5, 'Máximo 5']
+    },
+    cleanLocationRating: {
+      type: Number,
+      min: [1, 'Mínimo 1'],
+      max: [5, 'Máximo 5']
+    },
+    // NPS score (0-10)
+    npsScore: {
+      type: Number,
+      min: [0, 'NPS mínimo é 0'],
+      max: [10, 'NPS máximo é 10']
+    },
+    // Legacy string fields for backward compatibility
     vaccineSuccess: {
       type: String,
       trim: true,

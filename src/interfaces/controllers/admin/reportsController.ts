@@ -21,21 +21,27 @@ export class ReportsController {
         .sort({ createdAt: -1 })
         .lean();
 
-      const headers = ['Data', 'UBS', 'Avaliação', 'Rating'];
-      const rows = feedbacks.map(feedback => {
-        // Concatenar todos os campos de avaliação textual
-        const avaliacaoCompleta = [
-          feedback.vaccineSuccess,
-          feedback.waitTime,
-          feedback.respectfulService,
-          feedback.cleanLocation,
-          feedback.recommendation
-        ].filter(Boolean).join(' | ');
+      // New header with numeric ratings and NPS
+      const headers = [
+        'Data',
+        'UBS',
+        'Vacina Obtida',
+        'Tempo de Espera',
+        'Atendimento Respeitoso',
+        'Local Limpo',
+        'Recomendação (NPS)',
+        'Rating Geral'
+      ];
 
+      const rows = feedbacks.map(feedback => {
         return [
           new Date(feedback.createdAt).toLocaleDateString('pt-BR'),
           (feedback.healthUnitId as any)?.name || 'N/A',
-          avaliacaoCompleta || 'Sem comentários',
+          feedback.vaccineSuccessRating?.toString() || feedback.vaccineSuccess || '',
+          feedback.waitTimeRating?.toString() || feedback.waitTime || '',
+          feedback.respectfulServiceRating?.toString() || feedback.respectfulService || '',
+          feedback.cleanLocationRating?.toString() || feedback.cleanLocation || '',
+          feedback.npsScore?.toString() || feedback.recommendation || '',
           feedback.rating?.toString() || ''
         ];
       });
