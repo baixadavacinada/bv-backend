@@ -1,11 +1,15 @@
 import { NotificationRepository } from '../../../domain/repositories/NotificationRepository';
+import { UserRepository } from '../../../domain/repositories/UserRepository';
 import { Notification } from '../../../domain/entities/Notification';
+import { NotificationGateway } from '../../../services/notificationGateway';
+import { Logger } from '../../../middlewares/logging';
 
 interface CreateNotificationData {
   userId: string;
   title: string;
   message: string;
   type: 'appointment_reminder' | 'vaccine_available' | 'dose_due' | 'system_update' | 'general';
+  channel?: 'whatsapp' | 'push' | 'email' | 'in_app'; // Default: in_app
   data?: {
     appointmentId?: string;
     vaccineId?: string;
@@ -16,7 +20,13 @@ interface CreateNotificationData {
 }
 
 export class CreateNotificationUseCase {
-  constructor(private notificationRepository: NotificationRepository) {}
+  private logger = Logger.getInstance();
+  private notificationGateway = new NotificationGateway();
+
+  constructor(
+    private notificationRepository: NotificationRepository,
+    private userRepository?: UserRepository
+  ) {}
 
   async execute(data: CreateNotificationData): Promise<Notification> {
     if (!data.userId || !data.title || !data.message || !data.type) {
@@ -31,17 +41,141 @@ export class CreateNotificationUseCase {
       throw new Error('Message must be between 10 and 1000 characters');
     }
 
+    // Default channel is in_app if not specified
+    const channel = data.channel || 'in_app';
+
     const notification: Omit<Notification, '_id'> = {
       userId: data.userId,
       title: data.title.trim(),
       message: data.message.trim(),
       type: data.type,
+      channel,
       data: data.data,
       isRead: false,
+      deliveryStatus: 'pending',
       createdAt: new Date(),
       scheduledFor: data.scheduledFor
     };
 
-    return this.notificationRepository.create(notification);
+    // Save notification to database
+    const savedNotification = await this.notificationRepository.create(notification);
+
+    // If scheduled for future, don't send now
+    if (data.scheduledFor && new Date(data.scheduledFor) > new Date()) {
+      this.logger.info('Notification scheduled for future delivery', {
+        notificationId: savedNotification._id,
+        scheduledFor: data.scheduledFor
+      });
+      return savedNotification;
+    }
+
+    // Send immediately if channel is not in_app
+    if (channel !== 'in_app') {
+      await this.sendNotification(savedNotification);
+    }
+
+    return savedNotification;
+  }
+
+  /**
+   * Send notification through the configured channel
+   */
+  private async sendNotification(notification: Notification): Promise<void> {
+    try {
+      // Fetch user to get contact info (email, phone, etc)
+      let contactInfo: string | null = null;
+
+      if (this.userRepository) {
+        try {
+          const user = await this.userRepository.findById(notification.userId);
+          if (!user) {
+            this.logger.error('User not found for notification', {
+              userId: notification.userId,
+              notificationId: notification._id
+            });
+            await this.updateNotificationStatus(notification._id!, 'failed');
+            return;
+          }
+
+          if (notification.channel === 'whatsapp' && user.phoneNumber) {
+            contactInfo = user.phoneNumber;
+          } else if (notification.channel === 'email' && user.email) {
+            contactInfo = user.email;
+          }
+        } catch (error) {
+          this.logger.error('Failed to fetch user data', error as Error, {
+            userId: notification.userId
+          });
+        }
+      }
+
+      // If no contact info available for the channel, mark as failed
+      if (!contactInfo) {
+        this.logger.warn('No contact info available for notification', {
+          channel: notification.channel,
+          userId: notification.userId,
+          notificationId: notification._id
+        });
+        await this.updateNotificationStatus(notification._id!, 'failed');
+        return;
+      }
+
+      // Send through gateway
+      const result = await this.notificationGateway.send({
+        channel: notification.channel,
+        to: contactInfo,
+        title: notification.title,
+        message: notification.message
+      });
+
+      // Update notification with send result
+      if (result.success) {
+        await this.updateNotificationStatus(
+          notification._id!,
+          'sent',
+          result.messageId
+        );
+        this.logger.info('Notification sent successfully', {
+          notificationId: notification._id,
+          channel: notification.channel,
+          messageId: result.messageId
+        });
+      } else {
+        await this.updateNotificationStatus(notification._id!, 'failed');
+        this.logger.error('Failed to send notification', {
+          notificationId: notification._id,
+          channel: notification.channel,
+          error: result.error
+        });
+      }
+    } catch (error) {
+      this.logger.error('Error in sendNotification', error as Error, {
+        notificationId: notification._id,
+        channel: notification.channel
+      });
+      await this.updateNotificationStatus(notification._id!, 'failed');
+    }
+  }
+
+  /**
+   * Update notification delivery status
+   */
+  private async updateNotificationStatus(
+    notificationId: string,
+    status: 'sent' | 'failed',
+    externalMessageId?: string
+  ): Promise<void> {
+    try {
+      await this.notificationRepository.updateDeliveryStatus(
+        notificationId,
+        status,
+        externalMessageId
+      );
+    } catch (error) {
+      this.logger.error('Failed to update notification status', error as Error, {
+        notificationId,
+        status
+      });
+    }
   }
 }

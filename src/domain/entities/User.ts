@@ -19,6 +19,8 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
+  phone?: string; // Phone number for contact and WhatsApp
+  acceptWhatsAppNotifications?: boolean; // User consent for WhatsApp notifications
   profile?: {
     assignedUnitsIds?: string[];
     favoritesHealthUnit?: Array<{

@@ -4,6 +4,7 @@ export interface Notification {
   title: string;
   message: string;
   type: 'appointment_reminder' | 'vaccine_available' | 'dose_due' | 'system_update' | 'general';
+  channel: 'whatsapp' | 'push' | 'email' | 'in_app'; // Channel through which notification was sent
   isRead: boolean;
   data?: {
     appointmentId?: string;
@@ -13,6 +14,8 @@ export interface Notification {
   };
   scheduledFor?: Date; // For scheduled notifications
   sentAt?: Date;
+  deliveryStatus?: 'pending' | 'sent' | 'delivered' | 'failed' | 'read'; // Track delivery status
+  externalMessageId?: string; // ID from external service (Z-API)
   createdAt?: Date;
   updatedAt?: Date;
 }

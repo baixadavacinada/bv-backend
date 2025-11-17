@@ -320,4 +320,19 @@ router.get('/users/favorites/educational-materials',
   })
 );
 
+// Webhook routes for external services
+import { WebhookController } from '../controllers/webhooks/webhookController';
+
+const webhookController = new WebhookController();
+
+// Z-API WhatsApp status webhook
+router.post('/webhooks/whatsapp/status',
+  asyncHandler(webhookController.handleWhatsAppStatusUpdate.bind(webhookController))
+);
+
+// Webhook health check
+router.get('/webhooks/health',
+  asyncHandler(webhookController.healthCheck.bind(webhookController))
+);
+
 export default router;

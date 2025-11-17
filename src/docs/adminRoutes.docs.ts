@@ -6,6 +6,66 @@
  *       type: http
  *       scheme: bearer
  *       bearerFormat: JWT
+ *   schemas:
+ *     Notification:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *           description: ID único da notificação
+ *         userId:
+ *           type: string
+ *           description: ID do usuário
+ *         title:
+ *           type: string
+ *           description: Título da notificação
+ *         message:
+ *           type: string
+ *           description: Conteúdo da notificação
+ *         type:
+ *           type: string
+ *           enum: [appointment_reminder, vaccine_available, dose_due, system_update, general]
+ *           description: Tipo de notificação
+ *         channel:
+ *           type: string
+ *           enum: [whatsapp, push, email, in_app]
+ *           description: Canal de envio da notificação
+ *         isRead:
+ *           type: boolean
+ *           description: Status de leitura
+ *         deliveryStatus:
+ *           type: string
+ *           enum: [pending, sent, delivered, failed, read]
+ *           description: Status de entrega (importante para WhatsApp)
+ *         externalMessageId:
+ *           type: string
+ *           description: ID da mensagem no serviço externo (ex. Z-API)
+ *         data:
+ *           type: object
+ *           description: Dados adicionais da notificação
+ *           properties:
+ *             appointmentId:
+ *               type: string
+ *             vaccineId:
+ *               type: string
+ *             healthUnitId:
+ *               type: string
+ *             actionUrl:
+ *               type: string
+ *         scheduledFor:
+ *           type: string
+ *           format: date-time
+ *           description: Data/hora de envio agendado
+ *         sentAt:
+ *           type: string
+ *           format: date-time
+ *           description: Data/hora de envio real
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
  */
 
 /**
@@ -1818,6 +1878,7 @@
  * /admin/notifications:
  *   get:
  *     summary: Lista notificações
+ *     description: Lista todas as notificações com filtros opcionais
  *     tags:
  *       - Notificações
  *     security:
@@ -1827,17 +1888,51 @@
  *         name: userId
  *         schema:
  *           type: string
+ *         description: Filtrar por ID do usuário
  *       - in: query
  *         name: isRead
  *         schema:
  *           type: boolean
+ *         description: Filtrar por status de leitura
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [appointment_reminder, vaccine_available, dose_due, system_update, general]
+ *         description: Filtrar por tipo de notificação
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Data inicial do filtro
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date-time
+ *         description: Data final do filtro
  *     responses:
  *       200:
  *         description: Lista de notificações
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Notification'
+ *                 total:
+ *                   type: number
  *       401:
  *         description: Não autorizado
  *   post:
  *     summary: Cria nova notificação
+ *     description: Cria uma notificação que pode ser enviada via múltiplos canais (WhatsApp, Email, Push, In-App)
  *     tags:
  *       - Notificações
  *     security:
@@ -1848,20 +1943,86 @@
  *         application/json:
  *           schema:
  *             type: object
+ *             required:
+ *               - userId
+ *               - title
+ *               - message
+ *               - type
  *             properties:
  *               userId:
  *                 type: string
+ *                 description: ID do usuário
  *               title:
  *                 type: string
+ *                 minLength: 3
+ *                 maxLength: 200
+ *                 description: Título da notificação
  *               message:
  *                 type: string
+ *                 minLength: 10
+ *                 maxLength: 1000
+ *                 description: Conteúdo da notificação
  *               type:
  *                 type: string
+ *                 enum: [appointment_reminder, vaccine_available, dose_due, system_update, general]
+ *                 description: Tipo de notificação
+ *               channel:
+ *                 type: string
+ *                 enum: [whatsapp, push, email, in_app]
+ *                 default: in_app
+ *                 description: Canal de envio
+ *               data:
+ *                 type: object
+ *                 description: Dados adicionais
+ *                 properties:
+ *                   appointmentId:
+ *                     type: string
+ *                   vaccineId:
+ *                     type: string
+ *                   healthUnitId:
+ *                     type: string
+ *                   actionUrl:
+ *                     type: string
  *               scheduledFor:
  *                 type: string
+ *                 format: date-time
+ *                 description: Data/hora para envio agendado
+ *           examples:
+ *             whatsapp:
+ *               summary: Notificação via WhatsApp
+ *               value:
+ *                 userId: "user-123"
+ *                 title: "Vacina Disponível"
+ *                 message: "A vacina contra COVID-19 está disponível na sua unidade de saúde"
+ *                 type: "vaccine_available"
+ *                 channel: "whatsapp"
+ *                 data:
+ *                   vaccineId: "vac-123"
+ *                   actionUrl: "https://seu-app.com/vaccines"
+ *             inapp:
+ *               summary: Notificação In-App
+ *               value:
+ *                 userId: "user-456"
+ *                 title: "Lembrete de Agendamento"
+ *                 message: "Seu agendamento de vacinação é amanhã às 10h"
+ *                 type: "appointment_reminder"
+ *                 channel: "in_app"
+ *                 data:
+ *                   appointmentId: "apt-789"
  *     responses:
  *       201:
- *         description: Notificação criada
+ *         description: Notificação criada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/Notification'
+ *       400:
+ *         description: Dados inválidos
  *       401:
  *         description: Não autorizado
  */
@@ -1881,9 +2042,21 @@
  *         required: true
  *         schema:
  *           type: string
+ *         description: ID da notificação
  *     responses:
  *       200:
  *         description: Dados da notificação
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/Notification'
+ *       404:
+ *         description: Notificação não encontrada
  *       401:
  *         description: Não autorizado
  *   delete:
@@ -1898,9 +2071,12 @@
  *         required: true
  *         schema:
  *           type: string
+ *         description: ID da notificação
  *     responses:
  *       200:
- *         description: Notificação deletada
+ *         description: Notificação deletada com sucesso
+ *       404:
+ *         description: Notificação não encontrada
  *       401:
  *         description: Não autorizado
  */

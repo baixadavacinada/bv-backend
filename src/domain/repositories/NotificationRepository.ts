@@ -10,4 +10,9 @@ export interface NotificationRepository {
   markAllAsRead(userId: string): Promise<number>;
   delete(id: string): Promise<boolean>;
   findScheduledNotifications(date: Date): Promise<Notification[]>;
+  updateDeliveryStatus(
+    id: string,
+    status: 'sent' | 'delivered' | 'failed' | 'read',
+    externalMessageId?: string
+  ): Promise<boolean>;
 }

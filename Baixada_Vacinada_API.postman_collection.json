@@ -1210,7 +1210,7 @@
           }
         },
         {
-          "name": "Create Notification (Admin)",
+          "name": "Create Notification (In-App)",
           "request": {
             "method": "POST",
             "header": [
@@ -1225,7 +1225,61 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"title\": \"Appointment Reminder\",\n  \"message\": \"Your vaccination appointment is scheduled for tomorrow at 10:00 AM\",\n  \"type\": \"appointment_reminder\",\n  \"data\": {\n    \"appointmentId\": \"{{appointment_id}}\"\n  },\n  \"scheduledFor\": \"2025-11-14T10:00:00Z\"\n}"
+              "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"title\": \"Appointment Reminder\",\n  \"message\": \"Your vaccination appointment is scheduled for tomorrow at 10:00 AM\",\n  \"type\": \"appointment_reminder\",\n  \"channel\": \"in_app\",\n  \"data\": {\n    \"appointmentId\": \"{{appointment_id}}\"\n  },\n  \"scheduledFor\": \"2025-11-14T10:00:00Z\"\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/notifications",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "notifications"]
+            }
+          }
+        },
+        {
+          "name": "Create Notification (WhatsApp)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"title\": \"Vacina Disponível\",\n  \"message\": \"A vacina contra COVID-19 está disponível na sua unidade de saúde. Clique aqui para agendar sua dose.\",\n  \"type\": \"vaccine_available\",\n  \"channel\": \"whatsapp\",\n  \"data\": {\n    \"vaccineId\": \"{{vaccine_id}}\",\n    \"healthUnitId\": \"{{health_unit_id}}\",\n    \"actionUrl\": \"https://seu-app.com/vaccines\"\n  }\n}"
+            },
+            "url": {
+              "raw": "https://bv-backend-ruby.vercel.app/api/admin/notifications",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "admin", "notifications"]
+            }
+          }
+        },
+        {
+          "name": "Create Notification (WhatsApp - Dose Reminder)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"{{user_id}}\",\n  \"title\": \"Lembrete de Dose\",\n  \"message\": \"Sua segunda dose está vencida. Procure a unidade de saúde mais próxima para atualizar seu status de vacinação.\",\n  \"type\": \"dose_due\",\n  \"channel\": \"whatsapp\",\n  \"data\": {\n    \"vaccineId\": \"{{vaccine_id}}\",\n    \"actionUrl\": \"https://seu-app.com/my-vaccines\"\n  }\n}"
             },
             "url": {
               "raw": "https://bv-backend-ruby.vercel.app/api/admin/notifications",
@@ -1299,7 +1353,67 @@
               "protocol": "http",
               "host": ["localhost"],
               "port": "3000",
-              "path": ["api", "admin", "notifications"]
+              "path": ["api", "admin", "notifications", "{{notification_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Twilio WhatsApp Webhook (Status Update)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Webhook processed successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "MessageSid",
+                  "value": "SM7d00d5e1f1c26c3aad4ca30f42c6a0f2"
+                },
+                {
+                  "key": "MessageStatus",
+                  "value": "delivered"
+                }
+              ]
+            },
+            "description": "This is a sample webhook that Twilio sends to your server when a WhatsApp message status changes.\n\nPossible MessageStatus values:\n- queued: Message has been queued for sending\n- sent: Message has been sent from Twilio to the destination carrier\n- delivered: Message has been delivered to the device\n- read: Message has been read by the user\n- failed: Message failed to send\n- undelivered: Message was unable to be delivered",
+            "url": {
+              "raw": "http://localhost:3000/api/public/webhooks/whatsapp/status",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "public", "webhooks", "whatsapp", "status"]
+            }
+          }
+        },
+        {
+          "name": "Webhook Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:3000/api/public/webhooks/health",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "public", "webhooks", "health"]
             }
           }
         }

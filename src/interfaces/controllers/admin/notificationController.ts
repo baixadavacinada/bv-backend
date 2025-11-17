@@ -1,16 +1,21 @@
 import { Request, Response } from 'express';
 import { MongoNotificationRepository } from '../../../infrastructure/database/implementations/MongoNotificationRepository';
+import { MongoUserRepository } from '../../../infrastructure/database/implementations/MongoUserRepository';
 import { CreateNotificationUseCase } from '../../../application/use-cases/admin/CreateNotificationUseCase';
 import { ListAllNotificationsUseCase } from '../../../application/use-cases/admin/ListAllNotificationsUseCase';
 
 export class AdminNotificationController {
   private notificationRepository = new MongoNotificationRepository();
-  private createNotificationUseCase = new CreateNotificationUseCase(this.notificationRepository);
+  private userRepository = new MongoUserRepository();
+  private createNotificationUseCase = new CreateNotificationUseCase(
+    this.notificationRepository,
+    this.userRepository
+  );
   private listAllNotificationsUseCase = new ListAllNotificationsUseCase(this.notificationRepository);
 
   async create(req: Request, res: Response): Promise<void> {
     try {
-      const { userId, title, message, type, data, scheduledFor } = req.body;
+      const { userId, title, message, type, channel, data, scheduledFor } = req.body;
 
       if (!userId || !title || !message || !type) {
         res.status(400).json({ 
@@ -24,6 +29,7 @@ export class AdminNotificationController {
         title,
         message,
         type,
+        channel: channel || 'in_app',
         data,
         scheduledFor: scheduledFor ? new Date(scheduledFor) : undefined
       });

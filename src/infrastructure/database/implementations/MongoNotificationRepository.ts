@@ -93,4 +93,31 @@ export class MongoNotificationRepository implements NotificationRepository {
     }).lean();
     return convertLeanArrayToString<Notification>(notifications);
   }
+
+  async updateDeliveryStatus(
+    id: string,
+    status: 'sent' | 'delivered' | 'failed' | 'read',
+    externalMessageId?: string
+  ): Promise<boolean> {
+    const updateData: any = {
+      deliveryStatus: status,
+      updatedAt: new Date()
+    };
+
+    if (status === 'sent') {
+      updateData.sentAt = new Date();
+    }
+
+    if (externalMessageId) {
+      updateData.externalMessageId = externalMessageId;
+    }
+
+    const result = await NotificationModel.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true }
+    );
+
+    return !!result;
+  }
 }

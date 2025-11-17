@@ -6,6 +6,8 @@ export interface UserDocument extends Document {
   name: string;
   email: string;
   role: "public" | "agent" | "admin";
+  phone?: string; // Phone number for contact and WhatsApp
+  acceptWhatsAppNotifications?: boolean; // User consent for WhatsApp notifications
   profile?: {
     assignedUnitsIds?: Types.ObjectId[];
     favoritesHealthUnit?: Array<{
@@ -69,6 +71,15 @@ const UserSchema = new Schema<UserDocument>({
     },
     required: [true, 'Role is required'],
     default: "public"
+  },
+  phone: {
+    type: String,
+    trim: true,
+    sparse: true // Allow multiple null values
+  },
+  acceptWhatsAppNotifications: {
+    type: Boolean,
+    default: false
   },
   profile: {
     assignedUnitsIds: [{
@@ -170,5 +181,7 @@ const UserSchema = new Schema<UserDocument>({
 
 UserSchema.index({ role: 1 });
 UserSchema.index({ 'profile.assignedUnitsIds': 1 });
+UserSchema.index({ phone: 1 });
+UserSchema.index({ acceptWhatsAppNotifications: 1 });
 
 export const UserModel = mongoose.model<UserDocument>("User", UserSchema);

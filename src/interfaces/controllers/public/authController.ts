@@ -130,9 +130,9 @@ export const updateProfile = async (req: Request, res: Response) => {
       });
     }
 
-    const { displayName, photoURL, name, phone, cpf, notifications, favoritesHealthUnit } = req.body;
+    const { displayName, photoURL, name, phone, cpf, notifications, favoritesHealthUnit, acceptWhatsAppNotifications } = req.body;
 
-    if (!displayName && !photoURL && !name && !phone && !cpf && !notifications && !favoritesHealthUnit) {
+    if (!displayName && !photoURL && !name && !phone && !cpf && !notifications && !favoritesHealthUnit && !acceptWhatsAppNotifications) {
       return res.status(400).json({
         success: false,
         error: {
@@ -152,9 +152,28 @@ export const updateProfile = async (req: Request, res: Response) => {
 
     // Preparar dados para MongoDB
     if (name) mongoUpdateData.name = name;
-    if (phone) mongoUpdateData.phone = phone;
+    if (phone) {
+      // Validar formato do telefone - aceita com ou sem máscara
+      // Formatos aceitos: (XX) 99999-9999, +55 (XX) 99999-9999, etc
+      const phoneRegex = /^[\d\s\-\(\)+]*$/;
+      if (!phoneRegex.test(phone) || phone.replace(/\D/g, '').length < 10) {
+        return res.status(400).json({
+          success: false,
+          error: {
+            code: 'INVALID_PHONE',
+            message: 'Phone number must be valid (minimum 10 digits)'
+          }
+        });
+      }
+      mongoUpdateData.phone = phone;
+    }
     if (cpf) mongoUpdateData.cpf = cpf;
     if (notifications) mongoUpdateData.notifications = notifications;
+    
+    // Adicionar dados de WhatsApp
+    if (acceptWhatsAppNotifications !== undefined) {
+      mongoUpdateData.acceptWhatsAppNotifications = acceptWhatsAppNotifications;
+    }
     
     // Adicionar favoritos se fornecidos
     if (favoritesHealthUnit) {

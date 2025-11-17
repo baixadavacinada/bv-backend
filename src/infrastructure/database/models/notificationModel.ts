@@ -5,6 +5,7 @@ export interface NotificationDocument extends Document {
   title: string;
   message: string;
   type: string;
+  channel: 'whatsapp' | 'push' | 'email' | 'in_app';
   isRead: boolean;
   data?: {
     appointmentId?: Types.ObjectId;
@@ -14,6 +15,8 @@ export interface NotificationDocument extends Document {
   };
   scheduledFor?: Date;
   sentAt?: Date;
+  deliveryStatus?: 'pending' | 'sent' | 'delivered' | 'failed' | 'read';
+  externalMessageId?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -43,6 +46,15 @@ const notificationSchema = new Schema<NotificationDocument>(
         message: 'Type must be: appointment_reminder, vaccine_available, dose_due, system_update or general'
       }
     },
+    channel: {
+      type: String,
+      required: [true, 'Channel is required'],
+      enum: {
+        values: ['whatsapp', 'push', 'email', 'in_app'],
+        message: 'Channel must be: whatsapp, push, email or in_app'
+      },
+      default: 'in_app'
+    },
     isRead: {
       type: Boolean,
       default: false
@@ -70,6 +82,15 @@ const notificationSchema = new Schema<NotificationDocument>(
     },
     sentAt: {
       type: Date
+    },
+    deliveryStatus: {
+      type: String,
+      enum: ['pending', 'sent', 'delivered', 'failed', 'read'],
+      default: 'pending'
+    },
+    externalMessageId: {
+      type: String,
+      sparse: true
     }
   },
   {
@@ -83,5 +104,7 @@ notificationSchema.index({ userId: 1, createdAt: -1 });
 notificationSchema.index({ userId: 1, isRead: 1 });
 notificationSchema.index({ scheduledFor: 1 });
 notificationSchema.index({ type: 1 });
+notificationSchema.index({ channel: 1, deliveryStatus: 1 });
+notificationSchema.index({ externalMessageId: 1 });
 
 export const NotificationModel = model<NotificationDocument>("Notification", notificationSchema);
