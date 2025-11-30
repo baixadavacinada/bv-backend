@@ -1,0 +1,240 @@
+/**
+ * Template Notification Controller
+ * Endpoints for managing and sending template-based notifications
+ */
+
+import { Router, Request, Response } from 'express';
+import { TemplateNotificationService } from '../../../services/templateNotificationService';
+import { NotificationTemplates } from '../../../services/notificationTemplates';
+import { Logger } from '../../../middlewares/logging';
+
+const router = Router();
+const logger = Logger.getInstance();
+
+// Middleware: Verify admin role
+const verifyAdmin = (req: Request, res: Response, next: Function) => {
+  const userRole = (req as any).user?.role;
+  if (userRole !== 'admin') {
+    return res.status(403).json({
+      success: false,
+      error: 'Access denied. Admin role required.'
+    });
+  }
+  next();
+};
+
+/**
+ * GET /api/admin/templates
+ * List all available templates
+ */
+router.get('/', verifyAdmin, (req: Request, res: Response) => {
+  try {
+    const templates = NotificationTemplates.listAll();
+
+    res.json({
+      success: true,
+      count: templates.length,
+      templates
+    });
+  } catch (error) {
+    logger.error('Error listing templates', error as Error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to list templates'
+    });
+  }
+});
+
+/**
+ * GET /api/admin/templates/:templateId
+ * Get specific template details
+ */
+router.get('/:templateId', verifyAdmin, (req: Request, res: Response) => {
+  try {
+    const { templateId } = req.params;
+    const template = NotificationTemplates.getTemplate(templateId);
+
+    if (!template) {
+      return res.status(404).json({
+        success: false,
+        error: 'Template not found'
+      });
+    }
+
+    res.json({
+      success: true,
+      template
+    });
+  } catch (error) {
+    logger.error('Error fetching template', error as Error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch template'
+    });
+  }
+});
+
+/**
+ * GET /api/admin/templates/category/:category
+ * Get templates by category
+ */
+router.get('/category/:category', verifyAdmin, (req: Request, res: Response) => {
+  try {
+    const { category } = req.params;
+    const validCategories = ['appointment', 'vaccine', 'reminder', 'system', 'general'];
+
+    if (!validCategories.includes(category)) {
+      return res.status(400).json({
+        success: false,
+        error: `Invalid category. Must be one of: ${validCategories.join(', ')}`
+      });
+    }
+
+    const templates = NotificationTemplates.getTemplatesByCategory(category as any);
+
+    res.json({
+      success: true,
+      category,
+      count: templates.length,
+      templates
+    });
+  } catch (error) {
+    logger.error('Error fetching templates by category', error as Error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to fetch templates'
+    });
+  }
+});
+
+/**
+ * POST /api/admin/templates/:templateId/preview
+ * Preview a template with context
+ */
+router.post('/:templateId/preview', verifyAdmin, (req: Request, res: Response) => {
+  try {
+    const { templateId } = req.params;
+    const { context } = req.body;
+
+    const rendered = TemplateNotificationService.previewTemplate(templateId, context);
+
+    if (!rendered) {
+      return res.status(404).json({
+        success: false,
+        error: 'Template not found or failed to render'
+      });
+    }
+
+    res.json({
+      success: true,
+      templateId,
+      rendered
+    });
+  } catch (error) {
+    logger.error('Error previewing template', error as Error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to preview template'
+    });
+  }
+});
+
+/**
+ * POST /api/admin/templates/:templateId/send
+ * Send notification using template to a single user
+ */
+router.post('/:templateId/send', verifyAdmin, async (req: Request, res: Response) => {
+  try {
+    const { templateId } = req.params;
+    const { userId, context, channels = ['email', 'whatsapp'] } = req.body;
+
+    // Validate required fields
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        error: 'userId is required'
+      });
+    }
+
+    // Validate template exists
+    const template = NotificationTemplates.getTemplate(templateId);
+    if (!template) {
+      return res.status(404).json({
+        success: false,
+        error: 'Template not found'
+      });
+    }
+
+    // Send notification
+    const result = await TemplateNotificationService.sendTemplateNotification({
+      userId,
+      templateId,
+      context,
+      channels
+    });
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    logger.error('Error sending template notification', error as Error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to send notification'
+    });
+  }
+});
+
+/**
+ * POST /api/admin/templates/:templateId/broadcast
+ * Send notification using template to multiple users
+ */
+router.post('/:templateId/broadcast', verifyAdmin, async (req: Request, res: Response) => {
+  try {
+    const { templateId } = req.params;
+    const { userIds, context, channels = ['email', 'whatsapp'] } = req.body;
+
+    // Validate required fields
+    if (!Array.isArray(userIds) || userIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'userIds array is required and must not be empty'
+      });
+    }
+
+    // Validate template exists
+    const template = NotificationTemplates.getTemplate(templateId);
+    if (!template) {
+      return res.status(404).json({
+        success: false,
+        error: 'Template not found'
+      });
+    }
+
+    // Send broadcast
+    const result = await TemplateNotificationService.broadcastTemplateNotification(
+      userIds,
+      templateId,
+      context,
+      channels
+    );
+
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    logger.error('Error broadcasting template notification', error as Error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to broadcast notification'
+    });
+  }
+});
+
+export default router;

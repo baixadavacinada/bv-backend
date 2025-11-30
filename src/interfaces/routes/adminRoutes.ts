@@ -20,6 +20,7 @@ import { AdminHealthUnitsController } from "../controllers/admin/healthUnitsCont
 import { DashboardController } from "../controllers/admin/dashboardController";
 import { ReportsController } from "../controllers/admin/reportsController";
 import { listHealthUnitsController } from "../controllers/healthUnitsController";
+import templateNotificationController from "../controllers/admin/templateNotificationController";
 import { 
   createFirebaseUser, 
   getFirebaseUser, 
@@ -440,5 +441,8 @@ router.patch("/users/:userId/educational-materials/favorite",
 router.get("/users/:userId/educational-materials/favorites",
   asyncHandler(getUserFavoriteEducationalMaterialsController)
 );
+
+// Notification Template Routes
+router.use("/templates", templateNotificationController);
 
 export default router;
