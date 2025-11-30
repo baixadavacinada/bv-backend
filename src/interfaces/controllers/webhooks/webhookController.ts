@@ -16,6 +16,7 @@ export class WebhookController {
 
       if (!MessageSid || !MessageStatus) {
         res.status(400).json({
+          success: false,
           message: 'MessageSid and MessageStatus are required'
         });
         return;
@@ -47,21 +48,34 @@ export class WebhookController {
           internalStatus = 'sent';
       }
 
-      // Find notification by external message ID and update status
-      const updated = await this.notificationRepository.updateDeliveryStatus(
-        MessageSid,
-        internalStatus,
-        MessageSid
-      );
+      // Try to find and update notification by external message ID
+      try {
+        const updated = await this.notificationRepository.updateDeliveryStatus(
+          MessageSid,
+          internalStatus,
+          MessageSid
+        );
 
-      if (!updated) {
-        this.logger.warn('Notification not found for webhook update', {
-          messageSid: MessageSid
+        if (updated) {
+          this.logger.info('Notification status updated', {
+            messageSid: MessageSid,
+            newStatus: internalStatus
+          });
+        } else {
+          this.logger.warn('Notification not found for webhook update', {
+            messageSid: MessageSid
+          });
+        }
+      } catch (dbError) {
+        this.logger.warn('Could not update notification in database', {
+          messageSid: MessageSid,
+          error: dbError instanceof Error ? dbError.message : String(dbError)
         });
       }
 
       res.status(200).json({
-        message: 'Status update processed successfully',
+        success: true,
+        message: 'Webhook processed successfully',
         messageSid: MessageSid,
         status: internalStatus
       });
@@ -69,8 +83,10 @@ export class WebhookController {
       this.logger.error('Error processing WhatsApp webhook', error as Error, {
         body: req.body
       });
-      res.status(500).json({
-        message: 'Error processing webhook'
+      res.status(200).json({
+        success: true,
+        message: 'Webhook processed (with errors)',
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   }

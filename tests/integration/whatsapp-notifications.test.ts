@@ -25,17 +25,13 @@ describe('WhatsApp Notifications Integration', () => {
   describe('WhatsAppService', () => {
     it('should validate WhatsApp configuration', () => {
       const status = whatsappService.getStatus();
-      console.log('WhatsApp Service Status:', status);
-      
-      // Service might not be configured in test environment
-      // but should have the methods available
+
       expect(whatsappService).toBeDefined();
       expect(typeof whatsappService.sendMessage).toBe('function');
       expect(typeof whatsappService.sendBulkMessages).toBe('function');
     });
 
     it('should validate phone number format', () => {
-      // Valid phone number
       const validNumber = '+5521987654321';
       const invalidNumber1 = '21987654321'; // Missing +
       const invalidNumber2 = '+55'; // Too short
