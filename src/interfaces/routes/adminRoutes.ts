@@ -15,6 +15,7 @@ import {
 import { VaccinationRecordController } from "../controllers/admin/vaccinationRecordController";
 import { FeedbackController } from "../controllers/admin/feedbackController";
 import { AdminNotificationController } from "../controllers/admin/notificationController";
+import { WhatsAppNotificationController } from "../controllers/admin/whatsappNotificationController";
 import { AdminHealthUnitsController } from "../controllers/admin/healthUnitsController";
 import { DashboardController } from "../controllers/admin/dashboardController";
 import { ReportsController } from "../controllers/admin/reportsController";
@@ -55,6 +56,7 @@ router.use(adminRateLimit);
 const vaccinationRecordController = new VaccinationRecordController();
 const feedbackController = new FeedbackController();
 const adminNotificationController = new AdminNotificationController();
+const whatsappNotificationController = new WhatsAppNotificationController();
 const adminHealthUnitsController = new AdminHealthUnitsController();
 const dashboardController = new DashboardController();
 const reportsController = new ReportsController();
@@ -279,6 +281,34 @@ router.get("/notifications/:id",
 
 router.delete("/notifications/:id",
   asyncHandler(adminNotificationController.delete.bind(adminNotificationController))
+);
+
+// WhatsApp Notification Routes
+router.post("/notifications/whatsapp/send",
+  validateBody({
+    userId: { required: true, type: 'string' as const },
+    message: { required: true, type: 'string' as const, minLength: 1, maxLength: 1000 },
+    title: { required: false, type: 'string' as const },
+    type: { required: false, type: 'string' as const },
+    data: { required: false, type: 'object' as const }
+  }),
+  asyncHandler(whatsappNotificationController.sendToUser.bind(whatsappNotificationController))
+);
+
+router.post("/notifications/whatsapp/broadcast",
+  validateBody({
+    userIds: { required: false, type: 'array' as const },
+    filter: { required: false, type: 'object' as const },
+    message: { required: true, type: 'string' as const, minLength: 1, maxLength: 1000 },
+    title: { required: false, type: 'string' as const },
+    type: { required: false, type: 'string' as const },
+    data: { required: false, type: 'object' as const }
+  }),
+  asyncHandler(whatsappNotificationController.broadcast.bind(whatsappNotificationController))
+);
+
+router.get("/notifications/whatsapp/status/:messageId",
+  asyncHandler(whatsappNotificationController.getStatus.bind(whatsappNotificationController))
 );
 
 router.get("/dashboard/stats",

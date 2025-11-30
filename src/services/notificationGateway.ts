@@ -11,6 +11,7 @@ export interface NotificationGatewayPayload {
   message: string;
   mediaUrl?: string;
   metadata?: Record<string, any>;
+  data?: Record<string, any>; // Additional data for the notification
 }
 
 export interface NotificationResult {
