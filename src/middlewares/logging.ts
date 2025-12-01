@@ -161,14 +161,19 @@ export const requestLoggingMiddleware = (req: Request, res: Response, next: Next
   
   let responseBody: any;
   let responseSize = 0;
+  let responseSent = false;
 
   res.send = function(data) {
+    if (responseSent) return this;
+    responseSent = true;
     responseBody = data;
     responseSize = typeof data === 'string' ? data.length : JSON.stringify(data).length;
     return originalSend.call(this, data);
   };
 
   res.json = function(data) {
+    if (responseSent) return this;
+    responseSent = true;
     responseBody = data;
     responseSize = JSON.stringify(data).length;
     return originalJson.call(this, data);

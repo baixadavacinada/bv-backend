@@ -31,6 +31,10 @@ app.use(sanitizeRequest);
 
 setupApiDocs(app);
 
+app.use('/api/public', publicRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+
 app.get('/', (req, res) => {
   res.json({
     success: true,
@@ -40,10 +44,6 @@ app.get('/', (req, res) => {
     environment: process.env.NODE_ENV || 'development'
   });
 });
-
-app.use('/api/public', publicRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/admin', adminRoutes);
 
 app.use(notFoundMiddleware);
 app.use(errorHandlingMiddleware);
