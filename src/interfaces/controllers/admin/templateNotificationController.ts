@@ -17,7 +17,9 @@ const verifyAdmin = (req: Request, res: Response, next: Function) => {
   if (userRole !== 'admin') {
     return res.status(403).json({
       success: false,
-      error: 'Access denied. Admin role required.'
+      error: {
+        message: 'Access denied. Admin role required.'
+      }
     });
   }
   next();
@@ -27,7 +29,7 @@ const verifyAdmin = (req: Request, res: Response, next: Function) => {
  * GET /api/admin/templates
  * List all available templates
  */
-router.get('/', verifyAdmin, (req: Request, res: Response) => {
+router.get('/', (req: Request, res: Response) => {
   try {
     const templates = NotificationTemplates.listAll();
 
@@ -53,7 +55,7 @@ router.get('/', verifyAdmin, (req: Request, res: Response) => {
  * GET /api/admin/templates/:templateId
  * Get specific template details
  */
-router.get('/:templateId', verifyAdmin, (req: Request, res: Response) => {
+router.get('/:templateId', (req: Request, res: Response) => {
   try {
     const { templateId } = req.params;
     const template = NotificationTemplates.getTemplate(templateId);
@@ -86,7 +88,7 @@ router.get('/:templateId', verifyAdmin, (req: Request, res: Response) => {
  * GET /api/admin/templates/category/:category
  * Get templates by category
  */
-router.get('/category/:category', verifyAdmin, (req: Request, res: Response) => {
+router.get('/category/:category', (req: Request, res: Response) => {
   try {
     const { category } = req.params;
     const validCategories = ['appointment', 'vaccine', 'reminder', 'system', 'general'];
@@ -125,7 +127,7 @@ router.get('/category/:category', verifyAdmin, (req: Request, res: Response) => 
  * POST /api/admin/templates/:templateId/preview
  * Preview a template with context
  */
-router.post('/:templateId/preview', verifyAdmin, (req: Request, res: Response) => {
+router.post('/:templateId/preview', (req: Request, res: Response) => {
   try {
     const { templateId } = req.params;
     const { context } = req.body;
@@ -161,7 +163,7 @@ router.post('/:templateId/preview', verifyAdmin, (req: Request, res: Response) =
  * POST /api/admin/templates/:templateId/send
  * Send notification using template to a single user
  */
-router.post('/:templateId/send', verifyAdmin, async (req: Request, res: Response) => {
+router.post('/:templateId/send', async (req: Request, res: Response) => {
   try {
     const { templateId } = req.params;
     const { userId, context, channels = ['email', 'whatsapp'] } = req.body;
@@ -223,7 +225,7 @@ router.post('/:templateId/send', verifyAdmin, async (req: Request, res: Response
  * POST /api/admin/templates/:templateId/broadcast
  * Send notification using template to multiple users
  */
-router.post('/:templateId/broadcast', verifyAdmin, async (req: Request, res: Response) => {
+router.post('/:templateId/broadcast', async (req: Request, res: Response) => {
   try {
     const { templateId } = req.params;
     const { userIds, context, channels = ['email', 'whatsapp'] } = req.body;
