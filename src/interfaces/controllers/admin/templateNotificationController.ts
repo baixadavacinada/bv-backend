@@ -33,14 +33,18 @@ router.get('/', verifyAdmin, (req: Request, res: Response) => {
 
     res.json({
       success: true,
-      count: templates.length,
-      templates
+      data: {
+        templates,
+        count: templates.length
+      }
     });
   } catch (error) {
     logger.error('Error listing templates', error as Error);
     res.status(500).json({
       success: false,
-      error: 'Failed to list templates'
+      error: {
+        message: 'Failed to list templates'
+      }
     });
   }
 });
@@ -57,19 +61,23 @@ router.get('/:templateId', verifyAdmin, (req: Request, res: Response) => {
     if (!template) {
       return res.status(404).json({
         success: false,
-        error: 'Template not found'
+        error: {
+          message: 'Template not found'
+        }
       });
     }
 
     res.json({
       success: true,
-      template
+      data: template
     });
   } catch (error) {
     logger.error('Error fetching template', error as Error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch template'
+      error: {
+        message: 'Failed to fetch template'
+      }
     });
   }
 });
@@ -86,7 +94,9 @@ router.get('/category/:category', verifyAdmin, (req: Request, res: Response) => 
     if (!validCategories.includes(category)) {
       return res.status(400).json({
         success: false,
-        error: `Invalid category. Must be one of: ${validCategories.join(', ')}`
+        error: {
+          message: `Invalid category. Must be one of: ${validCategories.join(', ')}`
+        }
       });
     }
 
@@ -94,15 +104,19 @@ router.get('/category/:category', verifyAdmin, (req: Request, res: Response) => 
 
     res.json({
       success: true,
-      category,
-      count: templates.length,
-      templates
+      data: {
+        templates,
+        category,
+        count: templates.length
+      }
     });
   } catch (error) {
     logger.error('Error fetching templates by category', error as Error);
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch templates'
+      error: {
+        message: 'Failed to fetch templates'
+      }
     });
   }
 });
@@ -127,14 +141,18 @@ router.post('/:templateId/preview', verifyAdmin, (req: Request, res: Response) =
 
     res.json({
       success: true,
-      templateId,
-      rendered
+      data: {
+        templateId,
+        rendered
+      }
     });
   } catch (error) {
     logger.error('Error previewing template', error as Error);
     res.status(500).json({
       success: false,
-      error: 'Failed to preview template'
+      error: {
+        message: 'Failed to preview template'
+      }
     });
   }
 });
@@ -152,7 +170,9 @@ router.post('/:templateId/send', verifyAdmin, async (req: Request, res: Response
     if (!userId) {
       return res.status(400).json({
         success: false,
-        error: 'userId is required'
+        error: {
+          message: 'userId is required'
+        }
       });
     }
 
@@ -161,7 +181,9 @@ router.post('/:templateId/send', verifyAdmin, async (req: Request, res: Response
     if (!template) {
       return res.status(404).json({
         success: false,
-        error: 'Template not found'
+        error: {
+          message: 'Template not found'
+        }
       });
     }
 
@@ -174,7 +196,12 @@ router.post('/:templateId/send', verifyAdmin, async (req: Request, res: Response
     });
 
     if (!result.success) {
-      return res.status(400).json(result);
+      return res.status(400).json({
+        success: false,
+        error: {
+          message: result.message || 'Failed to send notification'
+        }
+      });
     }
 
     res.json({
@@ -185,7 +212,9 @@ router.post('/:templateId/send', verifyAdmin, async (req: Request, res: Response
     logger.error('Error sending template notification', error as Error);
     res.status(500).json({
       success: false,
-      error: 'Failed to send notification'
+      error: {
+        message: 'Failed to send notification'
+      }
     });
   }
 });
@@ -203,7 +232,9 @@ router.post('/:templateId/broadcast', verifyAdmin, async (req: Request, res: Res
     if (!Array.isArray(userIds) || userIds.length === 0) {
       return res.status(400).json({
         success: false,
-        error: 'userIds array is required and must not be empty'
+        error: {
+          message: 'userIds array is required and must not be empty'
+        }
       });
     }
 
@@ -212,7 +243,9 @@ router.post('/:templateId/broadcast', verifyAdmin, async (req: Request, res: Res
     if (!template) {
       return res.status(404).json({
         success: false,
-        error: 'Template not found'
+        error: {
+          message: 'Template not found'
+        }
       });
     }
 
@@ -232,7 +265,9 @@ router.post('/:templateId/broadcast', verifyAdmin, async (req: Request, res: Res
     logger.error('Error broadcasting template notification', error as Error);
     res.status(500).json({
       success: false,
-      error: 'Failed to broadcast notification'
+      error: {
+        message: 'Failed to broadcast notification'
+      }
     });
   }
 });
