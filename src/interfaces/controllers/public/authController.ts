@@ -425,6 +425,26 @@ export const syncFirebaseUser = async (req: Request, res: Response) => {
       });
     }
 
+    // Check if user exists and is inactive - reactivate on login
+    try {
+      const existingUser = await userRepository.findById(firebaseUid);
+      if (existingUser && !existingUser.isActive) {
+        await userRepository.updateProfile(firebaseUid, { 
+          isActive: true,
+          lastLoginAt: new Date()
+        });
+        logger.info('Inactive user reactivated on login', {
+          uid: firebaseUid,
+          email: email || req.user.email
+        });
+      }
+    } catch (reactivateError) {
+      logger.warn('Could not reactivate user', {
+        uid: firebaseUid,
+        error: reactivateError
+      });
+    }
+
     try {
       await userRepository.create({
         _id: firebaseUid,
