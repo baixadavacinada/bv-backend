@@ -97,7 +97,7 @@ export class ZapiWhatsappService {
 
       // Send message via Z-API
       const response = await this.apiClient.post(
-        `/${this.instanceId}/token/${this.apiToken}/send-message`,
+        `/${this.instanceId}/token/${this.apiToken}/send-text`,
         payload
       );
 
