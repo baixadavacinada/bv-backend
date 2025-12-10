@@ -119,7 +119,6 @@ export class ZapiWhatsappService {
         payload,
         {
           headers: {
-            'Client-Token': this.apiToken,
             'Content-Type': 'application/json'
           },
           validateStatus: () => true // Don't throw on any status code
