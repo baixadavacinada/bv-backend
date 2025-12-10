@@ -99,16 +99,16 @@ export class ZapiWhatsappService {
       }
 
       // Send message via Z-API
-      const requestUrl = `/${this.instanceId}/token/${this.apiToken}/send-text`;
+      const zapiUrl = process.env.ZAPI_API_URL || `https://api.z-api.io/instances/${this.instanceId}/token/${this.apiToken}/send-text`;
       
       this.logger.info('Sending WhatsApp message to Z-API', {
-        url: requestUrl.replace(this.apiToken, '****'),
+        url: zapiUrl.substring(0, 40) + '****',
         phone: this.maskPhoneNumber(message.to),
         payload: { phone: phoneNumber, message: message.body.substring(0, 50) + '...' }
       });
 
       const response = await this.apiClient.post(
-        requestUrl,
+        zapiUrl,
         payload,
         {
           headers: {
