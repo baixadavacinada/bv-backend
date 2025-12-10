@@ -106,7 +106,8 @@ export class ZapiWhatsappService {
       this.logger.info('WhatsApp message sent successfully via Z-API', {
         messageId,
         to: this.maskPhoneNumber(message.to),
-        status: response.data?.status || 'sent'
+        status: response.data?.status || 'sent',
+        responseData: response.data
       });
 
       return messageId;
@@ -114,7 +115,8 @@ export class ZapiWhatsappService {
       this.logger.error('Failed to send WhatsApp message via Z-API', error as Error, {
         to: this.maskPhoneNumber(message.to),
         messageLength: message.body.length,
-        errorResponse: axios.isAxiosError(error) ? error.response?.data : undefined
+        errorResponse: axios.isAxiosError(error) ? error.response?.data : undefined,
+        errorStatus: axios.isAxiosError(error) ? error.response?.status : undefined
       });
       return null;
     }
