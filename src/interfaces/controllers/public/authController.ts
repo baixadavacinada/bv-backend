@@ -198,7 +198,7 @@ export const updateProfile = async (req: Request, res: Response) => {
     if (phone && acceptWhatsAppNotifications) {
       try {
         const notificationGateway = new NotificationGateway();
-        const user = await userRepository.getUserById(req.user.id);
+        const user = await userRepository.findById(req.user.id);
         
         await notificationGateway.sendNotification({
           userId: req.user.id,
