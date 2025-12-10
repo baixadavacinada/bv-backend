@@ -99,16 +99,17 @@ export class ZapiWhatsappService {
       }
 
       // Send message via Z-API
-      // Use ZAPI_API_URL if provided (full URL), otherwise construct it
+      // Use ZAPI_API_URL if provided (full URL with token already included), otherwise construct it
       let zapiUrl = process.env.ZAPI_API_URL;
       
       if (!zapiUrl) {
         // Fallback: construct URL from instance ID and token
+        // Z-API expects: /instances/{id}/token/{token}/send-text
         zapiUrl = `${this.baseUrl}/${this.instanceId}/token/${this.apiToken}/send-text`;
       }
       
       this.logger.info('Sending WhatsApp message to Z-API', {
-        url: zapiUrl.substring(0, 40) + '****',
+        url: zapiUrl.substring(0, 60) + '****',
         phone: this.maskPhoneNumber(message.to),
         payload: { phone: phoneNumber, message: message.body.substring(0, 50) + '...' }
       });
@@ -119,7 +120,8 @@ export class ZapiWhatsappService {
         payload,
         {
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'X-API-Token': this.apiToken,
           },
           validateStatus: () => true // Don't throw on any status code
         }
