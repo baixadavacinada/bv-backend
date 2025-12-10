@@ -536,3 +536,46 @@ export const sendPasswordReset = async (req: Request, res: Response) => {
     });
   }
 };
+
+export const checkEmailExists = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_INPUT',
+          message: 'Email is required'
+        }
+      });
+    }
+
+    // Check if email exists in MongoDB
+    const existingUser = await userRepository.findByEmail(email);
+    const exists = !!existingUser;
+
+    logger.info('Email existence check', {
+      email,
+      exists
+    });
+
+    res.json({
+      success: true,
+      data: {
+        email,
+        exists
+      }
+    });
+  } catch (error) {
+    logger.error('Error checking email existence', error instanceof Error ? error : new Error(String(error)));
+
+    res.status(500).json({
+      success: false,
+      error: {
+        code: 'SERVER_ERROR',
+        message: 'Failed to check email existence'
+      }
+    });
+  }
+};

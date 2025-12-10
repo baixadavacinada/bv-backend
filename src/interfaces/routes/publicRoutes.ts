@@ -16,7 +16,8 @@ import {
   updateProfile, 
   registerWithEmail,
   sendPasswordReset,
-  syncFirebaseUser
+  syncFirebaseUser,
+  checkEmailExists
 } from '../controllers/public/authController';
 import { createAdminUser } from '../controllers/admin/adminAuthController';
 import { 
@@ -76,6 +77,12 @@ router.post('/auth/admin/create',
     role: { required: true, type: 'string' as const, enum: ['admin', 'agent'] as any[] }
   }),
   asyncHandler(createAdminUser)
+);
+
+router.post('/users/check-email',
+  firebaseAuthAdvanced(),
+  validateBody({ email: { required: true, type: 'email' as const } }),
+  asyncHandler(checkEmailExists)
 );
 
 router.get('/health-units', asyncHandler(listHealthUnitsController));
