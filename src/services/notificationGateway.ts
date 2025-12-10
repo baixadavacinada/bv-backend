@@ -30,9 +30,7 @@ export class NotificationGateway {
     this.whatsappService = WhatsAppServiceFactory.getInstance();
   }
 
-  /**
-   * Send notification through the specified channel
-   */
+
   async send(payload: NotificationGatewayPayload): Promise<NotificationResult> {
     try {
       switch (payload.channel) {

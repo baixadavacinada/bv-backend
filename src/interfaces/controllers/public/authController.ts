@@ -92,6 +92,14 @@ export const getProfile = async (req: Request, res: Response) => {
 
     const auth = getFirebaseAuth();
     const userRecord = await auth.getUser(req.user.id);
+    
+    // Buscar dados adicionais do MongoDB
+    let mongoUser = null;
+    try {
+      mongoUser = await userRepository.findById(req.user.id);
+    } catch (mongoError) {
+      logger.warn('Failed to fetch MongoDB user data', mongoError instanceof Error ? mongoError : new Error(String(mongoError)));
+    }
 
     res.json({
       success: true,
@@ -103,7 +111,12 @@ export const getProfile = async (req: Request, res: Response) => {
         photoURL: userRecord.photoURL,
         role: req.user.role,
         lastSignInTime: userRecord.metadata.lastSignInTime,
-        creationTime: userRecord.metadata.creationTime
+        creationTime: userRecord.metadata.creationTime,
+        // Dados do MongoDB
+        name: mongoUser?.name,
+        phone: mongoUser?.phone,
+        acceptWhatsAppNotifications: mongoUser?.acceptWhatsAppNotifications,
+        favoritesHealthUnit: mongoUser?.profile?.favoritesHealthUnit
       }
     });
   } catch (error) {
@@ -131,9 +144,9 @@ export const updateProfile = async (req: Request, res: Response) => {
       });
     }
 
-    const { displayName, photoURL, name, phone, cpf, notifications, favoritesHealthUnit, acceptWhatsAppNotifications } = req.body;
+    const { displayName, photoURL, name, phone, favoritesHealthUnit, acceptWhatsAppNotifications } = req.body;
 
-    if (!displayName && !photoURL && !name && !phone && !cpf && !notifications && !favoritesHealthUnit && !acceptWhatsAppNotifications) {
+    if (!displayName && !photoURL && !name && !phone && !favoritesHealthUnit && acceptWhatsAppNotifications === undefined) {
       return res.status(400).json({
         success: false,
         error: {
@@ -168,8 +181,6 @@ export const updateProfile = async (req: Request, res: Response) => {
       }
       mongoUpdateData.phone = phone;
     }
-    if (cpf) mongoUpdateData.cpf = cpf;
-    if (notifications) mongoUpdateData.notifications = notifications;
     
     // Adicionar dados de WhatsApp
     if (acceptWhatsAppNotifications !== undefined) {
@@ -200,15 +211,11 @@ export const updateProfile = async (req: Request, res: Response) => {
         const notificationGateway = new NotificationGateway();
         const user = await userRepository.findById(req.user.id);
         
-        await notificationGateway.sendNotification({
-          userId: req.user.id,
-          templateId: 'confirmation_whatsapp',
+        await notificationGateway.send({
+          to: phone,
           channel: 'whatsapp',
-          data: {
-            to: phone,
-            userName: name || user?.name || 'Usuário',
-            message: 'Seu número de celular foi atualizado com sucesso. Você receberá notificações importantes do Baixada Vacinada via WhatsApp.'
-          }
+          title: 'Número atualizado',
+          message: 'Seu número de celular foi atualizado com sucesso. Você receberá notificações importantes do Baixada Vacinada via WhatsApp.'
         });
 
         logger.info('WhatsApp confirmation sent', {
@@ -238,8 +245,7 @@ export const updateProfile = async (req: Request, res: Response) => {
         photoURL: photoURL || (userRecord?.photoURL),
         name,
         phone,
-        cpf,
-        notifications,
+        acceptWhatsAppNotifications,
         favoritesHealthUnit
       }
     });

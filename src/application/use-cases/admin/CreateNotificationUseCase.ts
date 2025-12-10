@@ -57,10 +57,8 @@ export class CreateNotificationUseCase {
       scheduledFor: data.scheduledFor
     };
 
-    // Save notification to database
     const savedNotification = await this.notificationRepository.create(notification);
 
-    // If scheduled for future, don't send now
     if (data.scheduledFor && new Date(data.scheduledFor) > new Date()) {
       this.logger.info('Notification scheduled for future delivery', {
         notificationId: savedNotification._id,
@@ -69,7 +67,6 @@ export class CreateNotificationUseCase {
       return savedNotification;
     }
 
-    // Send immediately if channel is not in_app
     if (channel !== 'in_app') {
       await this.sendNotification(savedNotification);
     }
@@ -77,12 +74,8 @@ export class CreateNotificationUseCase {
     return savedNotification;
   }
 
-  /**
-   * Send notification through the configured channel
-   */
   private async sendNotification(notification: Notification): Promise<void> {
     try {
-      // Fetch user to get contact info (email, phone, etc)
       let contactInfo: string | null = null;
 
       if (this.userRepository) {
