@@ -11,14 +11,14 @@ import { Logger } from '../../../middlewares/logging';
 const router = Router();
 const logger = Logger.getInstance();
 
-// Middleware: Verify admin role
-const verifyAdmin = (req: Request, res: Response, next: Function) => {
+// Middleware: Verify admin or agent role
+const verifyAdminOrAgent = (req: Request, res: Response, next: Function) => {
   const userRole = (req as any).user?.role;
-  if (userRole !== 'admin') {
+  if (userRole !== 'admin' && userRole !== 'agent') {
     return res.status(403).json({
       success: false,
       error: {
-        message: 'Access denied. Admin role required.'
+        message: 'Access denied. Admin or Agent role required.'
       }
     });
   }
