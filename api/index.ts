@@ -2,6 +2,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import { connectDatabase } from "../src/config/database";
 import publicRoutes from '../src/interfaces/routes/publicRoutes';
+import authRoutes from '../src/interfaces/routes/authRoutes';
 import adminRoutes from '../src/interfaces/routes/adminRoutes';
 import { setupApiDocs } from '../src/config/scalar';
 import "dotenv/config";
@@ -59,6 +60,7 @@ app.get('/api', (req, res) => {
 });
 
 app.use('/api/public', publicRoutes);
+app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 
 app.use('*', (req, res) => {
