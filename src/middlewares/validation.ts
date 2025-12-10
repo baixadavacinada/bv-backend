@@ -273,6 +273,7 @@ export const ValidationSchemas = {
         }
       }
     },
+    acceptWhatsAppNotifications: { required: false, type: 'boolean' as const },
     notifications: { required: false, type: 'object' as const },
     favoritesHealthUnit: { required: false, type: 'array' as const }
   }

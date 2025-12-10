@@ -3,6 +3,7 @@ import { getFirebaseAuth } from '../../../config/firebase';
 import { Logger } from '../../../middlewares/logging';
 import { MongoUserRepository } from '../../../infrastructure/database/implementations/MongoUserRepository';
 import { claimsService } from '../../../services/claimsService';
+import { NotificationGateway } from '../../../services/notificationGateway';
 
 const logger = Logger.getInstance();
 const userRepository = new MongoUserRepository();
@@ -191,6 +192,36 @@ export const updateProfile = async (req: Request, res: Response) => {
     // Atualizar MongoDB se houver dados
     if (Object.keys(mongoUpdateData).length > 0) {
       await userRepository.updateProfile(req.user.id, mongoUpdateData);
+    }
+
+    // Enviar mensagem de confirmação por WhatsApp se telefone foi atualizado e notificações estão ativas
+    if (phone && acceptWhatsAppNotifications) {
+      try {
+        const notificationGateway = new NotificationGateway();
+        const user = await userRepository.getUserById(req.user.id);
+        
+        await notificationGateway.sendNotification({
+          userId: req.user.id,
+          templateId: 'confirmation_whatsapp',
+          channel: 'whatsapp',
+          data: {
+            to: phone,
+            userName: name || user?.name || 'Usuário',
+            message: 'Seu número de celular foi atualizado com sucesso. Você receberá notificações importantes do Baixada Vacinada via WhatsApp.'
+          }
+        });
+
+        logger.info('WhatsApp confirmation sent', {
+          uid: req.user.id,
+          phone: phone.replace(/\d(?=\d{4})/g, '*')
+        });
+      } catch (whatsappError) {
+        logger.warn('Failed to send WhatsApp confirmation', {
+          uid: req.user.id,
+          error: whatsappError instanceof Error ? whatsappError.message : 'Unknown error'
+        });
+        // Não falha a requisição se não conseguir enviar WhatsApp
+      }
     }
 
     logger.info('User profile updated', {

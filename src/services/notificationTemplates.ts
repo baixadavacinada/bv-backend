@@ -410,7 +410,7 @@ Baixada Vacinada`,
       subject: '💉 Nova vacina adicionada ao sistema: {{vaccineName}}',
       body: `Alerta de nova vacina:
 
-Uma nova vacina foi adicionada ao sistema! ✅
+Uma nova vacina foi adicionada ao sistema!
 
 💉 Vacina: {{vaccineName}}
 🏢 Fabricante: {{manufacturer}}

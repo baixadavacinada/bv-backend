@@ -14,6 +14,11 @@ router.use(firebaseAuthAdvanced({ required: true }));
 
 router.get('/profile', asyncHandler(getProfile));
 
+router.put('/profile', 
+  validateBody(ValidationSchemas.profileUpdate), 
+  asyncHandler(updateProfile)
+);
+
 router.post('/profile',
   validateBody({
     firebaseUid: { required: false, type: 'string' as const },
@@ -27,11 +32,6 @@ router.post('/profile',
     healthConditions: { required: false, type: 'array' as const }
   }),
   asyncHandler(createProfile)
-);
-
-router.put('/profile', 
-  validateBody(ValidationSchemas.profileUpdate), 
-  asyncHandler(updateProfile)
 );
 
 export default router;
