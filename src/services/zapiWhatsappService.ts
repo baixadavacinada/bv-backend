@@ -99,7 +99,13 @@ export class ZapiWhatsappService {
       }
 
       // Send message via Z-API
-      const zapiUrl = process.env.ZAPI_API_URL || `https://api.z-api.io/instances/${this.instanceId}/token/${this.apiToken}/send-text`;
+      // Use ZAPI_API_URL if provided (full URL), otherwise construct it
+      let zapiUrl = process.env.ZAPI_API_URL;
+      
+      if (!zapiUrl) {
+        // Fallback: construct URL from instance ID and token
+        zapiUrl = `${this.baseUrl}/${this.instanceId}/token/${this.apiToken}/send-text`;
+      }
       
       this.logger.info('Sending WhatsApp message to Z-API', {
         url: zapiUrl.substring(0, 40) + '****',
@@ -107,14 +113,16 @@ export class ZapiWhatsappService {
         payload: { phone: phoneNumber, message: message.body.substring(0, 50) + '...' }
       });
 
-      const response = await this.apiClient.post(
+      // Use axios directly with full URL instead of apiClient to avoid baseURL concatenation
+      const response = await axios.post(
         zapiUrl,
         payload,
         {
           headers: {
             'Client-Token': this.apiToken,
             'Content-Type': 'application/json'
-          }
+          },
+          validateStatus: () => true // Don't throw on any status code
         }
       );
 
