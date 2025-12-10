@@ -24,6 +24,7 @@ export interface NotificationTemplate {
   subject: string;
   body: string;
   category: 'appointment' | 'vaccine' | 'reminder' | 'system' | 'general';
+  status?: 'ativo' | 'desativado';
 }
 
 export class NotificationTemplates {
@@ -94,7 +95,8 @@ Dúvidas? Entre em contato com a unidade de saúde.
 
 Obrigado! 💙
 Baixada Vacinada`,
-      category: 'appointment'
+      category: 'appointment',
+      status: 'desativado'
     },
 
     appointment_reminder_24h: {
@@ -117,7 +119,8 @@ Qualquer dúvida, entre em contato com a unidade.
 
 Nos vemos amanhã! 💙
 Baixada Vacinada`,
-      category: 'reminder'
+      category: 'reminder',
+      status: 'desativado'
     },
 
     appointment_reminder_2h: {
@@ -137,7 +140,8 @@ Prepare-se e chegue alguns minutos antes!
 
 Nos vemos em breve! 💙
 Baixada Vacinada`,
-      category: 'reminder'
+      category: 'reminder',
+      status: 'desativado'
     },
 
     appointment_cancelled: {
@@ -157,7 +161,8 @@ Para reagendar, acesse nosso app ou entre em contato com a unidade de saúde.
 
 Continuamos à sua disposição! 💙
 Baixada Vacinada`,
-      category: 'appointment'
+      category: 'appointment',
+      status: 'desativado'
     },
 
     appointment_rescheduled: {
@@ -179,7 +184,8 @@ O agendamento anterior foi cancelado.
 
 Nos vemos em breve! 💙
 Baixada Vacinada`,
-      category: 'appointment'
+      category: 'appointment',
+      status: 'desativado'
     },
 
     // ============ VACCINE TEMPLATES ============
@@ -201,7 +207,8 @@ Agende seu atendimento agora mesmo no nosso app!
 
 Não perca essa oportunidade! 💙
 Baixada Vacinada`,
-      category: 'vaccine'
+      category: 'vaccine',
+      status: 'desativado'
     },
 
     vaccine_stock_low: {
@@ -221,7 +228,8 @@ Se você precisa dessa vacina, recomendamos agendar seu atendimento o quanto ant
 Acesse nosso app para agendar! 🏥
 
 Baixada Vacinada`,
-      category: 'vaccine'
+      category: 'vaccine',
+      status: 'desativado'
     },
 
     vaccine_out_of_stock: {
@@ -239,7 +247,8 @@ Você será notificado quando a vacina voltar ao estoque!
 
 Obrigado pela compreensão! 💙
 Baixada Vacinada`,
-      category: 'vaccine'
+      category: 'vaccine',
+      status: 'desativado'
     },
 
     vaccination_completed: {
@@ -262,7 +271,8 @@ Dados registrados em seu histórico de vacinação!
 
 Obrigado por se vacinar! 💙
 Baixada Vacinada`,
-      category: 'vaccine'
+      category: 'vaccine',
+      status: 'desativado'
     },
 
     vaccination_dose_due: {
@@ -285,7 +295,8 @@ Por favor, agende seu atendimento o quanto antes para manter sua proteção em d
 Agende agora no nosso app! 🏥
 
 Baixada Vacinada`,
-      category: 'reminder'
+      category: 'reminder',
+      status: 'desativado'
     },
 
     vaccination_dose_approaching: {
@@ -307,7 +318,54 @@ Acesse nosso app para agendar! 🏥
 
 Obrigado! 💙
 Baixada Vacinada`,
-      category: 'reminder'
+      category: 'reminder',
+      status: 'desativado'
+    },
+
+    // ============ CUSTOM ACTIVE TEMPLATES ============
+
+    lembretes_segunda_dose: {
+      id: 'lembretes_segunda_dose',
+      name: 'Lembretes de Segunda Dose',
+      description: 'Notificações de lembretes para tomar a segunda dose da vacina',
+      subject: '💉 Lembrete: sua segunda dose de {{vaccineName}} está disponível!',
+      body: `Olá {{userName}}! 👋
+
+Lembrete importante: Sua segunda dose de {{vaccineName}} está disponível!
+
+💉 Vacina: {{vaccineName}}
+📍 Unidade: {{healthUnitName}}
+
+Agende seu atendimento o quanto antes para manter sua proteção em dia.
+
+Acesse nosso app para agendar sua segunda dose! 🏥
+
+Obrigado por se vacinar! 💙
+Baixada Vacinada`,
+      category: 'reminder',
+      status: 'ativo'
+    },
+
+    novos_registros_vacinacao: {
+      id: 'novos_registros_vacinacao',
+      name: 'Novos Registros de Vacinação',
+      description: 'Notificações quando uma nova dose for registrada no histórico',
+      subject: '✅ Nova dose registrada: {{vaccineName}}',
+      body: `Parabéns {{userName}}! 🎉
+
+Uma nova dose foi registrada em seu histórico de vacinação! ✅
+
+💉 Vacina: {{vaccineName}}
+🔢 Dose: {{currentDose}}/{{doses}}
+📅 Data: {{date}}
+📍 Unidade: {{healthUnitName}}
+
+Seu histórico de vacinação foi atualizado com sucesso!
+
+Obrigado por se manter vacinado! 💙
+Baixada Vacinada`,
+      category: 'vaccine',
+      status: 'ativo'
     },
 
     // ============ SYSTEM TEMPLATES ============
@@ -334,7 +392,8 @@ Comece agora mesmo acessando nosso app!
 Qualquer dúvida, estamos à disposição! 💙
 
 Baixada Vacinada`,
-      category: 'system'
+      category: 'system',
+      status: 'desativado'
     },
 
     profile_updated: {
@@ -351,7 +410,8 @@ Se você não realizou esta ação, entre em contato conosco imediatamente.
 Continuamos à sua disposição! 💙
 
 Baixada Vacinada`,
-      category: 'system'
+      category: 'system',
+      status: 'desativado'
     },
 
     whatsapp_opt_in_confirmation: {
@@ -371,7 +431,8 @@ Você receberá:
 
 Obrigado! 💙
 Baixada Vacinada`,
-      category: 'system'
+      category: 'system',
+      status: 'desativado'
     },
 
     // ============ GENERAL TEMPLATES ============
@@ -391,7 +452,8 @@ Para mais informações, visite nosso app!
 
 Obrigado! 💙
 Baixada Vacinada`,
-      category: 'general'
+      category: 'general',
+      status: 'desativado'
     },
 
     maintenance_notice: {
@@ -411,7 +473,8 @@ Pedimos desculpas pelo inconveniente!
 
 Obrigado pela compreensão! 💙
 Baixada Vacinada`,
-      category: 'system'
+      category: 'system',
+      status: 'desativado'
     },
 
     help_available: {
@@ -429,7 +492,8 @@ Nossa equipe está pronta para ajudar via WhatsApp!
 
 Estamos aqui para você! 💙
 Baixada Vacinada`,
-      category: 'general'
+      category: 'general',
+      status: 'desativado'
     }
   };
 }
