@@ -25,6 +25,7 @@ export interface NotificationTemplate {
   body: string;
   category: 'appointment' | 'vaccine' | 'reminder' | 'system' | 'general';
   status?: 'ativo' | 'desativado';
+  roles?: ('public' | 'agent' | 'admin')[];
 }
 
 export class NotificationTemplates {
@@ -96,7 +97,8 @@ Dúvidas? Entre em contato com a unidade de saúde.
 Obrigado! 💙
 Baixada Vacinada`,
       category: 'appointment',
-      status: 'desativado'
+      status: 'desativado',
+      roles: ['public', 'agent', 'admin']
     },
 
     appointment_reminder_24h: {
@@ -120,7 +122,8 @@ Qualquer dúvida, entre em contato com a unidade.
 Nos vemos amanhã! 💙
 Baixada Vacinada`,
       category: 'reminder',
-      status: 'desativado'
+      status: 'desativado',
+      roles: ['public', 'agent', 'admin']
     },
 
     appointment_reminder_2h: {
@@ -141,7 +144,8 @@ Prepare-se e chegue alguns minutos antes!
 Nos vemos em breve! 💙
 Baixada Vacinada`,
       category: 'reminder',
-      status: 'desativado'
+      status: 'desativado',
+      roles: ['public', 'agent', 'admin']
     },
 
     appointment_cancelled: {
@@ -162,7 +166,8 @@ Para reagendar, acesse nosso app ou entre em contato com a unidade de saúde.
 Continuamos à sua disposição! 💙
 Baixada Vacinada`,
       category: 'appointment',
-      status: 'desativado'
+      status: 'desativado',
+      roles: ['public', 'agent', 'admin']
     },
 
     appointment_rescheduled: {
@@ -185,7 +190,8 @@ O agendamento anterior foi cancelado.
 Nos vemos em breve! 💙
 Baixada Vacinada`,
       category: 'appointment',
-      status: 'desativado'
+      status: 'desativado',
+      roles: ['public', 'agent', 'admin']
     },
 
     // ============ VACCINE TEMPLATES ============
@@ -208,7 +214,8 @@ Agende seu atendimento agora mesmo no nosso app!
 Não perca essa oportunidade! 💙
 Baixada Vacinada`,
       category: 'vaccine',
-      status: 'desativado'
+      status: 'desativado',
+      roles: ['public', 'agent', 'admin']
     },
 
     vaccine_stock_low: {
@@ -229,7 +236,8 @@ Acesse nosso app para agendar! 🏥
 
 Baixada Vacinada`,
       category: 'vaccine',
-      status: 'desativado'
+      status: 'desativado',
+      roles: ['public', 'agent', 'admin']
     },
 
     vaccine_out_of_stock: {
@@ -248,7 +256,8 @@ Você será notificado quando a vacina voltar ao estoque!
 Obrigado pela compreensão! 💙
 Baixada Vacinada`,
       category: 'vaccine',
-      status: 'desativado'
+      status: 'desativado',
+      roles: ['public', 'agent', 'admin']
     },
 
     vaccination_completed: {
@@ -272,7 +281,8 @@ Dados registrados em seu histórico de vacinação!
 Obrigado por se vacinar! 💙
 Baixada Vacinada`,
       category: 'vaccine',
-      status: 'desativado'
+      status: 'desativado',
+      roles: ['public', 'agent', 'admin']
     },
 
     vaccination_dose_due: {
@@ -296,7 +306,8 @@ Agende agora no nosso app! 🏥
 
 Baixada Vacinada`,
       category: 'reminder',
-      status: 'desativado'
+      status: 'desativado',
+      roles: ['public', 'agent', 'admin']
     },
 
     vaccination_dose_approaching: {
@@ -319,7 +330,8 @@ Acesse nosso app para agendar! 🏥
 Obrigado! 💙
 Baixada Vacinada`,
       category: 'reminder',
-      status: 'desativado'
+      status: 'desativado',
+      roles: ['public', 'agent', 'admin']
     },
 
     // ============ CUSTOM ACTIVE TEMPLATES ============
@@ -343,7 +355,8 @@ Acesse nosso app para agendar sua segunda dose! 🏥
 Obrigado por se vacinar! 💙
 Baixada Vacinada`,
       category: 'reminder',
-      status: 'ativo'
+      status: 'ativo',
+      roles: ['public', 'agent', 'admin']
     },
 
     novos_registros_vacinacao: {
@@ -365,7 +378,72 @@ Seu histórico de vacinação foi atualizado com sucesso!
 Obrigado por se manter vacinado! 💙
 Baixada Vacinada`,
       category: 'vaccine',
-      status: 'ativo'
+      status: 'ativo',
+      roles: ['public', 'agent', 'admin']
+    },
+
+    novos_usuarios: {
+      id: 'novos_usuarios',
+      name: 'Alertas de Novos Cadastros de Usuários',
+      description: 'Notifica sobre novos usuários registrados no sistema',
+      subject: '👤 Novo usuário registrado: {{userName}}',
+      body: `Alerta de novo cadastro:
+
+Um novo usuário foi registrado no sistema Baixada Vacinada! ✅
+
+👤 Nome: {{userName}}
+📧 Email: {{email}}
+📅 Data de Cadastro: {{date}}
+
+Acesse o painel administrativo para mais informações.
+
+Baixada Vacinada`,
+      category: 'system',
+      status: 'ativo',
+      roles: ['agent', 'admin']
+    },
+
+    novas_vacinas: {
+      id: 'novas_vacinas',
+      name: 'Alerta de Novas Vacinas',
+      description: 'Notifica quando uma nova vacina é adicionada à aplicação',
+      subject: '💉 Nova vacina adicionada ao sistema: {{vaccineName}}',
+      body: `Alerta de nova vacina:
+
+Uma nova vacina foi adicionada ao sistema! ✅
+
+💉 Vacina: {{vaccineName}}
+🏢 Fabricante: {{manufacturer}}
+📅 Data de Adição: {{date}}
+
+A vacina já está disponível para agendamento.
+
+Baixada Vacinada`,
+      category: 'vaccine',
+      status: 'ativo',
+      roles: ['agent', 'admin']
+    },
+
+    novas_ubs: {
+      id: 'novas_ubs',
+      name: 'Alerta de Novas UBSs',
+      description: 'Notifica quando uma nova unidade de saúde é cadastrada',
+      subject: '🏥 Nova unidade de saúde cadastrada: {{healthUnitName}}',
+      body: `Alerta de nova UBS:
+
+Uma nova unidade de saúde foi cadastrada no sistema! ✅
+
+🏥 Unidade: {{healthUnitName}}
+📍 Cidade: {{city}}
+📞 Telefone: {{phoneNumber}}
+📅 Data de Cadastro: {{date}}
+
+A unidade já está disponível para agendamentos.
+
+Baixada Vacinada`,
+      category: 'system',
+      status: 'ativo',
+      roles: ['agent', 'admin']
     },
 
     // ============ SYSTEM TEMPLATES ============
@@ -393,7 +471,8 @@ Qualquer dúvida, estamos à disposição! 💙
 
 Baixada Vacinada`,
       category: 'system',
-      status: 'desativado'
+      status: 'desativado',
+      roles: ['public', 'agent', 'admin']
     },
 
     profile_updated: {
@@ -411,7 +490,8 @@ Continuamos à sua disposição! 💙
 
 Baixada Vacinada`,
       category: 'system',
-      status: 'desativado'
+      status: 'desativado',
+      roles: ['public', 'agent', 'admin']
     },
 
     whatsapp_opt_in_confirmation: {
@@ -432,7 +512,8 @@ Você receberá:
 Obrigado! 💙
 Baixada Vacinada`,
       category: 'system',
-      status: 'desativado'
+      status: 'desativado',
+      roles: ['public', 'agent', 'admin']
     },
 
     // ============ GENERAL TEMPLATES ============
@@ -453,7 +534,8 @@ Para mais informações, visite nosso app!
 Obrigado! 💙
 Baixada Vacinada`,
       category: 'general',
-      status: 'desativado'
+      status: 'desativado',
+      roles: ['public', 'agent', 'admin']
     },
 
     maintenance_notice: {
@@ -474,7 +556,8 @@ Pedimos desculpas pelo inconveniente!
 Obrigado pela compreensão! 💙
 Baixada Vacinada`,
       category: 'system',
-      status: 'desativado'
+      status: 'desativado',
+      roles: ['public', 'agent', 'admin']
     },
 
     help_available: {
@@ -493,7 +576,8 @@ Nossa equipe está pronta para ajudar via WhatsApp!
 Estamos aqui para você! 💙
 Baixada Vacinada`,
       category: 'general',
-      status: 'desativado'
+      status: 'desativado',
+      roles: ['public', 'agent', 'admin']
     }
   };
 }
