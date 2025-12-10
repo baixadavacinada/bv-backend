@@ -39,7 +39,9 @@ export class ZapiWhatsappService {
     if (!this.instanceId || !this.apiToken) {
       this.logger.warn('Z-API credentials not fully configured', {
         hasInstanceId: !!this.instanceId,
-        hasApiToken: !!this.apiToken
+        hasApiToken: !!this.apiToken,
+        instanceId: this.instanceId ? 'set' : 'missing',
+        apiToken: this.apiToken ? 'set' : 'missing'
       });
     }
 
@@ -49,7 +51,8 @@ export class ZapiWhatsappService {
       headers: {
         'Client-Token': this.apiToken,
         'Content-Type': 'application/json'
-      }
+      },
+      validateStatus: () => true // Don't throw on any status code
     });
   }
 
@@ -96,9 +99,23 @@ export class ZapiWhatsappService {
       }
 
       // Send message via Z-API
+      const requestUrl = `/${this.instanceId}/token/${this.apiToken}/send-text`;
+      
+      this.logger.info('Sending WhatsApp message to Z-API', {
+        url: requestUrl.replace(this.apiToken, '****'),
+        phone: this.maskPhoneNumber(message.to),
+        payload: { phone: phoneNumber, message: message.body.substring(0, 50) + '...' }
+      });
+
       const response = await this.apiClient.post(
-        `/${this.instanceId}/token/${this.apiToken}/send-text`,
-        payload
+        requestUrl,
+        payload,
+        {
+          headers: {
+            'Client-Token': this.apiToken,
+            'Content-Type': 'application/json'
+          }
+        }
       );
 
       const messageId = response.data?.messageId || response.data?.id || 'unknown';
