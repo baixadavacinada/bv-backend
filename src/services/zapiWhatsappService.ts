@@ -133,7 +133,9 @@ export class ZapiWhatsappService {
         messageId,
         to: this.maskPhoneNumber(message.to),
         status: response.data?.status || 'sent',
-        responseData: response.data
+        httpStatus: response.status,
+        responseData: response.data,
+        hasError: !!response.data?.error,
       });
 
       return messageId;
