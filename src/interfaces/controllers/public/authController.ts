@@ -8,6 +8,30 @@ import { NotificationGateway } from '../../../services/notificationGateway';
 const logger = Logger.getInstance();
 const userRepository = new MongoUserRepository();
 
+/**
+ * Normalize phone number to Z-API format: +55 + DDD + number
+ * Accepts formats like: (11) 9966596428, 11996659428, +5511996659428, etc
+ */
+function normalizePhoneNumber(phone: string): string | null {
+  // Remove all non-numeric characters except +
+  let cleaned = phone.replace(/[^\d+]/g, '');
+  
+  // Remove + if it exists
+  cleaned = cleaned.replace('+', '');
+  
+  // If doesn't start with 55 (Brazil country code), add it
+  if (!cleaned.startsWith('55')) {
+    cleaned = '55' + cleaned;
+  }
+  
+  // Validate format: 55 + 2 digits (area code) + 8-9 digits (number)
+  if (!/^55\d{10,11}$/.test(cleaned)) {
+    return null;
+  }
+  
+  return '+' + cleaned;
+}
+
 export interface UserRegistration {
   email: string;
   password: string;
@@ -209,10 +233,16 @@ export const updateProfile = async (req: Request, res: Response) => {
     if (phone && acceptWhatsAppNotifications) {
       try {
         const notificationGateway = new NotificationGateway();
-        const user = await userRepository.findById(req.user.id);
+        
+        // Normalizar telefone para formato Z-API: +55 + DDD + número (ex: +5511996596428)
+        const normalizedPhone = normalizePhoneNumber(phone);
+        
+        if (!normalizedPhone) {
+          throw new Error('Invalid phone number format for WhatsApp');
+        }
         
         await notificationGateway.send({
-          to: phone,
+          to: normalizedPhone,
           channel: 'whatsapp',
           title: 'Número atualizado',
           message: 'Seu número de celular foi atualizado com sucesso. Você receberá notificações importantes do Baixada Vacinada via WhatsApp.'
