@@ -3,6 +3,7 @@ import { corsConfig } from './config/cors';
 import publicRoutes from './interfaces/routes/publicRoutes';
 import authRoutes from './interfaces/routes/authRoutes';
 import adminRoutes from './interfaces/routes/adminRoutes';
+import adminTemplateRoutes from './interfaces/routes/adminTemplateRoutes';
 import { setupApiDocs } from './config/scalar';
 import { connectDatabase } from "./config/database";
 import "dotenv/config";
@@ -34,6 +35,7 @@ setupApiDocs(app);
 app.use('/api/public', publicRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin/templates', adminTemplateRoutes);
 
 app.get('/', (req, res) => {
   res.json({
