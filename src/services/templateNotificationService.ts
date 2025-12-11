@@ -4,7 +4,8 @@
  */
 
 import { NotificationGateway } from './notificationGateway';
-import { NotificationTemplates, TemplateContext } from './notificationTemplates';
+import { notificationTemplatesService } from './notificationTemplatesDbService';
+import { TemplateContext } from '../domain/entities/NotificationTemplate';
 import { Logger } from '../middlewares/logging';
 
 export interface TemplateNotificationPayload {
@@ -42,7 +43,7 @@ export class TemplateNotificationService {
       const { userId, templateId, context = {}, channels = ['email', 'whatsapp'], priority = 'normal' } = payload;
 
       // Validate template exists
-      const template = NotificationTemplates.getTemplate(templateId);
+      const template = await notificationTemplatesService.getTemplate(templateId);
       if (!template) {
         this.logger.warn(`Template not found: ${templateId}`);
         return {
@@ -52,7 +53,7 @@ export class TemplateNotificationService {
       }
 
       // Render template with context
-      const rendered = NotificationTemplates.render(templateId, context);
+      const rendered = await notificationTemplatesService.render(templateId, context);
       if (!rendered) {
         return {
           success: false,
@@ -137,21 +138,21 @@ export class TemplateNotificationService {
   /**
    * Get available templates for a specific category
    */
-  static getTemplatesByCategory(category: 'appointment' | 'vaccine' | 'reminder' | 'system' | 'general') {
-    return NotificationTemplates.getTemplatesByCategory(category);
+  static async getTemplatesByCategory(category: 'appointment' | 'vaccine' | 'reminder' | 'system' | 'general') {
+    return await notificationTemplatesService.getTemplatesByCategory(category);
   }
 
   /**
    * List all available templates
    */
-  static listAllTemplates() {
-    return NotificationTemplates.listAll();
+  static async listAllTemplates() {
+    return await notificationTemplatesService.listAll();
   }
 
   /**
    * Preview a template rendering
    */
-  static previewTemplate(templateId: string, context?: TemplateContext) {
-    return NotificationTemplates.render(templateId, context);
+  static async previewTemplate(templateId: string, context?: TemplateContext) {
+    return await notificationTemplatesService.render(templateId, context || {});
   }
 }

@@ -4,27 +4,21 @@ import { Logger } from '../../../middlewares/logging';
 import { MongoUserRepository } from '../../../infrastructure/database/implementations/MongoUserRepository';
 import { claimsService } from '../../../services/claimsService';
 import { NotificationGateway } from '../../../services/notificationGateway';
+import { notificationTemplatesService } from '../../../services/notificationTemplatesDbService';
 
 const logger = Logger.getInstance();
 const userRepository = new MongoUserRepository();
 
-/**
- * Normalize phone number to Z-API format: +55 + DDD + number
- * Accepts formats like: (11) 9966596428, 11996659428, +5511996659428, etc
- */
+
 function normalizePhoneNumber(phone: string): string | null {
-  // Remove all non-numeric characters except +
   let cleaned = phone.replace(/[^\d+]/g, '');
   
-  // Remove + if it exists
   cleaned = cleaned.replace('+', '');
   
-  // If doesn't start with 55 (Brazil country code), add it
   if (!cleaned.startsWith('55')) {
     cleaned = '55' + cleaned;
   }
   
-  // Validate format: 55 + 2 digits (area code) + 8-9 digits (number)
   if (!/^55\d{10,11}$/.test(cleaned)) {
     return null;
   }
@@ -234,23 +228,39 @@ export const updateProfile = async (req: Request, res: Response) => {
       try {
         const notificationGateway = new NotificationGateway();
         
-        // Normalizar telefone para formato Z-API: +55 + DDD + número (ex: +5511996596428)
         const normalizedPhone = normalizePhoneNumber(phone);
         
         if (!normalizedPhone) {
           throw new Error('Invalid phone number format for WhatsApp');
         }
         
+        // Buscar e renderizar template do banco de dados
+        const template = await notificationTemplatesService.getTemplate('whatsapp_opt_in_confirmation');
+        
+        if (!template) {
+          throw new Error('Template whatsapp_opt_in_confirmation not found');
+        }
+        
+        const rendered = await notificationTemplatesService.render('whatsapp_opt_in_confirmation', {
+          userName: displayName || name || req.user.email?.split('@')[0] || 'Usuário',
+          phone: phone
+        });
+        
+        if (!rendered) {
+          throw new Error('Failed to render template');
+        }
+        
         await notificationGateway.send({
           to: normalizedPhone,
           channel: 'whatsapp',
-          title: 'Número atualizado',
-          message: 'Seu número de celular foi atualizado com sucesso. Você receberá notificações importantes do Baixada Vacinada via WhatsApp.'
+          title: rendered.subject,
+          message: rendered.body
         });
 
         logger.info('WhatsApp confirmation sent', {
           uid: req.user.id,
-          phone: phone.replace(/\d(?=\d{4})/g, '*')
+          phone: phone.replace(/\d(?=\d{4})/g, '*'),
+          templateId: 'whatsapp_opt_in_confirmation'
         });
       } catch (whatsappError) {
         logger.warn('Failed to send WhatsApp confirmation', {
