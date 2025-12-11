@@ -71,7 +71,7 @@ export class ZapiWhatsappService {
     try {
       // Validate phone number format
       if (!this.isValidPhoneNumber(message.to)) {
-        this.logger.error('Invalid phone number format', {
+        this.logger.error('Invalid phone number format', undefined, {
           phoneNumber: this.maskPhoneNumber(message.to),
           format: 'Expected +[countryCode][number]'
         });

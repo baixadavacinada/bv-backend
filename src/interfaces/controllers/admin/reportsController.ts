@@ -73,7 +73,7 @@ export class ReportsController {
             });
 
             const authClient = await auth.getClient();
-            const drive = google.drive({ version: 'v3', auth: authClient });
+            const drive = google.drive({ version: 'v3', auth: authClient as any });
 
             await drive.files.create({
               requestBody: {
@@ -177,7 +177,7 @@ export class ReportsController {
             });
 
             const authClient = await auth.getClient();
-            const drive = google.drive({ version: 'v3', auth: authClient });
+            const drive = google.drive({ version: 'v3', auth: authClient as any });
 
             await drive.files.create({
               requestBody: {

@@ -66,7 +66,7 @@ export async function toggleFavoriteEducationalMaterialController(
     return res.status(200).json({
       message: "Material educativo favorito atualizado com sucesso",
       favoriteEducationalMaterials:
-        updatedUser.profile.favoriteEducationalMaterials,
+        updatedUser.profile?.favoriteEducationalMaterials,
     });
   } catch (error) {
     console.error("Erro ao atualizar material favorito:", error);

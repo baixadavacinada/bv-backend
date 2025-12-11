@@ -442,7 +442,4 @@ router.get("/users/:userId/educational-materials/favorites",
   asyncHandler(getUserFavoriteEducationalMaterialsController)
 );
 
-// Notification Template Routes
-router.use("/templates", templateNotificationController);
-
 export default router;

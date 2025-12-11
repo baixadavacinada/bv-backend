@@ -4,6 +4,7 @@ import publicRoutes from './interfaces/routes/publicRoutes';
 import authRoutes from './interfaces/routes/authRoutes';
 import adminRoutes from './interfaces/routes/adminRoutes';
 import adminTemplateRoutes from './interfaces/routes/adminTemplateRoutes';
+import adminNotificationRoutes from './interfaces/routes/adminNotificationRoutes';
 import { setupApiDocs } from './config/scalar';
 import { connectDatabase } from "./config/database";
 import "dotenv/config";
@@ -36,6 +37,7 @@ app.use('/api/public', publicRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin/templates', adminTemplateRoutes);
+app.use('/api/admin/notifications', adminNotificationRoutes);
 
 app.get('/', (req, res) => {
   res.json({

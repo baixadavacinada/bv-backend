@@ -1,4 +1,4 @@
-import { NotificationTemplate } from "../../../domain/entities/NotificationTemplate";
+import { NotificationTemplate } from "../entities/NotificationTemplate";
 
 /**
  * Repository interface for Notification Templates

@@ -82,7 +82,7 @@ export class CreateNotificationUseCase {
         try {
           const user = await this.userRepository.findById(notification.userId);
           if (!user) {
-            this.logger.error('User not found for notification', {
+            this.logger.error('User not found for notification', undefined, {
               userId: notification.userId,
               notificationId: notification._id
             });
@@ -90,8 +90,8 @@ export class CreateNotificationUseCase {
             return;
           }
 
-          if (notification.channel === 'whatsapp' && user.phoneNumber) {
-            contactInfo = user.phoneNumber;
+          if (notification.channel === 'whatsapp' && user.phone) {
+            contactInfo = user.phone;
           } else if (notification.channel === 'email' && user.email) {
             contactInfo = user.email;
           }
@@ -135,7 +135,7 @@ export class CreateNotificationUseCase {
         });
       } else {
         await this.updateNotificationStatus(notification._id!, 'failed');
-        this.logger.error('Failed to send notification', {
+        this.logger.error('Failed to send notification', undefined, {
           notificationId: notification._id,
           channel: notification.channel,
           error: result.error

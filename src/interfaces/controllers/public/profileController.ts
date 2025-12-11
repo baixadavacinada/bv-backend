@@ -964,7 +964,7 @@ export const getSecondDoseConfiguration = async (req: Request, res: Response) =>
       });
     }
 
-    const secondDoseConfig = user.profile?.secondDoseConfig || null;
+    const secondDoseConfig = (user.profile as any)?.secondDoseConfig || null;
 
     logger.info('Second dose configuration retrieved', {
       uid: req.user.id

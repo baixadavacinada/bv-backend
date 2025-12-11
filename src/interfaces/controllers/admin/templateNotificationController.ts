@@ -1,277 +1,328 @@
-/**
- * Template Notification Controller
- * Endpoints for managing and sending template-based notifications
- */
-
-import { Router, Request, Response } from 'express';
-import { TemplateNotificationService } from '../../../services/templateNotificationService';
-import { NotificationTemplates } from '../../../services/notificationTemplates';
+import { Request, Response } from 'express';
 import { Logger } from '../../../middlewares/logging';
+import { SendTemplateNotificationUseCase } from '../../../application/use-cases/SendTemplateNotificationUseCase';
+import { MongoNotificationJobRepository } from '../../../infrastructure/database/implementations/MongoNotificationJobRepository';
+import { MongoNotificationAuditRepository } from '../../../infrastructure/database/implementations/MongoNotificationAuditRepository';
+import { MongoNotificationTemplateRepository } from '../../../infrastructure/database/implementations/MongoNotificationTemplateRepository';
+import { MongoUserRepository } from '../../../infrastructure/database/implementations/MongoUserRepository';
+import { NotificationGateway } from '../../../services/notificationGateway';
 
-const router = Router();
 const logger = Logger.getInstance();
+const jobRepository = new MongoNotificationJobRepository();
+const auditRepository = new MongoNotificationAuditRepository();
+const templateRepository = new MongoNotificationTemplateRepository();
+const userRepository = new MongoUserRepository();
+const notificationGateway = new NotificationGateway();
 
-// Middleware: Verify admin or agent role
-const verifyAdminOrAgent = (req: Request, res: Response, next: Function) => {
-  const userRole = (req as any).user?.role;
-  if (userRole !== 'admin' && userRole !== 'agent') {
-    return res.status(403).json({
-      success: false,
-      error: {
-        message: 'Access denied. Admin or Agent role required.'
-      }
-    });
-  }
-  next();
-};
+const sendTemplateUseCase = new SendTemplateNotificationUseCase(
+  jobRepository,
+  auditRepository,
+  templateRepository,
+  userRepository,
+  notificationGateway,
+  logger
+);
 
-/**
- * GET /api/admin/templates
- * List all available templates
- */
-router.get('/', (req: Request, res: Response) => {
+export async function sendTemplateNotification(req: Request, res: Response): Promise<void> {
   try {
-    const templates = NotificationTemplates.listAll();
+    const { templateId, recipients, context, scheduledFor } = req.body;
 
-    res.json({
-      success: true,
-      data: {
-        templates,
-        count: templates.length
-      }
-    });
-  } catch (error) {
-    logger.error('Error listing templates', error as Error);
-    res.status(500).json({
-      success: false,
-      error: {
-        message: 'Failed to list templates'
-      }
-    });
-  }
-});
-
-/**
- * GET /api/admin/templates/:templateId
- * Get specific template details
- */
-router.get('/:templateId', (req: Request, res: Response) => {
-  try {
-    const { templateId } = req.params;
-    const template = NotificationTemplates.getTemplate(templateId);
-
-    if (!template) {
-      return res.status(404).json({
+    if (!templateId) {
+      res.status(400).json({
         success: false,
-        error: {
-          message: 'Template not found'
-        }
+        error: { code: 'INVALID_INPUT', message: 'templateId is required' }
       });
+      return;
     }
 
-    res.json({
-      success: true,
-      data: template
-    });
-  } catch (error) {
-    logger.error('Error fetching template', error as Error);
-    res.status(500).json({
-      success: false,
-      error: {
-        message: 'Failed to fetch template'
-      }
-    });
-  }
-});
-
-/**
- * GET /api/admin/templates/category/:category
- * Get templates by category
- */
-router.get('/category/:category', (req: Request, res: Response) => {
-  try {
-    const { category } = req.params;
-    const validCategories = ['appointment', 'vaccine', 'reminder', 'system', 'general'];
-
-    if (!validCategories.includes(category)) {
-      return res.status(400).json({
+    if (!recipients || !recipients.mode) {
+      res.status(400).json({
         success: false,
-        error: {
-          message: `Invalid category. Must be one of: ${validCategories.join(', ')}`
-        }
+        error: { code: 'INVALID_INPUT', message: 'recipients.mode is required' }
       });
+      return;
     }
 
-    const templates = NotificationTemplates.getTemplatesByCategory(category as any);
-
-    res.json({
-      success: true,
-      data: {
-        templates,
-        category,
-        count: templates.length
-      }
-    });
-  } catch (error) {
-    logger.error('Error fetching templates by category', error as Error);
-    res.status(500).json({
-      success: false,
-      error: {
-        message: 'Failed to fetch templates'
-      }
-    });
-  }
-});
-
-/**
- * POST /api/admin/templates/:templateId/preview
- * Preview a template with context
- */
-router.post('/:templateId/preview', (req: Request, res: Response) => {
-  try {
-    const { templateId } = req.params;
-    const { context } = req.body;
-
-    const rendered = TemplateNotificationService.previewTemplate(templateId, context);
-
-    if (!rendered) {
-      return res.status(404).json({
-        success: false,
-        error: 'Template not found or failed to render'
-      });
-    }
-
-    res.json({
-      success: true,
-      data: {
-        templateId,
-        rendered
-      }
-    });
-  } catch (error) {
-    logger.error('Error previewing template', error as Error);
-    res.status(500).json({
-      success: false,
-      error: {
-        message: 'Failed to preview template'
-      }
-    });
-  }
-});
-
-/**
- * POST /api/admin/templates/:templateId/send
- * Send notification using template to a single user
- */
-router.post('/:templateId/send', async (req: Request, res: Response) => {
-  try {
-    const { templateId } = req.params;
-    const { userId, context, channels = ['email', 'whatsapp'] } = req.body;
-
-    // Validate required fields
-    if (!userId) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          message: 'userId is required'
-        }
-      });
-    }
-
-    // Validate template exists
-    const template = NotificationTemplates.getTemplate(templateId);
-    if (!template) {
-      return res.status(404).json({
-        success: false,
-        error: {
-          message: 'Template not found'
-        }
-      });
-    }
-
-    // Send notification
-    const result = await TemplateNotificationService.sendTemplateNotification({
-      userId,
+    const result = await sendTemplateUseCase.execute({
       templateId,
-      context,
-      channels
+      recipients,
+      context: context || {},
+      scheduledFor: scheduledFor ? new Date(scheduledFor) : undefined,
+      performedBy: req.user?.id || 'system',
+      performedByName: req.user?.email || 'Admin'
     });
 
     if (!result.success) {
-      return res.status(400).json({
+      res.status(400).json({
         success: false,
-        error: {
-          message: result.message || 'Failed to send notification'
-        }
+        error: { code: 'SEND_FAILED', message: result.message }
       });
+      return;
     }
 
-    res.json({
+    res.status(200).json({
       success: true,
-      data: result
+      data: {
+        jobId: result.jobId,
+        message: result.message,
+        preview: result.preview
+      }
     });
   } catch (error) {
     logger.error('Error sending template notification', error as Error);
     res.status(500).json({
       success: false,
-      error: {
-        message: 'Failed to send notification'
-      }
+      error: { code: 'SERVER_ERROR', message: 'Internal server error' }
     });
   }
-});
+}
 
-/**
- * POST /api/admin/templates/:templateId/broadcast
- * Send notification using template to multiple users
- */
-router.post('/:templateId/broadcast', async (req: Request, res: Response) => {
+export async function listJobs(req: Request, res: Response): Promise<void> {
   try {
-    const { templateId } = req.params;
-    const { userIds, context, channels = ['email', 'whatsapp'] } = req.body;
+    const { status, type, templateId, startDate, endDate } = req.query;
 
-    // Validate required fields
-    if (!Array.isArray(userIds) || userIds.length === 0) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          message: 'userIds array is required and must not be empty'
-        }
-      });
-    }
-
-    // Validate template exists
-    const template = NotificationTemplates.getTemplate(templateId);
-    if (!template) {
-      return res.status(404).json({
-        success: false,
-        error: {
-          message: 'Template not found'
-        }
-      });
-    }
-
-    // Send broadcast
-    const result = await TemplateNotificationService.broadcastTemplateNotification(
-      userIds,
-      templateId,
-      context,
-      channels
-    );
-
-    res.json({
-      success: true,
-      data: result
+    const jobs = await jobRepository.findAll({
+      status: status as any,
+      type: type as any,
+      templateId: templateId as string,
+      startDate: startDate ? new Date(startDate as string) : undefined,
+      endDate: endDate ? new Date(endDate as string) : undefined
     });
+
+    res.status(200).json({ success: true, data: jobs });
   } catch (error) {
-    logger.error('Error broadcasting template notification', error as Error);
+    logger.error('Error listing jobs', error as Error);
     res.status(500).json({
       success: false,
-      error: {
-        message: 'Failed to broadcast notification'
-      }
+      error: { code: 'SERVER_ERROR', message: 'Internal server error' }
     });
   }
-});
+}
 
-export default router;
+export async function getJob(req: Request, res: Response): Promise<void> {
+  try {
+    const { id } = req.params;
+    const job = await jobRepository.findById(id);
+
+    if (!job) {
+      res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Job not found' }
+      });
+      return;
+    }
+
+    res.status(200).json({ success: true, data: job });
+  } catch (error) {
+    logger.error('Error getting job', error as Error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: 'Internal server error' }
+    });
+  }
+}
+
+export async function cancelJob(req: Request, res: Response): Promise<void> {
+  try {
+    const { id } = req.params;
+    const job = await jobRepository.findById(id);
+
+    if (!job) {
+      res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Job not found' }
+      });
+      return;
+    }
+
+    if (job.status !== 'pending') {
+      res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_STATE', message: 'Only pending jobs can be cancelled' }
+      });
+      return;
+    }
+
+    const cancelled = await jobRepository.cancel(id);
+
+    await auditRepository.create({
+      action: 'job_cancelled',
+      entityType: 'job',
+      entityId: id,
+      templateId: job.templateId,
+      templateName: job.templateName,
+      jobId: id,
+      channel: 'whatsapp',
+      success: true,
+      performedBy: req.user?.id || 'system',
+      performedByName: req.user?.email || 'Admin'
+    });
+
+    res.status(200).json({ success: true, data: cancelled });
+  } catch (error) {
+    logger.error('Error cancelling job', error as Error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: 'Internal server error' }
+    });
+  }
+}
+
+export async function getJobStats(req: Request, res: Response): Promise<void> {
+  try {
+    const { startDate, endDate, templateId } = req.query;
+
+    const stats = await jobRepository.getStats({
+      startDate: startDate ? new Date(startDate as string) : undefined,
+      endDate: endDate ? new Date(endDate as string) : undefined,
+      templateId: templateId as string
+    });
+
+    res.status(200).json({ success: true, data: stats });
+  } catch (error) {
+    logger.error('Error getting job stats', error as Error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: 'Internal server error' }
+    });
+  }
+}
+
+export async function getAuditLogs(req: Request, res: Response): Promise<void> {
+  try {
+    const {
+      action, entityType, entityId, templateId, jobId, recipientId,
+      channel, success, performedBy, startDate, endDate, limit, offset
+    } = req.query;
+
+    const result = await auditRepository.findAll(
+      {
+        action: action as any,
+        entityType: entityType as any,
+        entityId: entityId as string,
+        templateId: templateId as string,
+        jobId: jobId as string,
+        recipientId: recipientId as string,
+        channel: channel as any,
+        success: success === 'true' ? true : success === 'false' ? false : undefined,
+        performedBy: performedBy as string,
+        startDate: startDate ? new Date(startDate as string) : undefined,
+        endDate: endDate ? new Date(endDate as string) : undefined
+      },
+      {
+        limit: limit ? parseInt(limit as string) : 50,
+        offset: offset ? parseInt(offset as string) : 0
+      }
+    );
+
+    res.status(200).json({
+      success: true,
+      data: result.data,
+      meta: { total: result.total, hasMore: result.hasMore }
+    });
+  } catch (error) {
+    logger.error('Error getting audit logs', error as Error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: 'Internal server error' }
+    });
+  }
+}
+
+export async function getAuditStats(req: Request, res: Response): Promise<void> {
+  try {
+    const { startDate, endDate, templateId, performedBy } = req.query;
+
+    const stats = await auditRepository.getStats({
+      startDate: startDate ? new Date(startDate as string) : undefined,
+      endDate: endDate ? new Date(endDate as string) : undefined,
+      templateId: templateId as string,
+      performedBy: performedBy as string
+    });
+
+    res.status(200).json({ success: true, data: stats });
+  } catch (error) {
+    logger.error('Error getting audit stats', error as Error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: 'Internal server error' }
+    });
+  }
+}
+
+export async function previewRecipients(req: Request, res: Response): Promise<void> {
+  try {
+    const { mode, userIds, filter } = req.query;
+
+    if (!mode) {
+      res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_INPUT', message: 'mode is required' }
+      });
+      return;
+    }
+
+    let users: any[] = [];
+
+    if (mode === 'single' || mode === 'broadcast') {
+      const ids = typeof userIds === 'string' ? userIds.split(',') : Array.isArray(userIds) ? userIds : [];
+      
+      if (!ids || ids.length === 0) {
+        res.status(400).json({
+          success: false,
+          error: { code: 'INVALID_INPUT', message: 'userIds required for single/broadcast' }
+        });
+        return;
+      }
+
+      for (const userId of ids) {
+        if (typeof userId === 'string') {
+          const user = await userRepository.findById(userId);
+          if (user) users.push(user);
+        }
+      }
+    } else if (mode === 'filter') {
+      const allUsers = await userRepository.findAll();
+      const filterObj = typeof filter === 'string' ? JSON.parse(filter) : filter;
+      
+      users = allUsers.filter(user => {
+        if (filterObj?.role && user.role !== filterObj.role) return false;
+        if (filterObj?.acceptWhatsAppNotifications !== undefined && 
+            user.acceptWhatsAppNotifications !== filterObj.acceptWhatsAppNotifications) return false;
+        if (filterObj?.hasPhone && !user.phone) return false;
+        return true;
+      });
+    }
+
+    const eligibleUsers = users
+      .filter(user => user.acceptWhatsAppNotifications && user.phone)
+      .map(user => ({
+        userId: user.uid || user._id?.toString(),
+        userName: user.name || user.displayName || user.email || 'Unknown',
+        phone: user.phone.replace(/\d(?=\d{4})/g, '*'),
+        email: user.email
+      }));
+
+    res.status(200).json({
+      success: true,
+      data: { total: eligibleUsers.length, recipients: eligibleUsers.slice(0, 100) }
+    });
+  } catch (error) {
+    logger.error('Error previewing recipients', error as Error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: 'Internal server error' }
+    });
+  }
+}
+
+export default {
+  sendTemplateNotification,
+  listJobs,
+  getJob,
+  cancelJob,
+  getJobStats,
+  getAuditLogs,
+  getAuditStats,
+  previewRecipients
+};
