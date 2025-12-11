@@ -68,4 +68,11 @@ router.get('/audit/stats', controller.getAuditStats);
  */
 router.get('/preview-recipients', controller.previewRecipients);
 
+/**
+ * GET /api/admin/notifications/history
+ * Get notification send history with filters
+ * Query: ?limit=50&offset=0&templateId=xxx&status=completed&startDate=xxx&endDate=xxx
+ */
+router.get('/history', controller.getHistory);
+
 export default router;

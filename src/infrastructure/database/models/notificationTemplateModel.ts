@@ -10,6 +10,16 @@ export interface NotificationTemplateDocument extends Document {
   status: 'ativo' | 'desativado';
   roles?: ('public' | 'agent' | 'admin')[];
   variables?: string[];
+  
+  // Metadata fields
+  trigger?: 'manual' | 'automático' | 'misto';
+  triggerDescription?: string;
+  requiredVariables?: string[];
+  exampleContext?: Record<string, string>;
+  usageCount?: number;
+  successRate?: number;
+  lastUsedAt?: Date | null;
+  
   createdAt: Date;
   updatedAt: Date;
 }
@@ -58,6 +68,39 @@ const notificationTemplateSchema = new Schema<NotificationTemplateDocument>(
     variables: {
       type: [String],
       default: []
+    },
+    // Metadata fields
+    trigger: {
+      type: String,
+      enum: ['manual', 'automático', 'misto'],
+      default: 'manual'
+    },
+    triggerDescription: {
+      type: String,
+      default: null
+    },
+    requiredVariables: {
+      type: [String],
+      default: []
+    },
+    exampleContext: {
+      type: Schema.Types.Mixed,
+      default: {}
+    },
+    usageCount: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    successRate: {
+      type: Number,
+      default: 100,
+      min: 0,
+      max: 100
+    },
+    lastUsedAt: {
+      type: Date,
+      default: null
     }
   },
   {

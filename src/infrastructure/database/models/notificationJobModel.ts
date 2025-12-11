@@ -76,6 +76,11 @@ const notificationJobSchema = new Schema<NotificationJobDocument>({
     type: [recipientSchema],
     required: true
   },
+  recipientMode: {
+    type: String,
+    enum: ['single', 'broadcast', 'filter'],
+    default: 'broadcast'
+  },
   totalRecipients: {
     type: Number,
     required: true,
@@ -90,6 +95,13 @@ const notificationJobSchema = new Schema<NotificationJobDocument>({
     type: Number,
     required: true,
     default: 0
+  },
+  
+  // Channels
+  channels: {
+    type: [String],
+    enum: ['email', 'whatsapp', 'push'],
+    default: ['whatsapp']
   },
   
   // Content

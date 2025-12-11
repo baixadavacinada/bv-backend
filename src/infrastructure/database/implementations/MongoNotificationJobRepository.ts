@@ -17,9 +17,11 @@ export class MongoNotificationJobRepository implements NotificationJobRepository
       type: data.scheduledFor ? 'scheduled' : data.recurrence ? 'recurring' : 'immediate',
       status: 'pending',
       recipients: [], // Will be populated by use case
+      recipientMode: data.recipients.mode,
       totalRecipients: 0,
       successCount: 0,
       failureCount: 0,
+      channels: ['whatsapp'], // Default channel, can be overridden
       context: data.context,
       scheduledFor: data.scheduledFor,
       recurrence: data.recurrence,

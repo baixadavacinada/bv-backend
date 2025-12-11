@@ -5,6 +5,7 @@
 
 import { Router } from 'express';
 import * as templateController from '../controllers/admin/templateController';
+import * as notificationController from '../controllers/admin/templateNotificationController';
 import { requireAdminOrAgent } from '../../middlewares/firebaseAuthAdvanced';
 
 const router = Router();
@@ -24,6 +25,20 @@ router.get('/', templateController.listTemplates);
  * Get templates by category
  */
 router.get('/category/:category', templateController.getTemplatesByCategory);
+
+/**
+ * GET /api/admin/templates/:templateId/analytics
+ * Get analytics for a specific template
+ * Query: ?startDate=xxx&endDate=xxx
+ */
+router.get('/:templateId/analytics', notificationController.getTemplateAnalytics);
+
+/**
+ * POST /api/admin/templates/:templateId/send-test
+ * Send test notification for a template
+ * Body: { recipientEmail, context }
+ */
+router.post('/:templateId/send-test', notificationController.sendTemplateTest);
 
 /**
  * GET /api/admin/templates/:templateId

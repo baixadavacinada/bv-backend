@@ -27,9 +27,13 @@ export interface NotificationJob {
   
   // Targeting
   recipients: NotificationRecipient[];
+  recipientMode?: 'single' | 'broadcast' | 'filter'; // How recipients were selected
   totalRecipients: number;
   successCount: number;
   failureCount: number;
+  
+  // Channels
+  channels?: ('email' | 'whatsapp' | 'push')[];
   
   // Content
   context: Record<string, any>;

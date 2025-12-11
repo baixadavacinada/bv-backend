@@ -14,6 +14,16 @@ export interface NotificationTemplate {
   status: 'ativo' | 'desativado';
   roles?: ('public' | 'agent' | 'admin')[]; // Who can receive this notification
   variables?: string[]; // Available variables (e.g., ['userName', 'date'])
+  
+  // Metadata fields for analytics and UI indicators
+  trigger?: 'manual' | 'automático' | 'misto'; // How this template is triggered
+  triggerDescription?: string; // Description of when/how it's triggered
+  requiredVariables?: string[]; // Variables that must be provided in context
+  exampleContext?: Record<string, string>; // Example context for preview/test
+  usageCount?: number; // How many times sent
+  successRate?: number; // Percentage of successful sends (0-100)
+  lastUsedAt?: Date | null; // Last time this template was sent
+  
   createdAt?: Date;
   updatedAt?: Date;
 }

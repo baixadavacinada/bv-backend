@@ -96,6 +96,12 @@ export class SendTemplateNotificationUseCase {
 
       const job = await this.jobRepository.create(jobData);
 
+      // Update template metadata (usageCount and lastUsedAt)
+      await this.templateRepository.update(template.id, {
+        usageCount: (template.usageCount || 0) + 1,
+        lastUsedAt: new Date()
+      });
+
       // Update job with recipients and rendered content
       await this.jobRepository.updateProgress(job.id, {
         successCount: 0,

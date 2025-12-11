@@ -316,6 +316,205 @@ export async function previewRecipients(req: Request, res: Response): Promise<vo
   }
 }
 
+export async function sendTemplateTest(req: Request, res: Response): Promise<void> {
+  try {
+    const { templateId } = req.params;
+    const { recipientEmail, context } = req.body;
+
+    if (!templateId) {
+      res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_INPUT', message: 'templateId is required' }
+      });
+      return;
+    }
+
+    if (!recipientEmail) {
+      res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_INPUT', message: 'recipientEmail is required' }
+      });
+      return;
+    }
+
+    // Get template
+    const template = await templateRepository.findByTemplateId(templateId);
+    if (!template) {
+      res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: `Template "${templateId}" not found` }
+      });
+      return;
+    }
+
+    // Send test using the SendTemplateNotificationUseCase
+    const result = await sendTemplateUseCase.execute({
+      templateId,
+      recipients: {
+        mode: 'single',
+        userIds: [recipientEmail]
+      },
+      context: context || {},
+      performedBy: req.user?.id || 'system',
+      performedByName: `${req.user?.email || 'Admin'} (test)`
+    });
+
+    if (!result.success) {
+      res.status(400).json({
+        success: false,
+        error: { code: 'TEST_FAILED', message: result.message }
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        jobId: result.jobId,
+        message: `Test notification sent to ${recipientEmail}`,
+        preview: result.preview
+      }
+    });
+  } catch (error) {
+    logger.error('Error sending test notification', error as Error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: 'Internal server error' }
+    });
+  }
+}
+
+export async function getTemplateAnalytics(req: Request, res: Response): Promise<void> {
+  try {
+    const { templateId } = req.params;
+    const { startDate, endDate } = req.query;
+
+    if (!templateId) {
+      res.status(400).json({
+        success: false,
+        error: { code: 'INVALID_INPUT', message: 'templateId is required' }
+      });
+      return;
+    }
+
+    // Get template
+    const template = await templateRepository.findByTemplateId(templateId);
+    if (!template) {
+      res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: `Template "${templateId}" not found` }
+      });
+      return;
+    }
+
+    // Get audit stats for this template
+    const stats = await auditRepository.getStats({
+      templateId,
+      startDate: startDate ? new Date(startDate as string) : undefined,
+      endDate: endDate ? new Date(endDate as string) : undefined
+    });
+
+    // Get recent jobs for this template
+    const jobs = await jobRepository.findAll({
+      templateId,
+      startDate: startDate ? new Date(startDate as string) : undefined,
+      endDate: endDate ? new Date(endDate as string) : undefined
+    });
+
+    // Calculate analytics
+    const totalSends = template.usageCount || 0;
+    const successRate = template.successRate || 100;
+    const lastUsed = template.lastUsedAt || null;
+
+    // Group jobs by status
+    const jobsByStatus = {
+      pending: jobs.filter(j => j.status === 'pending').length,
+      processing: jobs.filter(j => j.status === 'processing').length,
+      completed: jobs.filter(j => j.status === 'completed').length,
+      failed: jobs.filter(j => j.status === 'failed').length
+    };
+
+    res.status(200).json({
+      success: true,
+      data: {
+        templateId,
+        templateName: template.name,
+        analytics: {
+          totalSends,
+          successRate,
+          lastUsedAt: lastUsed,
+          jobsByStatus,
+          stats
+        },
+        recentJobs: jobs.slice(0, 10).map(job => ({
+          id: job.id,
+          status: job.status,
+          createdAt: job.createdAt,
+          recipientCount: job.recipients?.length || 0,
+          successCount: job.successCount || 0,
+          failureCount: job.failureCount || 0
+        }))
+      }
+    });
+  } catch (error) {
+    logger.error('Error getting template analytics', error as Error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: 'Internal server error' }
+    });
+  }
+}
+
+export async function getHistory(req: Request, res: Response): Promise<void> {
+  try {
+    const { limit = '50', offset = '0', templateId, status, startDate, endDate } = req.query;
+
+    const jobs = await jobRepository.findAll({
+      templateId: templateId as string,
+      status: status as any,
+      startDate: startDate ? new Date(startDate as string) : undefined,
+      endDate: endDate ? new Date(endDate as string) : undefined
+    });
+
+    const limitNum = Math.min(parseInt(limit as string) || 50, 100);
+    const offsetNum = parseInt(offset as string) || 0;
+
+    const paginatedJobs = jobs.slice(offsetNum, offsetNum + limitNum);
+
+    const history = paginatedJobs.map(job => ({
+      id: job.id,
+      templateId: job.templateId,
+      templateName: job.templateName,
+      recipientMode: job.recipientMode || 'broadcast',
+      totalRecipients: job.recipients?.length || 0,
+      successfulSends: job.successCount || 0,
+      failedSends: job.failureCount || 0,
+      channels: job.channels || ['whatsapp'],
+      sentAt: job.createdAt,
+      sentBy: job.createdByName || 'System',
+      status: job.status,
+      context: job.context
+    }));
+
+    res.status(200).json({
+      success: true,
+      data: {
+        history,
+        total: jobs.length,
+        limit: limitNum,
+        offset: offsetNum,
+        hasMore: offsetNum + limitNum < jobs.length
+      }
+    });
+  } catch (error) {
+    logger.error('Error getting notification history', error as Error);
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: 'Internal server error' }
+    });
+  }
+}
+
 export default {
   sendTemplateNotification,
   listJobs,
@@ -324,5 +523,8 @@ export default {
   getJobStats,
   getAuditLogs,
   getAuditStats,
-  previewRecipients
+  previewRecipients,
+  sendTemplateTest,
+  getTemplateAnalytics,
+  getHistory
 };
