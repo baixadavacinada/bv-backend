@@ -74,28 +74,32 @@ export class NotificationTemplates {
   }
 
   private static readonly templates: Record<string, NotificationTemplate> = {
-    // ============ APPOINTMENT TEMPLATES ============
 
     appointment_scheduled: {
       id: 'appointment_scheduled',
       name: 'Agendamento Confirmado',
       description: 'Confirma que o agendamento foi realizado com sucesso',
-      subject: 'Seu agendamento na {{healthUnitName}} foi confirmado',
-      body: `Olá {{userName}}! 👋
+      subject: 'Agendamento confirmado',
+      body: `Olá, aqui é a equipe Baixada Vacinada!
 
-Seu agendamento foi confirmado com sucesso! ✅
+Esperamos que você esteja bem, {{userName}}.
 
-📍 Local: {{healthUnitName}}
-📅 Data: {{date}}
-🕐 Horário: {{time}}
-💉 Vacina: {{vaccineName}}
+Temos uma ótima notícia: seu agendamento foi confirmado com sucesso.
 
-Por favor, chegue 10 minutos antes do horário agendado com seus documentos em mãos.
+Local: {{healthUnitName}}
+Data: {{date}}
+Horário: {{time}}
+Vacina: {{vaccineName}}
 
-Dúvidas? Entre em contato com a unidade de saúde.
+Pedimos que chegue com 10 minutos de antecedência e traga seus documentos.
 
-Obrigado! 💙
-Baixada Vacinada`,
+Acesse sua área na plataforma para mais detalhes: https://baixadavacinada.com/
+
+Compartilhe com seus amigos e familiares: https://baixadavacinada.com/
+
+Qualquer dúvida, entre em contato com a unidade de saúde.
+
+Equipe Baixada Vacinada`,
       category: 'appointment',
       status: 'desativado',
       roles: ['public', 'agent', 'admin']
@@ -105,22 +109,27 @@ Baixada Vacinada`,
       id: 'appointment_reminder_24h',
       name: 'Lembrete de Agendamento (24h)',
       description: 'Lembrete 24 horas antes do agendamento',
-      subject: 'Não esqueça! Seu agendamento é amanhã em {{healthUnitName}}',
-      body: `Olá {{userName}}! 🔔
+      subject: 'Lembrete: seu agendamento é amanhã',
+      body: `Olá, aqui é a equipe Baixada Vacinada!
 
-Lembrete: Seu agendamento é AMANHÃ!
+Tudo bem, {{userName}}?
 
-📍 Local: {{healthUnitName}}
-📅 Data: {{date}}
-🕐 Horário: {{time}}
-💉 Vacina: {{vaccineName}}
+Este é um lembrete amigável de que seu agendamento é amanhã.
 
-Chegue 10 minutos mais cedo. Leve seus documentos! 📋
+Local: {{healthUnitName}}
+Data: {{date}}
+Horário: {{time}}
+Vacina: {{vaccineName}}
 
-Qualquer dúvida, entre em contato com a unidade.
+Lembre-se de chegar 10 minutos mais cedo e trazer seus documentos.
 
-Nos vemos amanhã! 💙
-Baixada Vacinada`,
+Confira todos os detalhes na plataforma: https://baixadavacinada.com/
+
+Compartilhe com quem você se importa: https://baixadavacinada.com/
+
+Em caso de dúvidas, entre em contato com a unidade de saúde.
+
+Equipe Baixada Vacinada`,
       category: 'reminder',
       status: 'desativado',
       roles: ['public', 'agent', 'admin']
@@ -130,19 +139,26 @@ Baixada Vacinada`,
       id: 'appointment_reminder_2h',
       name: 'Lembrete de Agendamento (2h)',
       description: 'Lembrete 2 horas antes do agendamento',
-      subject: 'Último lembrete: seu agendamento é hoje em 2 horas',
-      body: `Olá {{userName}}! ⏰
+      subject: 'Seu agendamento é hoje',
+      body: `Olá, aqui é a equipe Baixada Vacinada!
 
-Seu agendamento é em POUCAS HORAS!
+Tudo pronto para hoje, {{userName}}?
 
-📍 Local: {{healthUnitName}}
-🕐 Horário: {{time}} (hoje)
-💉 Vacina: {{vaccineName}}
+Este é um lembrete de que seu agendamento é daqui a poucas horas.
 
-Prepare-se e chegue alguns minutos antes! 
+Local: {{healthUnitName}}
+Horário: {{time}}
+Vacina: {{vaccineName}}
 
-Nos vemos em breve! 💙
-Baixada Vacinada`,
+Prepare seus documentos e chegue alguns minutos antes do horário.
+
+Veja os detalhes na plataforma: https://baixadavacinada.com/
+
+Compartilhe nossa plataforma: https://baixadavacinada.com/
+
+Nos vemos em breve.
+
+Equipe Baixada Vacinada`,
       category: 'reminder',
       status: 'desativado',
       roles: ['public', 'agent', 'admin']
@@ -152,19 +168,26 @@ Baixada Vacinada`,
       id: 'appointment_cancelled',
       name: 'Agendamento Cancelado',
       description: 'Notifica cancelamento de agendamento',
-      subject: 'Seu agendamento em {{healthUnitName}} foi cancelado',
-      body: `Olá {{userName}},
+      subject: 'Agendamento cancelado',
+      body: `Olá, aqui é a equipe Baixada Vacinada!
 
-Informamos que seu agendamento foi cancelado.
+Esperamos que esteja tudo bem com você, {{userName}}.
 
-📍 Local: {{healthUnitName}}
-📅 Data: {{date}}
-🕐 Horário: {{time}}
+Infelizmente precisamos informar que seu agendamento foi cancelado.
 
-Para reagendar, acesse nosso app ou entre em contato com a unidade de saúde.
+Local: {{healthUnitName}}
+Data: {{date}}
+Horário: {{time}}
 
-Continuamos à sua disposição! 💙
-Baixada Vacinada`,
+Você pode realizar um novo agendamento facilmente pela nossa plataforma ou entrar em contato com a unidade de saúde.
+
+Acesse: https://baixadavacinada.com/
+
+Compartilhe com quem precisa: https://baixadavacinada.com/
+
+Continuamos à sua disposição.
+
+Equipe Baixada Vacinada`,
       category: 'appointment',
       status: 'desativado',
       roles: ['public', 'agent', 'admin']
@@ -174,21 +197,28 @@ Baixada Vacinada`,
       id: 'appointment_rescheduled',
       name: 'Agendamento Remarcado',
       description: 'Confirma remarcação de agendamento',
-      subject: 'Seu agendamento foi remarcado para {{date}}',
-      body: `Olá {{userName}}! 👋
+      subject: 'Agendamento remarcado',
+      body: `Olá, aqui é a equipe Baixada Vacinada!
 
-Seu agendamento foi remarcado com sucesso! ✅
+Tudo certo, {{userName}}?
 
-NOVO AGENDAMENTO:
-📍 Local: {{healthUnitName}}
-📅 Data: {{date}}
-🕐 Horário: {{time}}
-💉 Vacina: {{vaccineName}}
+Estamos confirmando que seu agendamento foi remarcado com sucesso.
 
-O agendamento anterior foi cancelado.
+Novo agendamento:
+Local: {{healthUnitName}}
+Data: {{date}}
+Horário: {{time}}
+Vacina: {{vaccineName}}
 
-Nos vemos em breve! 💙
-Baixada Vacinada`,
+O agendamento anterior foi automaticamente cancelado.
+
+Confira na plataforma: https://baixadavacinada.com/
+
+Compartilhe conosco: https://baixadavacinada.com/
+
+Nos vemos em breve.
+
+Equipe Baixada Vacinada`,
       category: 'appointment',
       status: 'desativado',
       roles: ['public', 'agent', 'admin']
@@ -200,19 +230,26 @@ Baixada Vacinada`,
       id: 'vaccine_available',
       name: 'Vacina Disponível',
       description: 'Notifica sobre disponibilidade de vacina',
-      subject: '💉 {{vaccineName}} disponível em {{healthUnitName}}!',
-      body: `Olá {{userName}}! 🎉
+      subject: 'Vacina disponível',
+      body: `Olá, aqui é a equipe Baixada Vacinada!
 
-Ótima notícia! A vacina {{vaccineName}} está disponível em {{healthUnitName}}!
+Temos uma ótima notícia para você, {{userName}}.
 
-📍 Local: {{healthUnitName}}
-💉 Vacina: {{vaccineName}}
-📱 Horário de funcionamento: {{time}}
+A vacina {{vaccineName}} está disponível em {{healthUnitName}}.
 
-Agende seu atendimento agora mesmo no nosso app!
+Local: {{healthUnitName}}
+Vacina: {{vaccineName}}
+Horário de funcionamento: {{time}}
 
-Não perca essa oportunidade! 💙
-Baixada Vacinada`,
+Você pode agendar seu atendimento pela nossa plataforma de forma rápida e fácil.
+
+Acesse: https://baixadavacinada.com/
+
+Compartilhe esta informação: https://baixadavacinada.com/
+
+Não perca essa oportunidade de se proteger.
+
+Equipe Baixada Vacinada`,
       category: 'vaccine',
       status: 'desativado',
       roles: ['public', 'agent', 'admin']
@@ -222,19 +259,23 @@ Baixada Vacinada`,
       id: 'vaccine_stock_low',
       name: 'Estoque Baixo',
       description: 'Alerta sobre estoque baixo de vacina',
-      subject: '⚠️ Estoque baixo: {{vaccineName}} em {{healthUnitName}}',
-      body: `Aviso importante:
+      subject: 'Alerta: estoque baixo',
+      body: `Olá, aqui é a equipe Baixada Vacinada!
 
-A vacina {{vaccineName}} está com estoque baixo em {{healthUnitName}}.
+Este é um alerta importante para você.
 
-Se você precisa dessa vacina, recomendamos agendar seu atendimento o quanto antes!
+O estoque da vacina {{vaccineName}} está baixo em {{healthUnitName}}. Se você precisa dessa vacina, recomendamos que agende seu atendimento o quanto antes.
 
-📍 Local: {{healthUnitName}}
-💉 Vacina: {{vaccineName}}
+Local: {{healthUnitName}}
+Vacina: {{vaccineName}}
 
-Acesse nosso app para agendar! 🏥
+Agende agora pela plataforma: https://baixadavacinada.com/
 
-Baixada Vacinada`,
+Compartilhe este alerta: https://baixadavacinada.com/
+
+Não deixe para depois.
+
+Equipe Baixada Vacinada`,
       category: 'vaccine',
       status: 'desativado',
       roles: ['public', 'agent', 'admin']
@@ -244,17 +285,24 @@ Baixada Vacinada`,
       id: 'vaccine_out_of_stock',
       name: 'Fora de Estoque',
       description: 'Notifica que vacina está fora de estoque',
-      subject: '⚠️ {{vaccineName}} indisponível em {{healthUnitName}}',
-      body: `Olá {{userName}},
+      subject: 'Vacina temporariamente indisponível',
+      body: `Olá, aqui é a equipe Baixada Vacinada!
 
-Informamos que a vacina {{vaccineName}} está temporariamente indisponível em {{healthUnitName}}.
+Esperamos que esteja tudo bem, {{userName}}.
 
-⏳ Previsão de reabastecimento: {{date}}
+Infelizmente precisamos informar que a vacina {{vaccineName}} está temporariamente indisponível em {{healthUnitName}}.
 
-Você será notificado quando a vacina voltar ao estoque!
+Previsão de reabastecimento: {{date}}
 
-Obrigado pela compreensão! 💙
-Baixada Vacinada`,
+Assim que a vacina voltar ao estoque, você será notificado imediatamente.
+
+Acompanhe pela plataforma: https://baixadavacinada.com/
+
+Compartilhe nossa plataforma: https://baixadavacinada.com/
+
+Agradecemos sua compreensão.
+
+Equipe Baixada Vacinada`,
       category: 'vaccine',
       status: 'desativado',
       roles: ['public', 'agent', 'admin']
@@ -264,22 +312,28 @@ Baixada Vacinada`,
       id: 'vaccination_completed',
       name: 'Vacinação Realizada',
       description: 'Confirma que vacinação foi realizada',
-      subject: '✅ Sua vacinação foi registrada com sucesso!',
-      body: `Parabéns {{userName}}! 🎉
+      subject: 'Vacinação registrada',
+      body: `Olá, aqui é a equipe Baixada Vacinada!
 
-Sua vacinação foi registrada com sucesso! ✅
+Parabéns, {{userName}}!
 
-💉 Vacina: {{vaccineName}}
-📅 Data: {{date}}
-📍 Local: {{healthUnitName}}
-🔢 Dose: {{currentDose}}/{{doses}}
+Sua vacinação foi registrada com sucesso em nosso sistema.
 
+Vacina: {{vaccineName}}
+Data: {{date}}
+Local: {{healthUnitName}}
+Dose: {{currentDose}}/{{doses}}
 Próxima dose: {{date}}
 
-Dados registrados em seu histórico de vacinação!
+Todos os dados foram salvos em seu histórico de vacinação.
 
-Obrigado por se vacinar! 💙
-Baixada Vacinada`,
+Acesse seu histórico: https://baixadavacinada.com/
+
+Compartilhe e incentive outras pessoas: https://baixadavacinada.com/
+
+Obrigado por se proteger e proteger quem você ama.
+
+Equipe Baixada Vacinada`,
       category: 'vaccine',
       status: 'desativado',
       roles: ['public', 'agent', 'admin']
@@ -289,22 +343,27 @@ Baixada Vacinada`,
       id: 'vaccination_dose_due',
       name: 'Próxima Dose Vencida',
       description: 'Alerta que próxima dose venceu',
-      subject: '⏰ Sua próxima dose de {{vaccineName}} está vencida',
-      body: `Olá {{userName}},
+      subject: 'Alerta: dose vencida',
+      body: `Olá, aqui é a equipe Baixada Vacinada!
 
-Sua próxima dose de {{vaccineName}} está vencida!
+Este é um alerta importante, {{userName}}.
 
-💉 Vacina: {{vaccineName}}
-📅 Vencimento: {{date}}
-🔢 Dose: {{currentDose + 1}}/{{doses}}
+Sua próxima dose de {{vaccineName}} está vencida e precisa ser tomada o quanto antes.
 
-Por favor, agende seu atendimento o quanto antes para manter sua proteção em dia!
+Vacina: {{vaccineName}}
+Vencimento: {{date}}
+Dose: {{currentDose + 1}}/{{doses}}
+Local disponível: {{healthUnitName}}
 
-📍 {{healthUnitName}} está pronta para atendê-lo!
+Para manter sua proteção completa, é fundamental tomar a dose dentro do prazo recomendado.
 
-Agende agora no nosso app! 🏥
+Agende agora: https://baixadavacinada.com/
 
-Baixada Vacinada`,
+Compartilhe este lembrete: https://baixadavacinada.com/
+
+Contamos com você.
+
+Equipe Baixada Vacinada`,
       category: 'reminder',
       status: 'desativado',
       roles: ['public', 'agent', 'admin']
@@ -314,21 +373,26 @@ Baixada Vacinada`,
       id: 'vaccination_dose_approaching',
       name: 'Próxima Dose se Aproximando',
       description: 'Lembrete que próxima dose está se aproximando',
-      subject: '📅 Sua próxima dose de {{vaccineName}} está chegando',
-      body: `Olá {{userName}},
+      subject: 'Lembrete: próxima dose se aproximando',
+      body: `Olá, aqui é a equipe Baixada Vacinada!
 
-Sua próxima dose de {{vaccineName}} está se aproximando!
+Tudo bem, {{userName}}?
 
-💉 Vacina: {{vaccineName}}
-📅 Recomendação: {{date}}
-🔢 Dose: {{currentDose + 1}}/{{doses}}
+Este é um lembrete amigável de que sua próxima dose está se aproximando.
 
-Agende seu atendimento e mantenha sua proteção em dia! 💪
+Vacina: {{vaccineName}}
+Data recomendada: {{date}}
+Dose: {{currentDose + 1}}/{{doses}}
 
-Acesse nosso app para agendar! 🏥
+Para garantir sua proteção completa, recomendamos que você agende seu atendimento com antecedência.
 
-Obrigado! 💙
-Baixada Vacinada`,
+Agende pela plataforma: https://baixadavacinada.com/
+
+Compartilhe: https://baixadavacinada.com/
+
+Cuidar da saúde é cuidar de quem você ama.
+
+Equipe Baixada Vacinada`,
       category: 'reminder',
       status: 'desativado',
       roles: ['public', 'agent', 'admin']
@@ -340,20 +404,25 @@ Baixada Vacinada`,
       id: 'lembretes_segunda_dose',
       name: 'Lembretes de Segunda Dose',
       description: 'Notificações de lembretes para tomar a segunda dose da vacina',
-      subject: '💉 Lembrete: sua segunda dose de {{vaccineName}} está disponível!',
-      body: `Olá {{userName}}! 👋
+      subject: 'Lembrete: segunda dose disponível',
+      body: `Olá, aqui é a equipe Baixada Vacinada!
 
-Lembrete importante: Sua segunda dose de {{vaccineName}} está disponível!
+Esperamos que você esteja bem, {{userName}}.
 
-💉 Vacina: {{vaccineName}}
-📍 Unidade: {{healthUnitName}}
+Este é um lembrete importante: sua segunda dose de {{vaccineName}} está disponível.
 
-Agende seu atendimento o quanto antes para manter sua proteção em dia.
+Vacina: {{vaccineName}}
+Unidade: {{healthUnitName}}
 
-Acesse nosso app para agendar sua segunda dose! 🏥
+Para manter sua proteção completa, é fundamental tomar a segunda dose dentro do prazo recomendado.
 
-Obrigado por se vacinar! 💙
-Baixada Vacinada`,
+Agende agora pela plataforma: https://baixadavacinada.com/
+
+Compartilhe com seus conhecidos: https://baixadavacinada.com/
+
+Contamos com você.
+
+Equipe Baixada Vacinada`,
       category: 'reminder',
       status: 'ativo',
       roles: ['public', 'agent', 'admin']
@@ -363,20 +432,27 @@ Baixada Vacinada`,
       id: 'novos_registros_vacinacao',
       name: 'Novos Registros de Vacinação',
       description: 'Notificações quando uma nova dose for registrada no histórico',
-      subject: '✅ Nova dose registrada: {{vaccineName}}',
-      body: `Parabéns {{userName}}! 🎉
+      subject: 'Nova dose registrada',
+      body: `Olá, aqui é a equipe Baixada Vacinada!
 
-Uma nova dose foi registrada em seu histórico de vacinação! ✅
+Parabéns, {{userName}}!
 
-💉 Vacina: {{vaccineName}}
-🔢 Dose: {{currentDose}}/{{doses}}
-📅 Data: {{date}}
-📍 Unidade: {{healthUnitName}}
+Uma nova dose foi registrada em seu histórico de vacinação.
 
-Seu histórico de vacinação foi atualizado com sucesso!
+Vacina: {{vaccineName}}
+Dose: {{currentDose}}/{{doses}}
+Data: {{date}}
+Unidade: {{healthUnitName}}
 
-Obrigado por se manter vacinado! 💙
-Baixada Vacinada`,
+Seu histórico foi atualizado e você pode consultá-lo a qualquer momento.
+
+Acesse sua área: https://baixadavacinada.com/
+
+Compartilhe e incentive: https://baixadavacinada.com/
+
+Obrigado por manter sua saúde em dia.
+
+Equipe Baixada Vacinada`,
       category: 'vaccine',
       status: 'ativo',
       roles: ['public', 'agent', 'admin']
@@ -386,18 +462,22 @@ Baixada Vacinada`,
       id: 'novos_usuarios',
       name: 'Alertas de Novos Cadastros de Usuários',
       description: 'Notifica sobre novos usuários registrados no sistema',
-      subject: '👤 Novo usuário registrado: {{userName}}',
-      body: `Alerta de novo cadastro:
+      subject: 'Novo cadastro no sistema',
+      body: `Olá, aqui é o sistema Baixada Vacinada.
 
-Um novo usuário foi registrado no sistema Baixada Vacinada! ✅
+Este é um alerta automático sobre um novo cadastro.
 
-👤 Nome: {{userName}}
-📧 Email: {{email}}
-📅 Data de Cadastro: {{date}}
+Um novo usuário foi registrado com sucesso no sistema:
 
-Acesse o painel administrativo para mais informações.
+Nome: {{userName}}
+Email: {{email}}
+Data de Cadastro: {{date}}
 
-Baixada Vacinada`,
+Você pode acessar o painel administrativo para mais detalhes.
+
+Acesse: https://baixadavacinada.com/
+
+Equipe Baixada Vacinada`,
       category: 'system',
       status: 'ativo',
       roles: ['agent', 'admin']
@@ -407,18 +487,20 @@ Baixada Vacinada`,
       id: 'novas_vacinas',
       name: 'Alerta de Novas Vacinas',
       description: 'Notifica quando uma nova vacina é adicionada à aplicação',
-      subject: '💉 Nova vacina adicionada ao sistema: {{vaccineName}}',
-      body: `Alerta de nova vacina:
+      subject: 'Nova vacina no sistema',
+      body: `Olá, aqui é o sistema Baixada Vacinada.
 
-Uma nova vacina foi adicionada ao sistema!
+Este é um alerta automático sobre nova vacina.
 
-💉 Vacina: {{vaccineName}}
-🏢 Fabricante: {{manufacturer}}
-📅 Data de Adição: {{date}}
+Uma nova vacina foi adicionada ao sistema e já está disponível para agendamento:
 
-A vacina já está disponível para agendamento.
+Vacina: {{vaccineName}}
+Fabricante: {{manufacturer}}
+Data de Adição: {{date}}
 
-Baixada Vacinada`,
+Acesse o painel: https://baixadavacinada.com/
+
+Equipe Baixada Vacinada`,
       category: 'vaccine',
       status: 'ativo',
       roles: ['agent', 'admin']
@@ -428,19 +510,21 @@ Baixada Vacinada`,
       id: 'novas_ubs',
       name: 'Alerta de Novas UBSs',
       description: 'Notifica quando uma nova unidade de saúde é cadastrada',
-      subject: '🏥 Nova unidade de saúde cadastrada: {{healthUnitName}}',
-      body: `Alerta de nova UBS:
+      subject: 'Nova unidade de saúde cadastrada',
+      body: `Olá, aqui é o sistema Baixada Vacinada.
 
-Uma nova unidade de saúde foi cadastrada no sistema! ✅
+Este é um alerta automático sobre nova unidade.
 
-🏥 Unidade: {{healthUnitName}}
-📍 Cidade: {{city}}
-📞 Telefone: {{phoneNumber}}
-📅 Data de Cadastro: {{date}}
+Uma nova unidade de saúde foi cadastrada e já está disponível para agendamentos:
 
-A unidade já está disponível para agendamentos.
+Unidade: {{healthUnitName}}
+Cidade: {{city}}
+Telefone: {{phoneNumber}}
+Data de Cadastro: {{date}}
 
-Baixada Vacinada`,
+Acesse o sistema: https://baixadavacinada.com/
+
+Equipe Baixada Vacinada`,
       category: 'system',
       status: 'ativo',
       roles: ['agent', 'admin']
@@ -452,24 +536,22 @@ Baixada Vacinada`,
       id: 'account_created',
       name: 'Conta Criada',
       description: 'Boas-vindas ao novo usuário',
-      subject: 'Bem-vindo à Baixada Vacinada! 👋',
-      body: `Olá {{userName}}! 👋
+      subject: 'Bem-vindo à Baixada Vacinada',
+      body: `Olá, aqui é a equipe Baixada Vacinada!
 
-Bem-vindo à Baixada Vacinada! 🎉
+Seja muito bem-vindo, {{userName}}!
 
-Sua conta foi criada com sucesso!
+É um prazer tê-lo conosco. Sua conta foi criada com sucesso e agora você pode aproveitar todos os nossos recursos.
 
-Você agora pode:
-✅ Agendar suas vacinas
-✅ Consultar disponibilidade
-✅ Ver seu histórico de vacinação
-✅ Receber lembretes importantes
+Você pode agendar suas vacinas, consultar disponibilidade em tempo real, ver seu histórico completo de vacinação e receber lembretes importantes.
 
-Comece agora mesmo acessando nosso app!
+Acesse a plataforma: https://baixadavacinada.com/
 
-Qualquer dúvida, estamos à disposição! 💙
+Compartilhe com amigos e familiares: https://baixadavacinada.com/
 
-Baixada Vacinada`,
+Estamos à disposição para qualquer dúvida.
+
+Equipe Baixada Vacinada`,
       category: 'system',
       status: 'desativado',
       roles: ['public', 'agent', 'admin']
@@ -479,16 +561,22 @@ Baixada Vacinada`,
       id: 'profile_updated',
       name: 'Perfil Atualizado',
       description: 'Confirma atualização de perfil',
-      subject: 'Seus dados foram atualizados com sucesso',
-      body: `Olá {{userName}},
+      subject: 'Perfil atualizado',
+      body: `Olá, aqui é a equipe Baixada Vacinada!
 
-Seus dados de perfil foram atualizados com sucesso! ✅
+Esperamos que esteja tudo bem, {{userName}}.
 
-Se você não realizou esta ação, entre em contato conosco imediatamente.
+Seus dados de perfil foram atualizados com sucesso em nosso sistema.
 
-Continuamos à sua disposição! 💙
+Se você não realizou esta alteração, entre em contato conosco imediatamente para verificarmos.
 
-Baixada Vacinada`,
+Acesse seu perfil: https://baixadavacinada.com/
+
+Compartilhe nossa plataforma: https://baixadavacinada.com/
+
+Continuamos à sua disposição.
+
+Equipe Baixada Vacinada`,
       category: 'system',
       status: 'desativado',
       roles: ['public', 'agent', 'admin']
@@ -498,19 +586,24 @@ Baixada Vacinada`,
       id: 'whatsapp_opt_in_confirmation',
       name: 'Confirmação WhatsApp',
       description: 'Confirma ativação de notificações WhatsApp',
-      subject: '✅ Notificações via WhatsApp ativadas',
-      body: `Olá {{userName}}! 👋
+      subject: 'Número atualizado',
+      body: `Olá, aqui é a equipe Baixada Vacinada!
 
-Notificações via WhatsApp foram ativadas com sucesso! ✅
+Esperamos que você esteja bem, {{userName}}.
 
-Você receberá:
-📱 Lembretes de agendamentos
-💉 Avisos sobre vacinas disponíveis
-📅 Notificações importantes
-✅ Confirmações de ações
+Estamos entrando em contato para confirmar que seu número de celular {{phoneNumber}} foi atualizado com sucesso em nosso sistema.
 
-Obrigado! 💙
-Baixada Vacinada`,
+A partir de agora, você receberá lembretes de agendamentos, avisos sobre vacinas disponíveis e outras notificações importantes diretamente no WhatsApp.
+
+Se você não realizou esta alteração, entre em contato conosco imediatamente.
+
+Acesse nossa plataforma: https://baixadavacinada.com/
+
+Compartilhe com seus amigos e familiares: https://baixadavacinada.com/
+
+Estamos à disposição para qualquer dúvida.
+
+Equipe Baixada Vacinada`,
       category: 'system',
       status: 'desativado',
       roles: ['public', 'agent', 'admin']
@@ -523,16 +616,21 @@ Baixada Vacinada`,
       name: 'Anúncio Geral',
       description: 'Anúncio genérico para todos os usuários',
       subject: 'Comunicado importante',
-      body: `Olá {{userName}},
+      body: `Olá, aqui é a equipe Baixada Vacinada!
 
-Segue importante comunicado:
+Como vai, {{userName}}?
+
+Gostaríamos de compartilhar um comunicado importante com você:
 
 {{message}}
 
-Para mais informações, visite nosso app!
+Para mais informações, acesse nossa plataforma: https://baixadavacinada.com/
 
-Obrigado! 💙
-Baixada Vacinada`,
+Compartilhe conosco: https://baixadavacinada.com/
+
+Obrigado pela atenção.
+
+Equipe Baixada Vacinada`,
       category: 'general',
       status: 'desativado',
       roles: ['public', 'agent', 'admin']
@@ -542,19 +640,25 @@ Baixada Vacinada`,
       id: 'maintenance_notice',
       name: 'Aviso de Manutenção',
       description: 'Notifica sobre manutenção do sistema',
-      subject: '🔧 Manutenção programada do sistema',
-      body: `Atenção {{userName}}! 🔧
+      subject: 'Manutenção programada',
+      body: `Olá, aqui é a equipe Baixada Vacinada!
 
-Realizaremos manutenção do sistema em:
-📅 {{date}}
-🕐 {{time}}
+Atenção, {{userName}}.
 
-Nossos serviços estarão temporariamente indisponíveis.
+Gostaríamos de informá-lo que realizaremos uma manutenção programada em nosso sistema.
 
-Pedimos desculpas pelo inconveniente!
+Data: {{date}}
+Horário: {{time}}
 
-Obrigado pela compreensão! 💙
-Baixada Vacinada`,
+Durante este período, nossos serviços ficarão temporariamente indisponíveis. Pedimos desculpas pelo inconveniente e agradecemos sua compreensão.
+
+Acompanhe atualizações: https://baixadavacinada.com/
+
+Compartilhe: https://baixadavacinada.com/
+
+Obrigado pela paciência.
+
+Equipe Baixada Vacinada`,
       category: 'system',
       status: 'desativado',
       roles: ['public', 'agent', 'admin']
@@ -564,17 +668,22 @@ Baixada Vacinada`,
       id: 'help_available',
       name: 'Suporte Disponível',
       description: 'Informa que suporte está disponível',
-      subject: '💬 Estamos aqui para ajudar!',
-      body: `Olá {{userName}},
+      subject: 'Estamos aqui para ajudar',
+      body: `Olá, aqui é a equipe Baixada Vacinada!
 
-Tem dúvidas sobre vacinação ou agendamentos? 💬
+Como vai, {{userName}}?
 
-Nossa equipe está pronta para ajudar via WhatsApp!
+Queremos que você saiba que estamos sempre à disposição para ajudar.
 
-📱 Entre em contato conosco a qualquer momento
+Tem dúvidas sobre vacinação, agendamentos ou qualquer funcionalidade da plataforma? Nossa equipe está pronta para atendê-lo via WhatsApp a qualquer momento.
 
-Estamos aqui para você! 💙
-Baixada Vacinada`,
+Acesse nossa plataforma: https://baixadavacinada.com/
+
+Compartilhe com quem precisa: https://baixadavacinada.com/
+
+Estamos aqui para você.
+
+Equipe Baixada Vacinada`,
       category: 'general',
       status: 'desativado',
       roles: ['public', 'agent', 'admin']
