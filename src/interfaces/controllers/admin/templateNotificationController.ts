@@ -496,15 +496,14 @@ export async function getHistory(req: Request, res: Response): Promise<void> {
       context: job.context
     }));
 
+    // Keep response shape simple to match frontend expectation
     res.status(200).json({
       success: true,
-      data: {
-        history,
-        total: jobs.length,
-        limit: limitNum,
-        offset: offsetNum,
-        hasMore: offsetNum + limitNum < jobs.length
-      }
+      history,
+      total: jobs.length,
+      limit: limitNum,
+      offset: offsetNum,
+      hasMore: offsetNum + limitNum < jobs.length
     });
   } catch (error) {
     logger.error('Error getting notification history', error as Error);

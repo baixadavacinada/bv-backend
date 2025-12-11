@@ -25,7 +25,9 @@ export const listTemplates = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       success: true,
-      data: templates,
+      data: {
+        templates
+      },
       count: templates.length
     });
   } catch (error) {
@@ -62,7 +64,9 @@ export const getTemplate = async (req: Request, res: Response) => {
 
     return res.status(200).json({
       success: true,
-      data: template
+      data: {
+        template
+      }
     });
   } catch (error) {
     logger.error('Failed to get template', error as Error, { templateId: req.params.templateId });

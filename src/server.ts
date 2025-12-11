@@ -35,9 +35,10 @@ setupApiDocs(app);
 
 app.use('/api/public', publicRoutes);
 app.use('/api/auth', authRoutes);
+// Mount notification routes BEFORE the broader /api/admin router to avoid path conflicts
+app.use('/api/admin/notifications', adminNotificationRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin/templates', adminTemplateRoutes);
-app.use('/api/admin/notifications', adminNotificationRoutes);
 
 app.get('/', (req, res) => {
   res.json({
