@@ -29,27 +29,33 @@ export class ZapiWhatsappService {
   private logger = Logger.getInstance();
   private instanceId: string;
   private apiToken: string;
+  private clientToken: string;
   private apiClient: AxiosInstance;
   private baseUrl = 'https://api.z-api.io/instances';
 
   constructor() {
     this.instanceId = process.env.ZAPI_INSTANCE_ID || '';
     this.apiToken = process.env.ZAPI_API_TOKEN || '';
+    this.clientToken = process.env.ZAPI_CLIENT_TOKEN || '';
 
-    if (!this.instanceId || !this.apiToken) {
+    if (!this.instanceId || !this.apiToken || !this.clientToken) {
       this.logger.warn('Z-API credentials not fully configured', {
         hasInstanceId: !!this.instanceId,
         hasApiToken: !!this.apiToken,
+        hasClientToken: !!this.clientToken,
         instanceId: this.instanceId ? 'set' : 'missing',
-        apiToken: this.apiToken ? 'set' : 'missing'
+        apiToken: this.apiToken ? 'set' : 'missing',
+        clientToken: this.clientToken ? 'set' : 'missing'
       });
     }
 
     // Initialize axios client with default headers
+    // Client-Token is the security token configured in Z-API dashboard (Security > Client-Token)
+    // This is DIFFERENT from ZAPI_API_TOKEN which is used in the URL
     this.apiClient = axios.create({
       baseURL: this.baseUrl,
       headers: {
-        'Client-Token': this.apiToken,
+        'Client-Token': this.clientToken,
         'Content-Type': 'application/json'
       },
       validateStatus: () => true // Don't throw on any status code
@@ -115,13 +121,14 @@ export class ZapiWhatsappService {
       });
 
       // Use axios directly with full URL instead of apiClient to avoid baseURL concatenation
+      // Must include Client-Token header with the security token configured in Z-API dashboard
       const response = await axios.post(
         zapiUrl,
         payload,
         {
           headers: {
             'Content-Type': 'application/json',
-            'X-API-Token': this.apiToken,
+            'Client-Token': this.clientToken,
           },
           validateStatus: () => true // Don't throw on any status code
         }
