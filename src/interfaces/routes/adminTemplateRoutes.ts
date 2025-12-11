@@ -5,12 +5,12 @@
 
 import { Router } from 'express';
 import * as templateController from '../controllers/admin/templateController';
-import { requireAdmin } from '../../middlewares/firebaseAuth';
+import { requireAdminOrAgent } from '../../middlewares/firebaseAuthAdvanced';
 
 const router = Router();
 
 // All template routes require admin authentication
-router.use(requireAdmin);
+router.use(requireAdminOrAgent);
 
 /**
  * GET /api/admin/templates
