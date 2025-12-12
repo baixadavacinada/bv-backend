@@ -221,7 +221,7 @@
  *         description: Não autorizado
  *       400:
  *         description: Input inválido
- */
+
 
 /**
  * @openapi
@@ -238,4 +238,5 @@
  *         description: Dados completos do usuário
  *       401:
  *         description: Não autorizado - token ausente ou inválido
- */
+
+*/

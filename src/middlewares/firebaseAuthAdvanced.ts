@@ -125,7 +125,9 @@ export function firebaseAuthAdvanced(options: AuthOptions = { required: true }) 
       }
 
       if (options.roles && options.roles.length > 0) {
-        const hasValidRole = await claimsService.hasRole(decodedToken.uid, options.roles[0]);
+        const hasValidRole = await Promise.all(
+          options.roles.map(role => claimsService.hasRole(decodedToken.uid, role))
+        ).then(results => results.some(hasRole => hasRole));
         
         if (!hasValidRole) {
           logger.warn('Insufficient role access', {

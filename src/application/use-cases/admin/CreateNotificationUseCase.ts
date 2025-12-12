@@ -41,7 +41,6 @@ export class CreateNotificationUseCase {
       throw new Error('Message must be between 10 and 1000 characters');
     }
 
-    // Default channel is in_app if not specified
     const channel = data.channel || 'in_app';
 
     const notification: Omit<Notification, '_id'> = {
@@ -102,7 +101,6 @@ export class CreateNotificationUseCase {
         }
       }
 
-      // If no contact info available for the channel, mark as failed
       if (!contactInfo) {
         this.logger.warn('No contact info available for notification', {
           channel: notification.channel,
@@ -112,8 +110,6 @@ export class CreateNotificationUseCase {
         await this.updateNotificationStatus(notification._id!, 'failed');
         return;
       }
-
-      // Send through gateway
       const result = await this.notificationGateway.send({
         channel: notification.channel,
         to: contactInfo,
@@ -121,7 +117,6 @@ export class CreateNotificationUseCase {
         message: notification.message
       });
 
-      // Update notification with send result
       if (result.success) {
         await this.updateNotificationStatus(
           notification._id!,
@@ -149,10 +144,6 @@ export class CreateNotificationUseCase {
       await this.updateNotificationStatus(notification._id!, 'failed');
     }
   }
-
-  /**
-   * Update notification delivery status
-   */
   private async updateNotificationStatus(
     notificationId: string,
     status: 'sent' | 'failed',

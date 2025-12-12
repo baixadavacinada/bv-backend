@@ -1,7 +1,3 @@
-/**
- * Template Management Controller
- * Endpoints for admin/agent to create, edit, and delete custom templates
- */
 
 import { Router, Request, Response } from 'express'
 import { Logger } from '../../../middlewares/logging'
@@ -10,7 +6,6 @@ import { v4 as uuidv4 } from 'uuid'
 const router = Router()
 const logger = Logger.getInstance()
 
-// Store templates in memory for now (will be replaced with database)
 const customTemplates: Record<string, any> = {}
 
 interface NotificationTemplate {
@@ -25,7 +20,6 @@ interface NotificationTemplate {
   updatedAt?: Date
 }
 
-// Middleware: Verify admin or agent role
 const verifyAdminOrAgent = (req: Request, res: Response, next: Function) => {
   const userRole = (req as any).user?.role
   if (userRole !== 'admin' && userRole !== 'agent') {
@@ -39,10 +33,6 @@ const verifyAdminOrAgent = (req: Request, res: Response, next: Function) => {
   next()
 }
 
-/**
- * GET /api/admin/custom-templates
- * List all custom templates
- */
 router.get('/', verifyAdminOrAgent, (req: Request, res: Response) => {
   try {
     const templates = Object.values(customTemplates)
@@ -65,10 +55,6 @@ router.get('/', verifyAdminOrAgent, (req: Request, res: Response) => {
   }
 })
 
-/**
- * GET /api/admin/custom-templates/:templateId
- * Get specific template details
- */
 router.get('/:templateId', verifyAdminOrAgent, (req: Request, res: Response) => {
   try {
     const { templateId } = req.params
@@ -98,16 +84,11 @@ router.get('/:templateId', verifyAdminOrAgent, (req: Request, res: Response) => 
   }
 })
 
-/**
- * POST /api/admin/custom-templates
- * Create a new custom template
- */
 router.post('/', verifyAdminOrAgent, (req: Request, res: Response) => {
   try {
     const { name, description, subject, body, category } = req.body
     const userId = (req as any).user?.id || 'unknown'
 
-    // Validate required fields
     if (!name || !description || !subject || !body || !category) {
       return res.status(400).json({
         success: false,
@@ -117,7 +98,6 @@ router.post('/', verifyAdminOrAgent, (req: Request, res: Response) => {
       })
     }
 
-    // Validate category
     const validCategories = ['appointment', 'vaccine', 'reminder', 'system', 'general']
     if (!validCategories.includes(category)) {
       return res.status(400).json({
@@ -128,7 +108,6 @@ router.post('/', verifyAdminOrAgent, (req: Request, res: Response) => {
       })
     }
 
-    // Validate variables format (must be {{variableName}})
     const variableRegex = /\{\{[a-zA-Z_][a-zA-Z0-9_]*\}\}/g
     const subjectVars = subject.match(variableRegex) || []
     const bodyVars = body.match(variableRegex) || []
@@ -172,10 +151,6 @@ router.post('/', verifyAdminOrAgent, (req: Request, res: Response) => {
   }
 })
 
-/**
- * PUT /api/admin/custom-templates/:templateId
- * Update an existing template
- */
 router.put('/:templateId', verifyAdminOrAgent, (req: Request, res: Response) => {
   try {
     const { templateId } = req.params
@@ -192,7 +167,6 @@ router.put('/:templateId', verifyAdminOrAgent, (req: Request, res: Response) => 
       })
     }
 
-    // Validate category if provided
     if (category) {
       const validCategories = ['appointment', 'vaccine', 'reminder', 'system', 'general']
       if (!validCategories.includes(category)) {
@@ -205,7 +179,6 @@ router.put('/:templateId', verifyAdminOrAgent, (req: Request, res: Response) => 
       }
     }
 
-    // Update allowed fields (but not createdBy or createdAt)
     const updatedTemplate: NotificationTemplate = {
       ...template,
       ...(name && { name }),
@@ -238,10 +211,6 @@ router.put('/:templateId', verifyAdminOrAgent, (req: Request, res: Response) => 
   }
 })
 
-/**
- * DELETE /api/admin/custom-templates/:templateId
- * Delete a template
- */
 router.delete('/:templateId', verifyAdminOrAgent, (req: Request, res: Response) => {
   try {
     const { templateId } = req.params

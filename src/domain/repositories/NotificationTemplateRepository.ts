@@ -1,8 +1,6 @@
 import { NotificationTemplate } from "../entities/NotificationTemplate";
 
-/**
- * Repository interface for Notification Templates
- */
+
 export interface NotificationTemplateRepository {
   create(template: NotificationTemplate): Promise<NotificationTemplate>;
   findById(id: string): Promise<NotificationTemplate | null>;

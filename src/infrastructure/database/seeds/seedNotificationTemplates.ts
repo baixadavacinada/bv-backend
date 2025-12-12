@@ -1,10 +1,3 @@
-/**
- * Seed Notification Templates
- * Run this script to populate the database with initial templates
- * 
- * Usage: npx ts-node src/infrastructure/database/seeds/seedNotificationTemplates.ts
- */
-
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { NotificationTemplateModel } from '../models/notificationTemplateModel';

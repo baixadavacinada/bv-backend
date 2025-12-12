@@ -1,10 +1,5 @@
 import { Document } from 'mongoose';
 
-/**
- * Utilitário para conversões seguras entre MongoDB Documents e entidades de domínio
- * Segue as melhores práticas de Domain-Driven Design mantendo os IDs como string
- */
-
 export function convertObjectIdToString<T extends Document, U>(
   mongoDocument: T & { _id: any }
 ): U {

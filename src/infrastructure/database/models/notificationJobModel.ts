@@ -1,7 +1,3 @@
-/**
- * Mongoose Model for Notification Jobs
- */
-
 import { Schema, model, Document } from 'mongoose';
 import { NotificationJob, NotificationRecipient } from '../../../domain/entities/NotificationJob';
 

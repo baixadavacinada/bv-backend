@@ -66,7 +66,7 @@
  *         updatedAt:
  *           type: string
  *           format: date-time
- */
+
 
 /**
  * @openapi
@@ -98,7 +98,7 @@
  *         description: Usuário criado com sucesso
  *       401:
  *         description: Token ausente ou inválido
- */
+
 
 /**
  * @openapi
@@ -131,7 +131,7 @@
  *         description: Vacina criada com sucesso
  *       401:
  *         description: Token ausente ou inválido
- */
+
 
 /**
  * @openapi
@@ -226,7 +226,7 @@
  *         description: Lista de unidades de saúde
  *       401:
  *         description: Token ausente ou inválido
- */
+
 
 /**
  * @openapi
@@ -314,7 +314,7 @@
  *         description: Unidade não encontrada
  *       401:
  *         description: Token ausente ou inválido
- */
+
 
 /**
  * @openapi
@@ -347,7 +347,7 @@
  *         description: Unidade não encontrada
  *       401:
  *         description: Token ausente ou inválido
- */
+
 
 /**
  * @openapi
@@ -380,7 +380,7 @@
  *         description: Unidade não encontrada
  *       401:
  *         description: Token ausente ou inválido
- */
+
 
 /**
  * @openapi
@@ -434,7 +434,7 @@
  *         description: Unidade não encontrada
  *       401:
  *         description: Token ausente ou inválido
- */
+
 
 /**
  * @openapi
@@ -501,7 +501,7 @@
  *         description: Email already exists
  *       401:
  *         description: Unauthorized
- */
+
 
 /**
  * @openapi
@@ -570,7 +570,7 @@
  *         description: User not found
  *       401:
  *         description: Unauthorized
- */
+
 
 /**
  * @openapi
@@ -627,7 +627,7 @@
  *         description: Token ausente ou inválido
  *       403:
  *         description: Sem permissão (apenas admin)
- */
+
 
 /**
  * @openapi
@@ -663,7 +663,7 @@
  *         description: User not found
  *       401:
  *         description: Unauthorized
- */
+
 
 /**
  * @openapi
@@ -701,7 +701,7 @@
  *                       type: object
  *       401:
  *         description: Unauthorized
- */
+
 
 /**
  * @openapi
@@ -802,7 +802,7 @@
  *         description: Token ausente ou inválido
  *       403:
  *         description: Sem permissão (apenas admin)
- */
+
 
 /**
  * @openapi
@@ -895,7 +895,7 @@
  *         description: Token ausente ou inválido
  *       403:
  *         description: Sem permissão (apenas admin)
- */
+
 
 /**
  * @openapi
@@ -973,7 +973,7 @@
  *         description: Token ausente ou inválido
  *       403:
  *         description: Sem permissão (apenas admin)
- */
+
 
 /**
  * @openapi
@@ -1078,7 +1078,7 @@
  *         description: Token ausente ou inválido
  *       403:
  *         description: Sem permissão (apenas admin)
- */
+
 
 /**
  * @openapi
@@ -1135,7 +1135,7 @@
  *         description: Token ausente ou inválido
  *       403:
  *         description: Sem permissão (apenas admin)
- */
+
 
 /**
  * @openapi
@@ -1188,7 +1188,7 @@
  *         description: Token ausente ou inválido
  *       403:
  *         description: Sem permissão (apenas admin)
- */
+
 
 /**
  * @openapi
@@ -1299,7 +1299,7 @@
  *         description: Token ausente ou inválido
  *       403:
  *         description: Sem permissão (apenas admin)
- */
+
 
 /**
  * @openapi
@@ -1332,7 +1332,7 @@
  *         description: Lista de agendamentos
  *       401:
  *         description: Não autorizado
- */
+
 
 /**
  * @openapi
@@ -1366,7 +1366,7 @@
  *         description: Status atualizado
  *       401:
  *         description: Não autorizado
- */
+
 
 /**
  * @openapi
@@ -1408,7 +1408,7 @@
  *         description: Vacinação registrada
  *       401:
  *         description: Não autorizado
- */
+
 
 /**
  * @openapi
@@ -1435,7 +1435,7 @@
  *         description: Estatísticas de agendamentos
  *       401:
  *         description: Não autorizado
- */
+
 
 /**
  * @openapi
@@ -1479,7 +1479,7 @@
  *         description: Vacina criada
  *       401:
  *         description: Não autorizado
- */
+
 
 /**
  * @openapi
@@ -1541,7 +1541,7 @@
  *         description: Vacina deletada
  *       401:
  *         description: Não autorizado
- */
+
 
 /**
  * @openapi
@@ -1609,7 +1609,7 @@
  *         description: Registro criado
  *       401:
  *         description: Não autorizado
- */
+
 
 /**
  * @openapi
@@ -1671,7 +1671,7 @@
  *         description: Registro deletado
  *       401:
  *         description: Não autorizado
- */
+
 
 /**
  * @openapi
@@ -1740,7 +1740,7 @@
  *         description: Unidade criada
  *       401:
  *         description: Não autorizado
- */
+
 
 /**
  * @openapi
@@ -1802,7 +1802,7 @@
  *         description: Unidade deletada
  *       401:
  *         description: Não autorizado
- */
+
 
 /**
  * @openapi
@@ -1823,7 +1823,7 @@
  *         description: Lista de feedbacks
  *       401:
  *         description: Não autorizado
- */
+
 
 /**
  * @openapi
@@ -1871,7 +1871,7 @@
  *         description: Feedback moderado
  *       401:
  *         description: Não autorizado
- */
+
 
 /**
  * @openapi
@@ -2025,7 +2025,7 @@
  *         description: Dados inválidos
  *       401:
  *         description: Não autorizado
- */
+
 
 /**
  * @openapi
@@ -2079,7 +2079,7 @@
  *         description: Notificação não encontrada
  *       401:
  *         description: Não autorizado
- */
+
 
 /**
  * @openapi
@@ -2096,7 +2096,7 @@
  *         description: Estatísticas do sistema
  *       401:
  *         description: Não autorizado
- */
+
 
 /**
  * @openapi
@@ -2113,7 +2113,7 @@
  *         description: Resumo de estatísticas
  *       401:
  *         description: Não autorizado
- */
+
 
 /**
  * @openapi
@@ -2148,7 +2148,7 @@
  *         description: Relatório de vacinações
  *       401:
  *         description: Não autorizado
- */
+
 
 /**
  * @openapi
@@ -2183,7 +2183,7 @@
  *         description: Relatório de unidades
  *       401:
  *         description: Não autorizado
- */
+
 
 /**
  * @openapi
@@ -2225,7 +2225,7 @@
  *         description: Usuário criado
  *       401:
  *         description: Não autorizado
- */
+
 
 /**
  * @openapi
@@ -2264,7 +2264,7 @@
  *         description: Usuário deletado
  *       401:
  *         description: Não autorizado
- */
+
 
 /**
  * @openapi
@@ -2295,4 +2295,5 @@
  *         description: Usuário criado
  *       401:
  *         description: Não autorizado
- */
+
+*/

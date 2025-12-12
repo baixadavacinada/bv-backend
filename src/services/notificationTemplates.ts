@@ -1,9 +1,3 @@
-/**
- * Notification Templates Service
- * Provides standardized message templates for different notification types
- * All templates are in Portuguese for Baixada Vacinada users
- */
-
 export interface TemplateContext {
   userName?: string;
   vaccineName?: string;
@@ -49,26 +43,16 @@ export class NotificationTemplates {
     };
   }
 
-  /**
-   * Interpolate template variables with context
-   * Example: "Olá {{userName}}" with context { userName: "João" } = "Olá João"
-   */
   private static interpolate(text: string, context: TemplateContext): string {
     return text.replace(/\{\{(\w+)\}\}/g, (match, key) => {
       return context[key] || match;
     });
   }
 
-  /**
-   * Get all templates by category
-   */
   static getTemplatesByCategory(category: NotificationTemplate['category']): NotificationTemplate[] {
     return Object.values(this.templates).filter((t) => t.category === category);
   }
 
-  /**
-   * List all available templates
-   */
   static listAll(): NotificationTemplate[] {
     return Object.values(this.templates);
   }

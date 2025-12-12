@@ -28,9 +28,6 @@ export interface NotificationTemplate {
   updatedAt?: Date;
 }
 
-/**
- * Context for rendering templates
- */
 export interface TemplateContext {
   userName?: string;
   vaccineName?: string;

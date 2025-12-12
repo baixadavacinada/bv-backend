@@ -1,7 +1,3 @@
-/**
- * Mongoose Model for Notification Audit
- */
-
 import { Schema, model, Document } from 'mongoose';
 import { NotificationAudit } from '../../../domain/entities/NotificationAudit';
 

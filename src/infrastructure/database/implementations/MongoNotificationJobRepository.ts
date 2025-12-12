@@ -1,7 +1,3 @@
-/**
- * MongoDB Implementation of NotificationJobRepository
- */
-
 import { v4 as uuidv4 } from 'uuid';
 import { NotificationJobRepository } from '../../../domain/repositories/NotificationJobRepository';
 import { NotificationJob, NotificationJobFilters, CreateNotificationJobDTO, JobStatus } from '../../../domain/entities/NotificationJob';

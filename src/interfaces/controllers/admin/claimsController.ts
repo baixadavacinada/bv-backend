@@ -22,9 +22,6 @@ export interface BulkUpdateClaimsRequest {
   }[];
 }
 
-/**
- * Atualiza claims de um usuário específico
- */
 export const updateUserClaims = async (req: Request, res: Response) => {
   try {
     const { uid, role, permissions, ubsId, isActive }: UpdateClaimsRequest = req.body;
@@ -89,9 +86,6 @@ export const updateUserClaims = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Busca claims de um usuário específico
- */
 export const getUserClaims = async (req: Request, res: Response) => {
   try {
     const { uid } = req.params;
@@ -138,9 +132,7 @@ export const getUserClaims = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Atualiza role de um usuário (shortcut para mudança de role)
- */
+
 export const updateUserRole = async (req: Request, res: Response) => {
   try {
     const { uid, role }: { uid: string; role: UserRole } = req.body;
@@ -198,9 +190,7 @@ export const updateUserRole = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Desativa um usuário
- */
+
 export const deactivateUser = async (req: Request, res: Response) => {
   try {
     const { uid } = req.params;
@@ -253,9 +243,6 @@ export const deactivateUser = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Reativa um usuário
- */
 export const reactivateUser = async (req: Request, res: Response) => {
   try {
     const { uid } = req.params;
@@ -308,9 +295,6 @@ export const reactivateUser = async (req: Request, res: Response) => {
   }
 };
 
-/**
- * Atualização em lote de múltiplos usuários
- */
 export const bulkUpdateClaims = async (req: Request, res: Response) => {
   try {
     const { updates }: BulkUpdateClaimsRequest = req.body;
@@ -335,61 +319,71 @@ export const bulkUpdateClaims = async (req: Request, res: Response) => {
       });
     }
 
-    const results = [];
-    const errors = [];
+    const successful = [];
+    const failed = [];
 
     for (const update of updates) {
       try {
         const { uid, ...claimsUpdate } = update;
-        
+
+        if (!uid) {
+          failed.push({
+            uid: 'unknown',
+            success: false,
+            error: 'User UID is required'
+          });
+          continue;
+        }
+
         const updatedClaims = await claimsService.updateUserClaims(
           uid,
           claimsUpdate,
           req.user.id
         );
 
-        results.push({
+        successful.push({
           uid,
           success: true,
           claims: updatedClaims
         });
-      } catch (error) {
-        errors.push({
-          uid: update.uid,
+      } catch (error: any) {
+        failed.push({
+          uid: update.uid || 'unknown',
           success: false,
-          error: error instanceof Error ? error.message : 'Unknown error'
+          error: error.message || 'Failed to update claims'
         });
       }
     }
 
-    logger.info('Bulk claims update completed', {
+    logger.info('Bulk update claims completed via API', {
       adminUid: req.user.id,
       totalUpdates: updates.length,
-      successful: results.length,
-      failed: errors.length
+      successful: successful.length,
+      failed: failed.length
     });
 
     res.json({
       success: true,
       data: {
-        successful: results,
-        failed: errors,
+        successful,
+        failed,
         summary: {
           total: updates.length,
-          successful: results.length,
-          failed: errors.length
+          successful: successful.length,
+          failed: failed.length
         }
       }
     });
   } catch (error: any) {
-    logger.error('Error in bulk claims update', error);
+    logger.error('Error in bulk update claims', error);
 
     res.status(500).json({
       success: false,
       error: {
         code: 'SERVER_ERROR',
-        message: 'Failed to perform bulk update'
+        message: 'Failed to process bulk claims update'
       }
     });
   }
 };
+
