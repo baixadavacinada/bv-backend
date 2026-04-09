@@ -1,7 +1,7 @@
 import request from 'supertest';
 import { Express } from 'express';
 import { createTestApp } from '../helpers/testApp';
-import { testUsers, testHealthUnits } from '../fixtures/testData';
+import { testUsers, testHealthUnit } from '../fixtures/testData';
 import { MongoUserRepository } from '../../src/infrastructure/database/implementations/MongoUserRepository';
 
 describe('Google OAuth Integration & Profile Editing', () => {

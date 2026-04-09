@@ -5,4 +5,5 @@ export interface UserRepository {
   findById(id: string): Promise<User | null>;
   findAll(): Promise<User[]>;
   updateProfile(id: string, data: Partial<User>): Promise<User | null>;
+  delete(id: string): Promise<boolean>;
 }

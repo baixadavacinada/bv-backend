@@ -32,6 +32,40 @@ export async function createTestApp(): Promise<Express> {
   app.use(requestLoggingMiddleware);
   app.use(sanitizeRequest);
 
+  // Mock auth middleware for tests
+  app.use('/api', (req, res, next) => {
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer mock-')) {
+      const token = authHeader.replace('Bearer mock-', '');
+      if (token === 'firebase-user-token') {
+        req.user = {
+          id: 'google-test-user',
+          email: 'test@example.com',
+          role: 'public'
+        };
+      } else if (token === 'admin-global-token') {
+        req.user = {
+          id: 'admin-global-uid',
+          email: 'admin-global@test.com',
+          role: 'admin'
+        };
+      } else if (token === 'admin-unit-token') {
+        req.user = {
+          id: 'admin-unit-uid',
+          email: 'admin-unit@test.com',
+          role: 'admin'
+        };
+      } else if (token === 'agent-token') {
+        req.user = {
+          id: 'agent-uid',
+          email: 'agent@test.com',
+          role: 'agent'
+        };
+      }
+    }
+    next();
+  });
+
   // Routes
   app.use('/api/public', publicRoutes);
   app.use('/api/auth', authRoutes);

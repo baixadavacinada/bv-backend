@@ -28,4 +28,9 @@ export class MongoUserRepository implements UserRepository {
     const updated = await UserModel.findByIdAndUpdate(id, data, { new: true }).lean();
     return updated ? convertLeanDocumentToString<User>(updated) : null;
   }
+
+  async delete(id: string): Promise<boolean> {
+    const result = await UserModel.findByIdAndDelete(id);
+    return !!result;
+  }
 }
