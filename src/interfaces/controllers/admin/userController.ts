@@ -111,3 +111,46 @@ export async function getUserFavoriteEducationalMaterialsController(
   }
 }
 
+/**
+ * Get eligible users for template testing (users with phone and WhatsApp acceptance)
+ */
+export async function getEligibleUsersForTestController(
+  req: Request,
+  res: Response
+) {
+  try {
+    const users = await UserModel.find(
+      {
+        "phone": { $exists: true, $nin: [null, ""] },
+        "preferences.acceptWhatsAppNotifications": true,
+        "isActive": true
+      },
+      { 
+        _id: 1, 
+        name: 1, 
+        email: 1, 
+        phone: 1 
+      }
+    ).limit(100);
+
+    const formattedUsers = users.map(user => ({
+      id: user._id?.toString(),
+      name: user.name || 'Sem nome',
+      email: user.email || '',
+      phone: user.phone || ''
+    }));
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        users: formattedUsers
+      }
+    });
+  } catch (error) {
+    console.error("Erro ao buscar usuários elegíveis:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Erro ao buscar usuários elegíveis para teste"
+    });
+  }
+}

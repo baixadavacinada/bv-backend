@@ -8,6 +8,7 @@ export interface UserDocument extends Document {
   role: "public" | "agent" | "admin";
   phone?: string; // Phone number for contact and WhatsApp
   acceptWhatsAppNotifications?: boolean; // User consent for WhatsApp notifications
+  adminScope?: "global" | "unit_scoped"; // Admin scope for access control (new system)
   profile?: {
     assignedUnitsIds?: Types.ObjectId[];
     favoritesHealthUnit?: Array<{
@@ -80,6 +81,15 @@ const UserSchema = new Schema<UserDocument>({
   acceptWhatsAppNotifications: {
     type: Boolean,
     default: false
+  },
+  adminScope: {
+    type: String,
+    enum: {
+      values: ["global", "unit_scoped"],
+      message: 'Admin scope must be: global or unit_scoped'
+    },
+    sparse: true,
+    default: null
   },
   profile: {
     assignedUnitsIds: [{

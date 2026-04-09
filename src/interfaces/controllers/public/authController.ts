@@ -199,17 +199,17 @@ export const updateProfile = async (req: Request, res: Response) => {
       }
       mongoUpdateData.phone = phone;
     }
-    
+
     // Adicionar dados de WhatsApp
     if (acceptWhatsAppNotifications !== undefined) {
       mongoUpdateData.acceptWhatsAppNotifications = acceptWhatsAppNotifications;
     }
-    
+
     // Adicionar favoritos se fornecidos
     if (favoritesHealthUnit) {
       mongoUpdateData['profile.favoritesHealthUnit'] = favoritesHealthUnit;
     }
-    
+
     mongoUpdateData.updatedAt = new Date();
 
     // Atualizar Firebase se houver dados
@@ -227,54 +227,39 @@ export const updateProfile = async (req: Request, res: Response) => {
     if (phone && acceptWhatsAppNotifications) {
       try {
         const notificationGateway = new NotificationGateway();
-        
+
         const normalizedPhone = normalizePhoneNumber(phone);
-        
+
         if (!normalizedPhone) {
           throw new Error('Invalid phone number format for WhatsApp');
         }
-        
+
         // Buscar e renderizar template do banco de dados
         const template = await notificationTemplatesService.getTemplate('whatsapp_opt_in_confirmation');
-        
+
         if (!template) {
           throw new Error('Template whatsapp_opt_in_confirmation not found');
         }
-        
+
         const rendered = await notificationTemplatesService.render('whatsapp_opt_in_confirmation', {
           userName: displayName || name || req.user.email?.split('@')[0] || 'Usuário',
           phone: phone
         });
-        
+
         if (!rendered) {
           throw new Error('Failed to render template');
         }
-        
+
         await notificationGateway.send({
           to: normalizedPhone,
           channel: 'whatsapp',
           title: rendered.subject,
           message: rendered.body
         });
-
-        logger.info('WhatsApp confirmation sent', {
-          uid: req.user.id,
-          phone: phone.replace(/\d(?=\d{4})/g, '*'),
-          templateId: 'whatsapp_opt_in_confirmation'
-        });
       } catch (whatsappError) {
-        logger.warn('Failed to send WhatsApp confirmation', {
-          uid: req.user.id,
-          error: whatsappError instanceof Error ? whatsappError.message : 'Unknown error'
-        });
         // Não falha a requisição se não conseguir enviar WhatsApp
       }
     }
-
-    logger.info('User profile updated', {
-      uid: req.user.id,
-      updatedFields: Object.keys({ ...firebaseUpdateData, ...mongoUpdateData })
-    });
 
     res.json({
       success: true,
@@ -440,78 +425,164 @@ export const syncFirebaseUser = async (req: Request, res: Response) => {
     const { email, displayName } = req.body;
     const firebaseUid = req.user.id;
 
-    let userRole = 'public';
+    logger.info('Starting Firebase user sync', {
+      uid: firebaseUid,
+      email: email || req.user.email,
+      displayName,
+      method: req.query.method || 'unknown'
+    });
 
+    let userRole = 'public';
+    let existingUser = null;
+
+    /**
+     * Step 1: Check Firebase custom claims (for admin/agent roles)
+     */
     try {
       const auth = getFirebaseAuth();
       const userRecord = await auth.getUser(firebaseUid);
       const firebaseCustomClaims = userRecord.customClaims as any;
 
+      logger.debug('Firebase user record retrieved', {
+        uid: firebaseUid,
+        email: userRecord.email,
+        displayName: userRecord.displayName,
+        hasCustomClaims: !!firebaseCustomClaims
+      });
+
       if (firebaseCustomClaims && firebaseCustomClaims.role && firebaseCustomClaims.role !== 'public') {
         userRole = firebaseCustomClaims.role;
         logger.info('Admin/agent user synced with custom role', {
           uid: firebaseUid,
-          role: userRole
+          role: userRole,
+          email: userRecord.email
         });
       } else {
         try {
           await claimsService.setDefaultClaimsForNewUser(firebaseUid);
-          logger.info('Default claims set for public user', { uid: firebaseUid });
+          logger.info('Default claims set for public user', { 
+            uid: firebaseUid,
+            email: userRecord.email
+          });
         } catch (claimsError) {
           logger.warn('Could not set default claims', {
             uid: firebaseUid,
-            error: claimsError
+            email: userRecord.email,
+            error: claimsError instanceof Error ? claimsError.message : String(claimsError)
           });
         }
       }
     } catch (error) {
       logger.warn('Error checking Firebase claims', {
         uid: firebaseUid,
-        error
+        error: error instanceof Error ? error.message : String(error)
       });
     }
 
-    // Check if user exists and is inactive - reactivate on login
+    /**
+     * Step 2: Check if user exists in MongoDB
+     */
     try {
-      const existingUser = await userRepository.findById(firebaseUid);
-      if (existingUser && !existingUser.isActive) {
-        await userRepository.updateProfile(firebaseUid, { 
-          isActive: true,
-          lastLoginAt: new Date()
-        });
-        logger.info('Inactive user reactivated on login', {
+      existingUser = await userRepository.findById(firebaseUid);
+      
+      if (existingUser) {
+        logger.info('Existing MongoDB user found', {
           uid: firebaseUid,
-          email: email || req.user.email
+          email: existingUser.email,
+          role: existingUser.role,
+          isActive: existingUser.isActive
         });
+
+        /**
+         * Step 2a: Reactivate if inactive
+         */
+        if (!existingUser.isActive) {
+          await userRepository.updateProfile(firebaseUid, { 
+            isActive: true,
+            lastLoginAt: new Date()
+          });
+          logger.info('Inactive user reactivated on sync', {
+            uid: firebaseUid,
+            email: existingUser.email,
+            previousRole: existingUser.role,
+            newRole: userRole
+          });
+        } else {
+          logger.debug('User already active, updating lastLogin', {
+            uid: firebaseUid,
+            email: existingUser.email
+          });
+          /**
+           * Update lastLoginAt even if active
+           */
+          await userRepository.updateProfile(firebaseUid, {
+            lastLoginAt: new Date()
+          });
+        }
       }
-    } catch (reactivateError) {
-      logger.warn('Could not reactivate user', {
+    } catch (dbError) {
+      logger.warn('Error checking existing user in MongoDB', {
         uid: firebaseUid,
-        error: reactivateError
+        error: dbError instanceof Error ? dbError.message : String(dbError)
       });
     }
 
+    /**
+     * Step 3: Create or update user in MongoDB
+     */
     try {
-      await userRepository.create({
+      const userData = {
         _id: firebaseUid,
         uid: firebaseUid,
-        name: displayName || email?.split('@')[0] || 'User',
+        name: displayName || email?.split('@')[0] || req.user.email?.split('@')[0] || 'User',
         email: email || req.user.email,
         role: userRole as any,
+        isActive: true,
+        lastLoginAt: new Date()
+      };
+
+      await userRepository.create(userData);
+      
+      logger.info('Firebase user successfully synced to MongoDB', {
+        uid: firebaseUid,
+        email: userData.email,
+        name: userData.name,
+        role: userRole,
         isActive: true
       });
-      
-      logger.info('Firebase user synced to MongoDB', {
-        uid: firebaseUid,
-        email: email || req.user.email,
-        role: userRole
-      });
     } catch (mongoError) {
-      logger.warn('User might already exist in MongoDB', {
-        uid: firebaseUid,
-        email: email || req.user.email,
-        error: mongoError
-      });
+      /**
+       * If user already exists, update instead of create
+       */
+      if (mongoError instanceof Error && mongoError.message.includes('duplicate')) {
+        try {
+          await userRepository.updateProfile(firebaseUid, {
+            name: displayName || email?.split('@')[0] || req.user.email?.split('@')[0] || 'User',
+            email: email || req.user.email,
+            role: userRole as any,
+            isActive: true,
+            lastLoginAt: new Date()
+          });
+          
+          logger.info('Existing Firebase user updated in MongoDB', {
+            uid: firebaseUid,
+            email: email || req.user.email,
+            role: userRole
+          });
+        } catch (updateError) {
+          console.error('Failed to update existing user', {
+            uid: firebaseUid,
+            message: updateError instanceof Error ? updateError.message : String(updateError)
+          });
+          throw updateError;
+        }
+      } else {
+        logger.warn('Could not create user in MongoDB', {
+          uid: firebaseUid,
+          email: email || req.user.email,
+          error: mongoError instanceof Error ? mongoError.message : String(mongoError)
+        });
+      }
     }
 
     res.status(201).json({
@@ -519,13 +590,17 @@ export const syncFirebaseUser = async (req: Request, res: Response) => {
       data: {
         uid: firebaseUid,
         email: email || req.user.email,
-        displayName: displayName,
+        displayName: displayName || email?.split('@')[0],
         role: userRole,
+        isActive: true,
         message: 'User synced to backend successfully'
       }
     });
   } catch (error: any) {
-    logger.error('Error syncing Firebase user', error);
+    console.error('Fatal error during Firebase user sync', {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
 
     res.status(500).json({
       success: false,

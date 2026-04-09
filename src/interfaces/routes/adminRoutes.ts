@@ -2,7 +2,8 @@ import { Router } from "express";
 import { 
   createUserController, 
   toggleFavoriteEducationalMaterialController,
-  getUserFavoriteEducationalMaterialsController 
+  getUserFavoriteEducationalMaterialsController,
+  getEligibleUsersForTestController
 } from "../controllers/admin/userController";
 import { updateUserProfileController } from "../controllers/admin/profileController";
 import { 
@@ -37,6 +38,7 @@ import {
 } from "../controllers/appointmentController";
 
 import { firebaseAuthAdvanced } from "../../middlewares/firebaseAuthAdvanced";
+import { requireUnitAccess } from "../../middlewares/unitAccess";
 import { 
   updateUserClaims as updateClaimsAdvanced, 
   getUserClaims as getClaimsAdvanced, 
@@ -65,6 +67,10 @@ const reportsController = new ReportsController();
 router.post("/users",
   validateBody(ValidationSchemas.user),
   asyncHandler(createUserController)
+);
+
+router.get("/users/eligible-for-test",
+  asyncHandler(getEligibleUsersForTestController)
 );
 
 router.post("/vaccines",
@@ -203,6 +209,7 @@ router.get("/health-units/:id",
 );
 
 router.put("/health-units/:id",
+  requireUnitAccess({ unitIdParam: 'id', allowAdminBypass: true }),
   validateBody({
     name: { required: false, type: 'string' as const, minLength: 3, maxLength: 200 },
     address: { required: false, type: 'string' as const, minLength: 10, maxLength: 500 },
@@ -221,6 +228,7 @@ router.put("/health-units/:id",
 );
 
 router.delete("/health-units/:id",
+  requireUnitAccess({ unitIdParam: 'id', allowAdminBypass: true }),
   asyncHandler(adminHealthUnitsController.delete.bind(adminHealthUnitsController))
 );
 
@@ -440,6 +448,10 @@ router.patch("/users/:userId/educational-materials/favorite",
 
 router.get("/users/:userId/educational-materials/favorites",
   asyncHandler(getUserFavoriteEducationalMaterialsController)
+);
+
+router.get("/users/eligible-for-test",
+  asyncHandler(getEligibleUsersForTestController)
 );
 
 export default router;

@@ -238,5 +238,6 @@
  *         description: Dados completos do usuário
  *       401:
  *         description: Não autorizado - token ausente ou inválido
+ */
 
-*/
+export const authRoutesDoc = {}

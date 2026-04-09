@@ -2295,5 +2295,6 @@
  *         description: Usuário criado
  *       401:
  *         description: Não autorizado
+ */
 
-*/
+export const adminRoutesDoc = {}
