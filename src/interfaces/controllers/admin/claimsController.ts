@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
+import mongoose from 'mongoose';
 import { claimsService, UserRole, Permission } from '../../../services/claimsService';
 import { Logger } from '../../../middlewares/logging';
+import { UserModel } from '../../../infrastructure/database/models/userModel';
 
 const logger = Logger.getInstance();
 
@@ -58,6 +60,24 @@ export const updateUserClaims = async (req: Request, res: Response) => {
       claimsUpdate,
       req.user.id
     );
+
+    if (ubsId !== undefined) {
+      if (ubsId) {
+        await UserModel.findByIdAndUpdate(uid, {
+          $set: {
+            adminScope: 'unit_scoped',
+            'profile.assignedUnitsIds': [new mongoose.Types.ObjectId(ubsId)],
+          },
+        });
+      } else {
+        await UserModel.findByIdAndUpdate(uid, {
+          $set: {
+            adminScope: 'global',
+            'profile.assignedUnitsIds': [],
+          },
+        });
+      }
+    }
 
     logger.info('User claims updated via API', {
       targetUid: uid,
