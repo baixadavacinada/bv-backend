@@ -43,7 +43,7 @@ describe('Health Unit Access Control Flow', () => {
     ubs2Id = ubs2._id.toString();
 
     // Create test users
-    // 1. Admin with GLOBAL scope (can edit all UBS)
+    // 1. Admin geral (adminScope: 'global') — acessa qualquer UBS
     const adminGlobal = new UserModel({
       _id: adminGlobalId,
       uid: adminGlobalId,
@@ -90,10 +90,10 @@ describe('Health Unit Access Control Flow', () => {
     await HealthUnitModel.deleteMany({ name: { $regex: /UBS Teste/ } });
   });
 
-  describe('Global Scope Admin Access Patterns', () => {
-    it('should allow global admin to edit any health unit', async () => {
-      // GIVEN: Admin with global scope
-      // WHEN: Editing UBS 1
+  describe('Admin Geral — acesso a qualquer UBS', () => {
+    it('deve permitir admin geral editar qualquer UBS', async () => {
+      // DADO: Admin com escopo global
+      // QUANDO: Edita a UBS 1
       const response = await request(app)
         .put(`/api/admin/health-units/${ubs1Id}`)
         .set('Authorization', `Bearer admin-global-token`)
@@ -108,9 +108,9 @@ describe('Health Unit Access Control Flow', () => {
       }
     });
 
-    it('should allow global admin to edit UBS 2', async () => {
-      // GIVEN: Admin with global scope
-      // WHEN: Editing UBS 2
+    it('deve permitir admin geral editar a UBS 2', async () => {
+      // DADO: Admin geral
+      // QUANDO: Edita a UBS 2
       const response = await request(app)
         .put(`/api/admin/health-units/${ubs2Id}`)
         .set('Authorization', `Bearer admin-global-token`)
@@ -125,10 +125,10 @@ describe('Health Unit Access Control Flow', () => {
     });
   });
 
-  describe('Unit-Scoped Admin Access Patterns', () => {
-    it('should allow unit-scoped admin to edit assigned unit', async () => {
-      // GIVEN: Admin assigned to UBS 1
-      // WHEN: Editing UBS 1
+  describe('Admin de UBS — acesso restrito à unidade vinculada', () => {
+    it('deve permitir admin de UBS editar sua própria unidade', async () => {
+      // DADO: Admin vinculado à UBS 1
+      // QUANDO: Edita a UBS 1
       const response = await request(app)
         .put(`/api/admin/health-units/${ubs1Id}`)
         .set('Authorization', `Bearer admin-unit-token`)
@@ -142,9 +142,9 @@ describe('Health Unit Access Control Flow', () => {
       }
     });
 
-    it('should DENY unit-scoped admin from editing unassigned unit', async () => {
-      // GIVEN: Admin scoped to UBS 1
-      // WHEN: Trying to edit UBS 2 (not assigned)
+    it('deve negar acesso do admin de UBS a uma unidade não vinculada', async () => {
+      // DADO: Admin vinculado à UBS 1
+      // QUANDO: Tenta editar a UBS 2 (sem vínculo)
       const response = await request(app)
         .put(`/api/admin/health-units/${ubs2Id}`)
         .set('Authorization', `Bearer admin-unit-token`)
@@ -160,10 +160,10 @@ describe('Health Unit Access Control Flow', () => {
     });
   });
 
-  describe('Health Professional (Agent) Access Patterns', () => {
-    it('should allow agent to edit assigned health unit', async () => {
-      // GIVEN: Agent assigned to UBS 1
-      // WHEN: Editing UBS 1
+  describe('Profissional de Saúde — acesso restrito à unidade vinculada', () => {
+    it('deve permitir profissional editar a UBS vinculada', async () => {
+      // DADO: Profissional vinculado à UBS 1
+      // QUANDO: Edita a UBS 1
       const response = await request(app)
         .put(`/api/admin/health-units/${ubs1Id}`)
         .set('Authorization', `Bearer agent-token`)
@@ -179,9 +179,9 @@ describe('Health Unit Access Control Flow', () => {
       }
     });
 
-    it('should DENY agent from editing unassigned health unit', async () => {
-      // GIVEN: Agent assigned to UBS 1
-      // WHEN: Trying to edit UBS 2
+    it('deve negar acesso do profissional a uma UBS não vinculada', async () => {
+      // DADO: Profissional vinculado à UBS 1
+      // QUANDO: Tenta editar a UBS 2
       const response = await request(app)
         .put(`/api/admin/health-units/${ubs2Id}`)
         .set('Authorization', `Bearer agent-token`)

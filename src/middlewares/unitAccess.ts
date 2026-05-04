@@ -25,16 +25,19 @@ export interface UnitAccessOptions {
 }
 
 /**
- * Middleware to enforce unit-level access control
- * 
- * Validates that:
- * 1. User with 'admin' role AND scope 'global' → access any unit
- * 2. User with 'admin' role AND scope 'unit_scoped' → access only if unit in assignedUnitsIds
- * 3. User with 'agent' role → access only if unit in assignedUnitsIds
- * 4. User with 'public' role → access DENIED (403)
- * 
- * @param options Configuration for unit access validation
- * @returns Middleware function
+ * Middleware de controle de acesso por unidade de saúde.
+ *
+ * Três perfis de acesso:
+ * 1. Admin geral (adminScope: 'global') → acessa qualquer UBS
+ * 2. Admin de UBS (adminScope: 'unit_scoped') → acessa apenas as UBSs em assignedUnitsIds
+ * 3. Profissional de saúde (role: 'agent') → acessa apenas as UBSs em assignedUnitsIds
+ * 4. Usuário público (role: 'public') → acesso negado (403)
+ *
+ * O vínculo entre admin/profissional e UBS é feito pelo admin geral
+ * ao definir adminScope e assignedUnitsIds no perfil do usuário.
+ *
+ * @param options Configuração do parâmetro de ID da unidade
+ * @returns Middleware Express
  */
 export function requireUnitAccess(options: UnitAccessOptions) {
   const {
@@ -107,14 +110,8 @@ export function requireUnitAccess(options: UnitAccessOptions) {
         });
       }
 
-      /**
-       * Admin role validation
-       */
       if (req.user.role === 'admin') {
         try {
-          /**
-           * Fetch user from database to check adminScope
-           */
           const mongoUser = await userRepository.findById(req.user.id);
 
           if (!mongoUser) {
@@ -133,13 +130,10 @@ export function requireUnitAccess(options: UnitAccessOptions) {
             });
           }
 
-          /**
-           * Check for global admin scope (new system) or legacy admin with no scope restriction
-           */
           const adminScope = (mongoUser as any).adminScope || 'global';
 
           if (adminScope === 'global' || allowAdminBypass) {
-            logger.info('Unit access granted - admin with global scope', {
+            logger.info('Acesso liberado - admin geral', {
               uid: req.user.id,
               email: req.user.email,
               role: req.user.role,
@@ -164,16 +158,13 @@ export function requireUnitAccess(options: UnitAccessOptions) {
           if (adminScope === 'unit_scoped') {
             const assignedUnitIds = mongoUser.profile?.assignedUnitsIds || [];
 
-            /**
-             * Normalize unit IDs for comparison (handle ObjectId vs string)
-             */
             const userCanAccessUnit = assignedUnitIds.some(id => {
               const idString = id.toString();
               return idString === unitId;
             });
 
             if (!userCanAccessUnit) {
-              logger.warn('Unit access denied - unit not in assignedUnitsIds', {
+              logger.warn('Acesso negado - admin de UBS sem vínculo com esta unidade', {
                 uid: req.user.id,
                 email: req.user.email,
                 role: req.user.role,
@@ -193,7 +184,7 @@ export function requireUnitAccess(options: UnitAccessOptions) {
               });
             }
 
-            logger.info('Unit access granted - admin with unit scope', {
+            logger.info('Acesso liberado - admin de UBS com unidade vínculada', {
               uid: req.user.id,
               email: req.user.email,
               role: req.user.role,
@@ -203,19 +194,13 @@ export function requireUnitAccess(options: UnitAccessOptions) {
               path: req.path
             });
 
-            /**
-             * Store unit info in request
-             */
             (req as any).unitId = unitId;
             (req as any).adminScope = adminScope;
 
             return next();
           }
 
-          /**
-           * Unknown admin scope
-           */
-          logger.warn('Unit access check - unknown admin scope', {
+          logger.warn('Escopo de admin não reconhecido', {
             uid: req.user.id,
             email: req.user.email,
             adminScope,
@@ -247,9 +232,6 @@ export function requireUnitAccess(options: UnitAccessOptions) {
         }
       }
 
-      /**
-       * Agent role validation
-       */
       if (req.user.role === 'agent') {
         try {
           const mongoUser = await userRepository.findById(req.user.id);
@@ -272,16 +254,13 @@ export function requireUnitAccess(options: UnitAccessOptions) {
 
           const assignedUnitIds = mongoUser.profile?.assignedUnitsIds || [];
 
-          /**
-           * Agent can only access their assigned units
-           */
           const agentCanAccessUnit = assignedUnitIds.some(id => {
             const idString = id.toString();
             return idString === unitId;
           });
 
           if (!agentCanAccessUnit) {
-            logger.warn('Unit access denied - agent unit not in assignedUnitsIds', {
+            logger.warn('Acesso negado - profissional não vinculado a esta UBS', {
               uid: req.user.id,
               email: req.user.email,
               role: req.user.role,
@@ -300,7 +279,7 @@ export function requireUnitAccess(options: UnitAccessOptions) {
             });
           }
 
-          logger.info('Unit access granted - agent with assigned unit', {
+          logger.info('Acesso liberado - profissional vinculado à UBS', {
             uid: req.user.id,
             email: req.user.email,
             role: req.user.role,
